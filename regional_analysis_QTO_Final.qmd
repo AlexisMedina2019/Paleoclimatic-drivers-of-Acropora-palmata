@@ -18,7 +18,7 @@ library(dplyr)
 library(ggplot2)
 library(stargazer)
 
-datos_reg <- read_excel("ages_kernel_reg.xlsx")
+datos_reg <- read_excel("ages_kernel_reg_updt.xlsx")
 
 datos_reg_pal <- datos_reg %>%
   filter(group == "palmata", t_ka >= 0 & t_ka <= 6)
