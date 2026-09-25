@@ -1215,6 +1215,33 @@ formulas_cb <- list(
   M7_av = counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N) + s(dT_raw) + s(Hur100_av) + Hydro + Thermal + Hurricane
 )
 
+## --- Safety helpers (added) -------------------------------------------
+## Fitting the full combined formulas (up to 4 smooth terms, default k = 10
+## each) on small panels such as Saint Croix requires far more unique
+## covariate values than a handful of centennial bins can provide. Letting
+## mgcv build an over-parameterized basis on so little data is the most
+## likely cause of the session crashes reported for that site. These
+## helpers (i) cap the basis dimension `k` of every smooth term to a value
+## that is safe given the panel size, and (ii) skip formulas that are
+## clearly over-parameterized for the panel rather than attempting to fit
+## them at all.
+count_smooth_terms <- function(formula) {
+  lengths(regmatches(paste(deparse(formula, width.cutoff = 500L), collapse = " "),
+                      gregexpr("s\\(", paste(deparse(formula, width.cutoff = 500L), collapse = " "))))
+}
+
+cap_smooth_k <- function(formula, k_max) {
+  f_chr <- paste(deparse(formula, width.cutoff = 500L), collapse = " ")
+  f_chr <- gsub("s\\(\\s*([A-Za-z0-9_\\.]+)\\s*\\)",
+                paste0("s(\\1, k = ", k_max, ")"), f_chr)
+  as.formula(f_chr)
+}
+
+safe_k_for <- function(n_obs, n_smooth_terms) {
+  max(3, min(10, floor((n_obs - 1) / max(1, n_smooth_terms))))
+}
+## ------------------------------------------------------------------------
+
 fit_combined_gams_safe <- function(formulas_cb, data, segment_name) {
   
   # 🔧 Limpieza previa
@@ -1226,14 +1253,28 @@ fit_combined_gams_safe <- function(formulas_cb, data, segment_name) {
   
   fits <- lapply(names(formulas_cb), function(name) {
     f <- formulas_cb[[name]]
+    n_smooth <- count_smooth_terms(f)
+
+    # Skip formulas that are clearly over-parameterized for this panel
+    # instead of letting mgcv attempt a rank-deficient / ill-posed basis.
+    if (n_obs < 8 || n_obs <= n_smooth * 3) {
+      message(paste("Skipping model", name, "for", segment_name,
+                    "- insufficient observations (n =", n_obs, ") for",
+                    n_smooth, "smooth term(s)"))
+      return(NULL)
+    }
+
+    k_max <- safe_k_for(n_obs, n_smooth)
+    f_safe <- if (n_smooth > 0) cap_smooth_k(f, k_max) else f
+
     tryCatch({
       if (n_obs > 100) {
         # Paneles grandes → bam
-        bam(f, data = data_clean, family = betar(link = "logit"),
+        bam(f_safe, data = data_clean, family = betar(link = "logit"),
             method = "fREML", select = TRUE, discrete = TRUE)
       } else {
-        # Paneles pequeños → gam con k reducido
-        gam(update(f, . ~ .), data = data_clean,
+        # Paneles pequeños → gam con k reducido (capped above)
+        gam(f_safe, data = data_clean,
             family = betar(link = "logit"), method = "REML",
             select = TRUE)
       }
@@ -1241,7 +1282,7 @@ fit_combined_gams_safe <- function(formulas_cb, data, segment_name) {
       message(paste("⚠️ Modelo", name, "falló en", segment_name, 
                     "con betar:", e$message, "→ probando quasibinomial"))
       tryCatch({
-        gam(update(f, . ~ .), data = data_clean,
+        gam(f_safe, data = data_clean,
             family = quasibinomial(link = "logit"), method = "REML",
             select = TRUE)
       }, error = function(e2) {
@@ -1314,8 +1355,8 @@ results_fl <- fit_combined_gams_safe(formulas_cb, datos_fl, "Florida")
 datos_bz <- merged_df_g %>% filter(panel == "Belize")
 results_bz <- fit_combined_gams_safe(formulas_cb, datos_bz, "Belize")
 
-#datos_sc <- merged_df_g %>% filter(panel == "Saint Croix")
-#results_sc <- fit_combined_gams_safe(formulas_cb, datos_sc, "Saint Croix")
+datos_sc <- merged_df_g %>% filter(panel == "Saint Croix")
+results_sc <- fit_combined_gams_safe(formulas_cb, datos_sc, "Saint Croix")
 
 datos_reg <- merged_df_g %>% filter(panel == "Regional")
 results_reg <- fit_combined_gams_safe(formulas_cb, datos_reg, "Regional")
@@ -1330,13 +1371,13 @@ results_reg <- fit_combined_gams_safe(formulas_cb, datos_reg, "Regional")
 comparison_cb_full <- bind_rows(results_pm$stats,
                            results_fl$stats,
                            results_bz$stats,
-                           #results_sc$stats,
+                           results_sc$stats,
                            results_reg$stats)
 
 competitive_models <- comparison_cb_full %>%
   filter(deltaAIC <= 2)%>%
   mutate(Segment = factor(Segment,
-                          levels = c("Punta Maroma", "Florida", "Belize",  "Regional"))) #"Saint Croix"
+                          levels = c("Punta Maroma", "Florida", "Belize", "Saint Croix", "Regional")))
 
 competitive_models %>%
    gt() %>%
@@ -1631,7 +1672,7 @@ library(dplyr)
 set.seed(123)
 
 df_cv <- merged_df_g %>%
-  filter(panel %in% c("Punta Maroma", "Florida", "Belize", "Regional"))
+  filter(panel %in% c("Punta Maroma", "Florida", "Belize", "Saint Croix", "Regional"))
 
 folds <- createFolds(df_cv$panel, k = 5)
 
@@ -1642,8 +1683,18 @@ cv_results <- lapply(seq_along(folds), function(i) {
   
   lapply(names(formulas_cb), function(mname) {
     f <- formulas_cb[[mname]]
+    n_smooth <- count_smooth_terms(f)
+    train_panel <- unique(train_data$panel)
+    n_obs_train <- nrow(train_data)
+
+    # Skip / cap basis dimension per fold to avoid over-parameterized,
+    # potentially crash-prone fits on small training folds (e.g. Saint Croix).
+    if (n_obs_train <= n_smooth * 3) return(NULL)
+    k_max <- safe_k_for(n_obs_train, n_smooth)
+    f_safe <- if (n_smooth > 0) cap_smooth_k(f, k_max) else f
+
     m <- tryCatch(
-      bam(f, data = train_data, family = betar(link="logit"),
+      bam(f_safe, data = train_data, family = betar(link="logit"),
           method = "fREML", discrete = TRUE),
       error = function(e) NULL
     )
@@ -1738,6 +1789,9 @@ run_gam_cv_pm <- function(datos_pm, formulas_cb, pars_table) {
     pull(Model)
 
   formula <- formulas_cb[[best_model]]
+  n_smooth <- count_smooth_terms(formula)
+  k_max <- safe_k_for(nrow(datos_pm), n_smooth)
+  formula <- if (n_smooth > 0) cap_smooth_k(formula, k_max) else formula
 
 mod <- bam(formula,
              data = datos_pm,
@@ -1804,18 +1858,25 @@ set.seed(7341)
 
   linears <- as.data.frame(smry$p.table)
   linears$Term <- rownames(smry$p.table)
+  # The parametric-term p-value column is named "Pr(>|t|)" or "Pr(>|z|)"
+  # depending on the estimation method/family combination (this varies,
+  # e.g., between bam() and gam() fits) - detect whichever is present
+  # instead of hardcoding one, to avoid failures like the one this caused
+  # for Saint Croix's gam()-fitted model.
+  pcol <- intersect(c("Pr(>|t|)", "Pr(>|z|)"), colnames(linears))[1]
   linears <- linears %>%
     mutate(Type = "Linear",
            edf = NA,
            Stat = NA,
+           p_value_tmp = .data[[pcol]],
            Significance = case_when(
-             `Pr(>|t|)` < 0.001 ~ "***",
-             `Pr(>|t|)` < 0.01 ~ "**",
-             `Pr(>|t|)` < 0.05 ~ "*",
-             `Pr(>|t|)` < 0.1 ~ ".",
+             p_value_tmp < 0.001 ~ "***",
+             p_value_tmp < 0.01 ~ "**",
+             p_value_tmp < 0.05 ~ "*",
+             p_value_tmp < 0.1 ~ ".",
              TRUE ~ "ns"
            )) %>%
-    select(Term, edf, Stat, p_value = `Pr(>|t|)`, Significance, Type)
+    select(Term, edf, Stat, p_value = p_value_tmp, Significance, Type)
 
   predictors <- bind_rows(smooths, linears)
 
@@ -1852,6 +1913,9 @@ run_gam_cv_fl <- function(datos_fl, formulas_cb, pars_table) {
     pull(Model)
   
   formula <- formulas_cb[[best_model]]
+  n_smooth <- count_smooth_terms(formula)
+  k_max <- safe_k_for(nrow(datos_fl), n_smooth)
+  formula <- if (n_smooth > 0) cap_smooth_k(formula, k_max) else formula
   
   mod <- bam(formula,
              data = datos_fl,
@@ -1919,18 +1983,25 @@ run_gam_cv_fl <- function(datos_fl, formulas_cb, pars_table) {
   
   linears <- as.data.frame(smry$p.table)
   linears$Term <- rownames(smry$p.table)
+  # The parametric-term p-value column is named "Pr(>|t|)" or "Pr(>|z|)"
+  # depending on the estimation method/family combination (this varies,
+  # e.g., between bam() and gam() fits) - detect whichever is present
+  # instead of hardcoding one, to avoid failures like the one this caused
+  # for Saint Croix's gam()-fitted model.
+  pcol <- intersect(c("Pr(>|t|)", "Pr(>|z|)"), colnames(linears))[1]
   linears <- linears %>%
     mutate(Type = "Linear",
            edf = NA,
            Stat = NA,
+           p_value_tmp = .data[[pcol]],
            Significance = case_when(
-             `Pr(>|t|)` < 0.001 ~ "***",
-             `Pr(>|t|)` < 0.01 ~ "**",
-             `Pr(>|t|)` < 0.05 ~ "*",
-             `Pr(>|t|)` < 0.1 ~ ".",
+             p_value_tmp < 0.001 ~ "***",
+             p_value_tmp < 0.01 ~ "**",
+             p_value_tmp < 0.05 ~ "*",
+             p_value_tmp < 0.1 ~ ".",
              TRUE ~ "ns"
            )) %>%
-    select(Term, edf, Stat, p_value = `Pr(>|t|)`, Significance, Type)
+    select(Term, edf, Stat, p_value = p_value_tmp, Significance, Type)
   
   predictors <- bind_rows(smooths, linears)
   
@@ -1967,6 +2038,9 @@ run_gam_cv_bz <- function(datos_bz, formulas_cb, pars_table) {
     pull(Model)
   
   formula <- formulas_cb[[best_model]]
+  n_smooth <- count_smooth_terms(formula)
+  k_max <- safe_k_for(nrow(datos_bz), n_smooth)
+  formula <- if (n_smooth > 0) cap_smooth_k(formula, k_max) else formula
   
   mod <- bam(formula,
              data = datos_bz,
@@ -2033,18 +2107,25 @@ run_gam_cv_bz <- function(datos_bz, formulas_cb, pars_table) {
   
   linears <- as.data.frame(smry$p.table)
   linears$Term <- rownames(smry$p.table)
+  # The parametric-term p-value column is named "Pr(>|t|)" or "Pr(>|z|)"
+  # depending on the estimation method/family combination (this varies,
+  # e.g., between bam() and gam() fits) - detect whichever is present
+  # instead of hardcoding one, to avoid failures like the one this caused
+  # for Saint Croix's gam()-fitted model.
+  pcol <- intersect(c("Pr(>|t|)", "Pr(>|z|)"), colnames(linears))[1]
   linears <- linears %>%
     mutate(Type = "Linear",
            edf = NA,
            Stat = NA,
+           p_value_tmp = .data[[pcol]],
            Significance = case_when(
-             `Pr(>|t|)` < 0.001 ~ "***",
-             `Pr(>|t|)` < 0.01 ~ "**",
-             `Pr(>|t|)` < 0.05 ~ "*",
-             `Pr(>|t|)` < 0.1 ~ ".",
+             p_value_tmp < 0.001 ~ "***",
+             p_value_tmp < 0.01 ~ "**",
+             p_value_tmp < 0.05 ~ "*",
+             p_value_tmp < 0.1 ~ ".",
              TRUE ~ "ns"
            )) %>%
-    select(Term, edf, Stat, p_value = `Pr(>|t|)`, Significance, Type)
+    select(Term, edf, Stat, p_value = p_value_tmp, Significance, Type)
   
   predictors <- bind_rows(smooths, linears)
   
@@ -2080,6 +2161,9 @@ run_gam_cv_reg <- function(datos_reg, formulas_cb, pars_table) {
     pull(Model)
 
   formula <- formulas_cb[[best_model]]
+  n_smooth <- count_smooth_terms(formula)
+  k_max <- safe_k_for(nrow(datos_reg), n_smooth)
+  formula <- if (n_smooth > 0) cap_smooth_k(formula, k_max) else formula
 
 mod <- bam(formula,
              data = datos_reg,
@@ -2146,18 +2230,25 @@ mod <- bam(formula,
 
   linears <- as.data.frame(smry$p.table)
   linears$Term <- rownames(smry$p.table)
+  # The parametric-term p-value column is named "Pr(>|t|)" or "Pr(>|z|)"
+  # depending on the estimation method/family combination (this varies,
+  # e.g., between bam() and gam() fits) - detect whichever is present
+  # instead of hardcoding one, to avoid failures like the one this caused
+  # for Saint Croix's gam()-fitted model.
+  pcol <- intersect(c("Pr(>|t|)", "Pr(>|z|)"), colnames(linears))[1]
   linears <- linears %>%
     mutate(Type = "Linear",
            edf = NA,
            Stat = NA,
+           p_value_tmp = .data[[pcol]],
            Significance = case_when(
-             `Pr(>|t|)` < 0.001 ~ "***",
-             `Pr(>|t|)` < 0.01 ~ "**",
-             `Pr(>|t|)` < 0.05 ~ "*",
-             `Pr(>|t|)` < 0.1 ~ ".",
+             p_value_tmp < 0.001 ~ "***",
+             p_value_tmp < 0.01 ~ "**",
+             p_value_tmp < 0.05 ~ "*",
+             p_value_tmp < 0.1 ~ ".",
              TRUE ~ "ns"
            )) %>%
-    select(Term, edf, Stat, p_value = `Pr(>|t|)`, Significance, Type)
+    select(Term, edf, Stat, p_value = p_value_tmp, Significance, Type)
 
   predictors <- bind_rows(smooths, linears)
 
@@ -2180,6 +2271,127 @@ results_reg <- run_gam_cv_reg(datos_reg, formulas_cb, pars_table)
 results_reg$Performance
 results_reg$Predictors
 
+```
+
+**Saint Croix Combined GAM**
+
+28b. Re-added Saint Croix to the site-specific best-model evaluation, now that the combined-GAM formulas are fit with a basis dimension (`k`) capped to a value safe for this panel's small sample size (see `cap_smooth_k`/`safe_k_for` defined earlier). This mirrors the procedure used for the other three site panels.
+
+```{r,echo=FALSE}
+run_gam_cv_sc <- function(datos_sc, formulas_cb, pars_table) {
+  best_model <- pars_table %>%
+    filter(Segment == "Saint Croix") %>%
+    slice_min(AIC, n = 1) %>%
+    pull(Model)
+
+  formula <- formulas_cb[[best_model]]
+  n_smooth <- count_smooth_terms(formula)
+  k_max <- safe_k_for(nrow(datos_sc), n_smooth)
+  formula <- if (n_smooth > 0) cap_smooth_k(formula, k_max) else formula
+
+  mod <- gam(formula,
+             data = datos_sc,
+             family = betar(link = "logit"),
+             method = "REML",
+             select = TRUE)
+
+  smry <- summary(mod)
+  aic_val <- AIC(mod)
+  mse_train <- mean(residuals(mod)^2)
+  r2_train <- smry$r.sq
+  dev_train <- smry$dev.expl
+
+  set.seed(7341)
+  folds <- createFolds(datos_sc$counts_norm_sv, k = 5)
+  cv_list <- lapply(seq_along(folds), function(i) {
+    test_idx <- folds[[i]]
+    train <- datos_sc[-test_idx, ]
+    test <- datos_sc[test_idx, ]
+    mod_cv <- gam(formula, data = train,
+                  family = betar(link = "logit"),
+                  method = "REML",
+                  select = TRUE)
+    preds <- predict(mod_cv, newdata = test, type = "response")
+    ss_res <- sum((test$counts_norm_sv - preds)^2)
+    ss_tot <- sum((test$counts_norm_sv - mean(test$counts_norm_sv))^2)
+    dev <- 1 - (ss_res / ss_tot)
+    mse_cv <- mean((test$counts_norm_sv - preds)^2)
+    data.frame(fold = i, dev_expl = dev, mse = mse_cv)
+  })
+  cv_results <- do.call(rbind, cv_list)
+
+  dev_mean <- mean(cv_results$dev_expl)
+  dev_range <- paste0(round(min(cv_results$dev_expl), 2), "–", round(max(cv_results$dev_expl), 2))
+  mse_mean <- mean(cv_results$mse)
+  mse_sd <- sd(cv_results$mse)
+
+  perf <- tibble(
+    Site = "Saint Croix",
+    Model = best_model,
+    AIC = round(aic_val, 2),
+    Explained_Deviance = round(dev_train * 100, 1),
+    `Explained_Deviance_(5fold)` = paste0(round(dev_mean, 2), " (", dev_range, ")"),
+    `MSE_±SD` = paste0(round(mse_mean, 3), " ± ", round(mse_sd, 3)),
+    R2_Adj = round(r2_train, 3)
+  )
+
+  smooths <- as.data.frame(smry$s.table)
+  smooths$Term <- rownames(smry$s.table)
+  stat_col <- intersect(c("Chi.sq", "F", "Statistic"), colnames(smooths))
+  smooths$Stat <- if (length(stat_col) == 0) NA else smooths[[stat_col[1]]]
+  smooths <- smooths %>%
+    mutate(Type = "Smooth",
+           Significance = case_when(
+             `p-value` < 0.001 ~ "***",
+             `p-value` < 0.01 ~ "**",
+             `p-value` < 0.05 ~ "*",
+             `p-value` < 0.1 ~ ".",
+             TRUE ~ "ns"
+           )) %>%
+    select(Term, edf = `edf`, Stat, p_value = `p-value`, Significance, Type)
+
+  linears <- as.data.frame(smry$p.table)
+  linears$Term <- rownames(smry$p.table)
+  # The parametric-term p-value column is named "Pr(>|t|)" or "Pr(>|z|)"
+  # depending on the estimation method/family combination (this varies,
+  # e.g., between bam() and gam() fits) - detect whichever is present
+  # instead of hardcoding one, to avoid failures like the one this caused
+  # for Saint Croix's gam()-fitted model.
+  pcol <- intersect(c("Pr(>|t|)", "Pr(>|z|)"), colnames(linears))[1]
+  linears <- linears %>%
+    mutate(Type = "Linear",
+           edf = NA,
+           Stat = NA,
+           p_value_tmp = .data[[pcol]],
+           Significance = case_when(
+             p_value_tmp < 0.001 ~ "***",
+             p_value_tmp < 0.01 ~ "**",
+             p_value_tmp < 0.05 ~ "*",
+             p_value_tmp < 0.1 ~ ".",
+             TRUE ~ "ns"
+           )) %>%
+    select(Term, edf, Stat, p_value = p_value_tmp, Significance, Type)
+
+  predictors <- bind_rows(smooths, linears)
+
+  pred <- tibble(
+    Site = "Saint Croix",
+    Model = best_model,
+    Predictor = predictors$Term,
+    EDF = round(predictors$edf, 4),
+    Chi_sq = round(predictors$Stat, 4),
+    p_value = format(predictors$p_value, scientific = TRUE, digits = 3),
+    Significance = predictors$Significance,
+    Type = predictors$Type
+  )
+
+  list(Performance = perf, Predictors = pred)
+}
+
+results_sc <- run_gam_cv_sc(datos_sc, formulas_cb, pars_table)
+
+results_sc$Performance
+results_sc$Predictors
 ```
 
 **Suppl.Table 4. Five‑fold cross‑validation performance across reef sites an regional scope.** Reported metrics include AIC, deviance explained, adjusted R², mean squared error (MSE ± SD), and cross‑validated deviance explained. Results show strong in‑sample fits but limited predictive stability, with predominantly negative or near‑zero values across folds.
@@ -2207,32 +2419,39 @@ The *gam.check()* visual outcome in the **Suppl. Fig. 6** provides a more compre
 library(gratia)
 library(dplyr)
 library(ggplot2)
-# 
-best_model_pm<-bam(counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N) + s(dT_raw) + s(Hur100_av) ,data = datos_pm,
-                   family = betar(link = "logit"),
-                   method = "fREML",
-                   select = TRUE,
-                   discrete = TRUE)
-best_model_fl<-bam(counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N) + s(dT_raw) + s(Hur100_av)+ Hydro+ Thermal + Hurricane,data = datos_fl,
-                   family = betar(link = "logit"),
-                   method = "fREML",
-                   select = TRUE,
-                   discrete = TRUE)
-best_model_sc<-bam(counts_norm_sv ~ s(age) + s(dT_raw),data = datos_sc,
-                   family = betar(link = "logit"),
-                   method = "fREML",
-                   select = TRUE,
-                   discrete = TRUE)
-best_model_reg<-bam(counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N) + s(dT_raw) + s(Hur100_av)+ Hydro+ Thermal + Hurricane,data = datos_reg,
-                  family = betar(link = "logit"),
-                  method = "fREML",
-                  select = TRUE,
-                  discrete = TRUE)
-best_model_bz<-bam(counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N) + s(dT_raw) + s(Hur100_av) + Hydro + Thermal,data = datos_bz,
-                  family = betar(link = "logit"),
-                  method = "fREML",
-                  select = TRUE,
-                  discrete = TRUE)
+
+# Fit each site's best combined GAM *dynamically* from the model actually
+# selected by the parsimony analysis (`pars_table`), instead of hardcoding
+# formulas here (previously this chunk used the wrong hurricane-metric
+# branch for Belize, and an ad hoc marginal formula for Saint Croix that
+# had never gone through the selection process). Basis dimension is capped
+# via `cap_smooth_k()`/`safe_k_for()` for safety on small panels.
+fit_selected_best <- function(site, data, pars_table, formulas_cb) {
+  best_model <- pars_table %>%
+    filter(Segment == site) %>%
+    slice_min(AIC, n = 1) %>%
+    pull(Model)
+
+  f <- formulas_cb[[best_model]]
+  n_smooth <- count_smooth_terms(f)
+  k_max <- safe_k_for(nrow(data), n_smooth)
+  f_safe <- if (n_smooth > 0) cap_smooth_k(f, k_max) else f
+
+  if (nrow(data) > 100) {
+    bam(f_safe, data = data, family = betar(link = "logit"),
+        method = "fREML", select = TRUE, discrete = TRUE)
+  } else {
+    gam(f_safe, data = data, family = betar(link = "logit"),
+        method = "REML", select = TRUE)
+  }
+}
+
+best_model_pm  <- fit_selected_best("Punta Maroma", datos_pm,  pars_table, formulas_cb)
+best_model_fl  <- fit_selected_best("Florida",      datos_fl,  pars_table, formulas_cb)
+best_model_bz  <- fit_selected_best("Belize",       datos_bz,  pars_table, formulas_cb)
+best_model_sc  <- fit_selected_best("Saint Croix",  datos_sc,  pars_table, formulas_cb)
+best_model_reg <- fit_selected_best("Regional",     datos_reg, pars_table, formulas_cb)
+
 summary(best_model_pm)
 summary(best_model_fl)
 summary(best_model_bz)
@@ -2264,8 +2483,13 @@ df_all <- purrr::map_df(names(best_models), function(site) {
 df_all <- df_all %>%
   mutate(site = factor(site, levels = names(custom_colors)))
 
+smooth_predictor_cols <- intersect(
+  c("age", "GMHT_CPS0_30N", "dT_raw", "Hur100_av", "Hur100_fqcy"),
+  names(df_all)
+)
+
 df_long <- df_all %>%
-  pivot_longer(cols = c(age, dT_raw, Hur100_av),
+  pivot_longer(cols = all_of(smooth_predictor_cols),
                names_to = "predictor", values_to = "xvar") %>%
   filter(!is.na(xvar))
 
@@ -2336,6 +2560,18 @@ par(mfrow = c(2,3))
 plot(best_models[["Regional"]], shade=TRUE, pages=1, all.terms=TRUE, rug=TRUE)
 ```
 
+#### Saint Croix
+
+33b. Diagnostics for Saint Croix's selected combined GAM, now fit with a safe (capped) basis dimension given its small panel size.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=12, fig.height=10}
+
+par(mfrow = c(2,2))
+invisible(capture.output(gam.check(best_models[["Saint Croix"]])))
+par(mfrow = c(2,3))
+plot(best_models[["Saint Croix"]], shade=TRUE, pages=1, all.terms=TRUE, rug=TRUE)
+```
+
 ### 4.5 Residuals' Temporal Independency Analysis
 
 The residual independency analysis underscores clear site‑specific differences in temporal autocorrelation. While **Punta Maroma** and **Regional** models achieve residual independence, **Belize** demonstrates acceptable independence, whereas **Florida** retains moderate autocorrelation. These diagnostics confirm that temporal dependence is site‑specific, with Florida emerging as the most problematic case.
@@ -2388,22 +2624,32 @@ check_temporal_independence <- function(mod) {
   )
 }
 
-best_models <- pars_table %>%
+## Note: named `best_models_table` (rather than `best_models`) to avoid
+## shadowing the `best_models` list of *fitted* model objects created in
+## the previous chunk (used there by gam.check()/plot()).
+best_models_table <- pars_table %>%
   group_by(Segment) %>%
   slice_min(AIC, n = 1) %>%
   select(Segment, Model)
 
-results_resid <- lapply(seq_len(nrow(best_models)), function(i) {
-  seg <- best_models$Segment[i]
-  mname <- best_models$Model[i]
+results_resid <- lapply(seq_len(nrow(best_models_table)), function(i) {
+  seg <- best_models_table$Segment[i]
+  mname <- best_models_table$Model[i]
   cat("Adjusting model:", mname, "for segment:", seg, "\n")
-  
-  mod <- bam(formulas_cb[[mname]],
-             data = data_list[[seg]],
-             family = betar(link="logit"),
-             method="fREML",
-             select=TRUE,
-             discrete=TRUE)
+
+  seg_data <- data_list[[seg]]
+  f <- formulas_cb[[mname]]
+  n_smooth <- count_smooth_terms(f)
+  k_max <- safe_k_for(nrow(seg_data), n_smooth)
+  f_safe <- if (n_smooth > 0) cap_smooth_k(f, k_max) else f
+
+  mod <- if (nrow(seg_data) > 100) {
+    bam(f_safe, data = seg_data, family = betar(link="logit"),
+        method="fREML", select=TRUE, discrete=TRUE)
+  } else {
+    gam(f_safe, data = seg_data, family = betar(link="logit"),
+        method="REML", select=TRUE)
+  }
   
   diag <- check_temporal_independence(mod)
   
@@ -2430,9 +2676,9 @@ res_summary %>%
              decimals = 3)
 
 pdf("acf_pacf_residuals_all.pdf")
-for (i in seq_len(nrow(best_models))) {
-  seg <- best_models$Segment[i]
-  mname <- best_models$Model[i]
+for (i in seq_len(nrow(best_models_table))) {
+  seg <- best_models_table$Segment[i]
+  mname <- best_models_table$Model[i]
   res_raw <- attr(results_resid[[i]], "res_raw")
   
   par(mfrow=c(1,2))
@@ -2461,8 +2707,8 @@ pacf_df <- function(res, type = "PACF", site) {
   )
 }
 
-df_all <- bind_rows(lapply(seq_len(nrow(best_models)), function(i) {
-  seg <- best_models$Segment[i]
+df_all <- bind_rows(lapply(seq_len(nrow(best_models_table)), function(i) {
+  seg <- best_models_table$Segment[i]
   res_raw <- attr(results_resid[[i]], "res_raw")
   bind_rows(
     acf_df(res_raw, "ACF", seg),
@@ -2511,7 +2757,7 @@ While the temporal spline (*s(age)*) is not a predictor but rather a structural 
 
 **Suppl.Table 8. Concurvity diagnostics across sites.** Observed concurvity values indicate near‑independence of predictors in **Punta Maroma**, low redundancy for hurricane effects in **Florida**, moderate overlap between age and hurricane predictors in **Belize**, and high collinearity of age at the regional scale. These results highlight site‑specific variability in predictor independence, with **Florida** and **Punta Maroma** showing the most stable signals, while Belize and the regional dataset exhibit greater redundancy.
 
-35. This code block assesses concurvity (collinearity among smooth terms) in reduced versions of the best GAMs for each site. For *Punta Maroma*, *Regional*, and *Belize*, the models are updated by removing predictors related to global mean temperature anomalies (GMHT_CPS0_30N), rates of temperature change (dT_raw), and hurricane frequency (Hur100_fqcy). For *Florida*, the model is reduced by excluding GMHT_CPS0_30N, dT_raw, and hurricane averages (Hur100_av). The `concurvity` function is then applied to each reduced model, producing matrices of worst‑case, observed, and estimated concurvity values. These diagnostics quantify the degree of redundancy among smooth terms, highlighting whether predictors share overlapping explanatory structure. By systematically evaluating concurvity across sites, this routine ensures that model inference is not compromised by multicollinearity, and it clarifies the unique versus shared contributions of climatic and disturbance variables to coral fossil density patterns.
+35. This code block assesses concurvity (collinearity among smooth terms) for the best GAM actually selected for each site. Previously this chunk hardcoded which terms to drop before calling `concurvity()`, and did so inconsistently with the model each site actually selected (e.g. it attempted to drop `s(Hur100_fqcy)` from Belize's model even when that model's hurricane term was `Hur100_av`, and vice versa) — a mismatch that could error out entirely. Here, `concurvity()` is instead applied directly to each site's `best_model_*` object (as fit in the previous chunk from `pars_table`/`formulas_cb`), so the smooth terms evaluated always match the model actually in use, for every site including Saint Croix.
 
 ```{r, echo=FALSE}
 
@@ -2519,21 +2765,7 @@ library(reshape2)
 library(dplyr)
 library(gt)
 
-gam_pm_reduced <- update(best_model_pm, . ~ . - s(GMHT_CPS0_30N) -s(dT_raw)- s(Hur100_fqcy))
-conc_pm <- concurvity(gam_pm_reduced, full = TRUE)
-conc_pm
-
-
-gam_reg_reduced <- update(best_model_reg, . ~ . - s(GMHT_CPS0_30N)-s(dT_raw) - s(Hur100_fqcy))
-conc_reg <- concurvity(gam_reg_reduced, full = TRUE)
-conc_reg
-
-gam_bz_reduced <- update(best_model_bz, . ~ . - s(GMHT_CPS0_30N) -s(dT_raw) - s(Hur100_fqcy))
-conc_bz <- concurvity(gam_bz_reduced, full = TRUE)
-conc_bz
-
-gam_fl_reduced <- update(best_model_fl, . ~ . - s(GMHT_CPS0_30N)-s(dT_raw) - s(Hur100_av))
-conc_fl <- concurvity(gam_fl_reduced, full = TRUE)
-conc_fl
+concurvity_results <- lapply(best_models, function(m) concurvity(m, full = TRUE))
+concurvity_results
 
 ```
