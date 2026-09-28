@@ -343,6 +343,9 @@ tabla_resumen_counts %>%
                 min_interval, max_interval),
     decimals = 3
   )
+
+
+
 ```
 
 ### 1.3 Climatic Variables Manipulation & Aggregation
@@ -513,330 +516,332 @@ corrplot(cor_matrix, method = "circle", type = "upper",
 
 **Supplementary Figure 1.** Correlation Plot showing Pearson product–moment correlation coefficients between pairs of numeric variables.
 
-### 2.2 Coral-Climate Interaction Analysis
+### ~~2.2 Coral-Climate Interaction Analysis~~
 
-10. This code block consolidates site‑level and regional density summaries with climatic predictors to generate combined analytical outputs. First, the centennial density results from each locality are merged into a unified dataset (`df_final`) and categorized into panels representing local, zonal, and regional scales. Temporal intervals are standardized into 0.1‑ka bins, ensuring alignment between ecological and climatic records. The merged dataset (`merged_df_c`) incorporates fossil density estimates alongside thermal, hydroclimatic, and hurricane variables, and constructs composite categorical states (`ClimateCombo`) that capture simultaneous climatic conditions. Frequency counts of these combinations are calculated by site, and overall totals are derived to assess distributional balance. Tabular summaries are produced with the `gt` package, reporting frequencies and totals per site, as well as descriptive statistics of density by site‑combo. To ensure analytical robustness, only combinations with at least three observations are retained (`combos_validos`), and the filtered dataset is reordered by median density within panels. The resulting summaries (`resumen_spot` and `resumen_spot_combo`) provide measures of central tendency, dispersion, and extremes for each site and climatic combination. This chunk therefore establishes the integrated framework for evaluating how coral fossil densities vary under distinct climatic regimes across spatial scales.
+10. ~~This code block consolidates site‑level and regional density summaries with climatic predictors to generate combined analytical outputs. First, the centennial density results from each locality are merged into a unified dataset (`df_final`) and categorized into panels representing local, zonal, and regional scales. Temporal intervals are standardized into 0.1‑ka bins, ensuring alignment between ecological and climatic records. The merged dataset (`merged_df_c`) incorporates fossil density estimates alongside thermal, hydroclimatic, and hurricane variables, and constructs composite categorical states (`ClimateCombo`) that capture simultaneous climatic conditions. Frequency counts of these combinations are calculated by site, and overall totals are derived to assess distributional balance. Tabular summaries are produced with the `gt` package, reporting frequencies and totals per site, as well as descriptive statistics of density by site‑combo. To ensure analytical robustness, only combinations with at least three observations are retained (`combos_validos`), and the filtered dataset is reordered by median density within panels. The resulting summaries (`resumen_spot` and `resumen_spot_combo`) provide measures of central tendency, dispersion, and extremes for each site and climatic combination. This chunk therefore establishes the integrated framework for evaluating how coral fossil densities vary under distinct climatic regimes across spatial scales.~~
 
 ```{r,echo=FALSE}
 library(forcats)
 library(stargazer)
 
-df_final <- bind_rows(res_pm, res_fl, res_bz,res_sc, res_all) %>%
-  mutate(panel = case_when(
-    spot == "Punta Maroma" ~ "Punta Maroma",
-    spot == "Florida" ~ "Florida",
-    spot %in% c("Saint Croix",
-                "Belize") ~ "Belize & Saint Croix",
-    spot == "Regional (All spots)" ~ "Regional"
-  ))
+# df_final <- bind_rows(res_pm, res_fl, res_bz,res_sc, res_all) %>%
+#   mutate(panel = case_when(
+#     spot == "Punta Maroma" ~ "Punta Maroma",
+#     spot == "Florida" ~ "Florida",
+#     spot %in% c("Saint Croix",
+#                 "Belize") ~ "Belize & Saint Croix",
+#     spot == "Regional (All spots)" ~ "Regional"
+#   ))
+# 
+# breaks <- seq(0, 6, by = 0.1)
+# 
+# centennial_density_all <- centennial_density_all %>%
+#   mutate(interval = cut(interval_mid, breaks = breaks, include.lowest = TRUE))
+# 
+# centennial_density_all <- centennial_density_all %>%
+#   mutate(interval = as.character(interval))
+# 
+# datos_cli <- datos_cli %>%
+#   mutate(interval = as.character(interval))
+# 
+# merged_df_c <- df_final %>%
+#   mutate(interval = as.character(interval)) %>%
+#   left_join(datos_cli %>% mutate(interval = as.character(interval)), by = "interval") %>%
+#   rename(density = avg_median, age = interval_mid)
+# 
+# 
+# merged_df_c$ClimateCombo <- interaction(merged_df_c$Thermal,
+#                                       merged_df_c$Hydro,
+#                                       merged_df_c$Hurricane,
+#                                       sep = "_")
+# 
+# merged_df_c[!complete.cases(merged_df_c), ]
+# 
+# merged_df_c$ClimateCombo <- reorder(merged_df_c$ClimateCombo,
+#                                   merged_df_c$density,
+#                                   median)
+# NULL
+# combo_freq <- merged_df_c %>%
+#   count(spot, ClimateCombo)
+# NULL
+# totales <- combo_freq %>%
+#   group_by(spot) %>%
+#   summarise(total = sum(n), .groups = "drop")
+# NULL
+# total_general <- data.frame(
+#   spot = "TOTAL",
+#   total = sum(totales$total)
+# )
+# totales <- bind_rows(totales, total_general)
+# NULL
+# combo_freq %>%
+#   gt() %>%
+#   tab_header(
+#     title = "Climate combos (frequencies)",
+#     subtitle = "Counts per site and climatic combination"
+#   ) %>%
+#   fmt_number(columns = c(n), decimals = 3)
+# 
+# 
+# totales %>%
+#   gt() %>%
+#   tab_header(
+#     title = "Totals per site",
+#     subtitle = "Sum of climatic combinations"
+#   ) %>%
+#   fmt_number(columns = c(total), decimals = 3)
+# 
+# combos_validos <- combo_freq %>%
+#   filter(n >= 3) %>%
+#   pull(ClimateCombo) %>%
+#   as.character()
+# 
+# invisible(combo_freq %>% filter(n >= 3))
+# invisible(combo_freq %>% filter(n < 3))
+# 
+# datos_filtrados <- merged_df_c %>%
+#   filter(ClimateCombo %in% combos_validos)
+# 
+# datos_filtrados <- datos_filtrados %>%
+#   group_by(panel) %>%
+#   mutate(ClimateCombo = fct_reorder(ClimateCombo, density, .fun = median)) %>%
+#   ungroup()
+# 
+# resumen_spot <- datos_filtrados %>%
+#   group_by(spot) %>%
+#   summarise(
+#     n_obs     = n(),
+#     dens_mean = mean(density, na.rm = TRUE),
+#     dens_sd   = sd(density, na.rm = TRUE),
+#     dens_min  = min(density, na.rm = TRUE),
+#     dens_max  = max(density, na.rm = TRUE),
+#     .groups = "drop"
+#   )
+# NULL
+# resumen_spot_combo <- datos_filtrados %>%
+#   group_by(spot, ClimateCombo) %>%
+#   summarise(
+#     n_obs     = n(),
+#     dens_mean = mean(density, na.rm = TRUE),
+#     dens_sd   = sd(density, na.rm = TRUE),
+#     dens_min  = min(density, na.rm = TRUE),
+#     dens_max  = max(density, na.rm = TRUE),
+#     .groups = "drop"
+#   )
+# NULL
+# resumen_spot_combo %>%
+#   gt() %>%
+#   tab_header(
+#     title = "Panel combos resume",
+#     subtitle = "Mean, dispersion, and extremes per site-combo"
+#   ) %>%
+#   fmt_number(columns = c(dens_mean, dens_sd, dens_min, dens_max), decimals = 3)
 
-breaks <- seq(0, 6, by = 0.1)
-
-centennial_density_all <- centennial_density_all %>%
-  mutate(interval = cut(interval_mid, breaks = breaks, include.lowest = TRUE))
-
-centennial_density_all <- centennial_density_all %>%
-  mutate(interval = as.character(interval))
-
-datos_cli <- datos_cli %>%
-  mutate(interval = as.character(interval))
-
-merged_df_c <- df_final %>%
-  mutate(interval = as.character(interval)) %>%
-  left_join(datos_cli %>% mutate(interval = as.character(interval)), by = "interval") %>%
-  rename(density = avg_median, age = interval_mid)
-
-merged_df_c$ClimateCombo <- interaction(merged_df_c$Thermal,
-                                      merged_df_c$Hydro,
-                                      merged_df_c$Hurricane,
-                                      sep = "_")
-
-merged_df_c[!complete.cases(merged_df_c), ]
-
-merged_df_c$ClimateCombo <- reorder(merged_df_c$ClimateCombo,
-                                  merged_df_c$density,
-                                  median)
-NULL
-combo_freq <- merged_df_c %>%
-  count(spot, ClimateCombo)
-NULL
-totales <- combo_freq %>%
-  group_by(spot) %>%
-  summarise(total = sum(n), .groups = "drop")
-NULL
-total_general <- data.frame(
-  spot = "TOTAL",
-  total = sum(totales$total)
-)
-totales <- bind_rows(totales, total_general)
-NULL
-combo_freq %>%
-  gt() %>%
-  tab_header(
-    title = "Climate combos (frequencies)",
-    subtitle = "Counts per site and climatic combination"
-  ) %>%
-  fmt_number(columns = c(n), decimals = 3)
-
-
-totales %>%
-  gt() %>%
-  tab_header(
-    title = "Totals per site",
-    subtitle = "Sum of climatic combinations"
-  ) %>%
-  fmt_number(columns = c(total), decimals = 3)
-
-combos_validos <- combo_freq %>%
-  filter(n >= 3) %>%
-  pull(ClimateCombo) %>%
-  as.character()
-
-invisible(combo_freq %>% filter(n >= 3))
-invisible(combo_freq %>% filter(n < 3))
-
-datos_filtrados <- merged_df_c %>%
-  filter(ClimateCombo %in% combos_validos)
-
-datos_filtrados <- datos_filtrados %>%
-  group_by(panel) %>%                                                               
-  mutate(ClimateCombo = fct_reorder(ClimateCombo, density, .fun = median)) %>%
-  ungroup()
-
-resumen_spot <- datos_filtrados %>%                                                 
-  group_by(spot) %>%
-  summarise(
-    n_obs     = n(),
-    dens_mean = mean(density, na.rm = TRUE),
-    dens_sd   = sd(density, na.rm = TRUE),
-    dens_min  = min(density, na.rm = TRUE),
-    dens_max  = max(density, na.rm = TRUE),
-    .groups = "drop"
-  )
-NULL
-resumen_spot_combo <- datos_filtrados %>%
-  group_by(spot, ClimateCombo) %>%
-  summarise(
-    n_obs     = n(),
-    dens_mean = mean(density, na.rm = TRUE),
-    dens_sd   = sd(density, na.rm = TRUE),
-    dens_min  = min(density, na.rm = TRUE),
-    dens_max  = max(density, na.rm = TRUE),
-    .groups = "drop"
-  )
-NULL
-resumen_spot_combo %>%
-  gt() %>%
-  tab_header(
-    title = "Panel combos resume",
-    subtitle = "Mean, dispersion, and extremes per site-combo"
-  ) %>%
-  fmt_number(columns = c(dens_mean, dens_sd, dens_min, dens_max), decimals = 3)
 
 
 ```
 
-### 2.3 Wilcoxon test (Bonferroni adjustment)
+### ~~2.3 Wilcoxon test (Bonferroni adjustment)~~
 
-11. This code block provides an assessment of differences in coral fossil density among climatic regimes, highlighting statistically significant contrasts across reef sites. here we implement non‑parametric pairwise comparisons of fossil density across climatic combinations. A custom function (`get_signif_df_v1`) is first defined to perform Wilcoxon rank‑sum tests between all pairs of climatic states within each site, applying Bonferroni correction to control for multiple comparisons. The function returns the test statistics, p‑values, and significance codes, which are then aggregated across sites into a single dataset (`spot_signifs_v1`). Significant results are formatted into a summary table using the `gt` package. A refined version of the function (`get_signif_df`) is subsequently introduced to restrict analyses to combinations with at least three observations, ensuring statistical robustness. This version also calculates annotation positions for graphical overlays. The procedure is applied to each site, and results are merged with panel metadata to facilitate visualization.
+11. ~~This code block provides an assessment of differences in coral fossil density among climatic regimes, highlighting statistically significant contrasts across reef sites. here we implement non‑parametric pairwise comparisons of fossil density across climatic combinations. A custom function (`get_signif_df_v1`) is first defined to perform Wilcoxon rank‑sum tests between all pairs of climatic states within each site, applying Bonferroni correction to control for multiple comparisons. The function returns the test statistics, p‑values, and significance codes, which are then aggregated across sites into a single dataset (`spot_signifs_v1`). Significant results are formatted into a summary table using the `gt` package. A refined version of the function (`get_signif_df`) is subsequently introduced to restrict analyses to combinations with at least three observations, ensuring statistical robustness. This version also calculates annotation positions for graphical overlays. The procedure is applied to each site, and results are merged with panel metadata to facilitate visualization.~~
 
 ```{r,echo=FALSE}
 library(dplyr)
 library(knitr)
 
-get_signif_df_v1 <- function(df, spot_name){
-  pw <- pairwise.wilcox.test(df$density, df$ClimateCombo,
-                             p.adjust.method = "bonferroni", exact = FALSE)
-  sig_pairs <- which(!is.na(pw$p.value), arr.ind = TRUE)
-  signif_code <- function(p){
-    if(p < 0.001) return("***")
-    else if(p < 0.01) return("**")
-    else if(p < 0.05) return("*")
-    else return("ns")
-  }
-  out <- data.frame()
-  for(i in seq_len(nrow(sig_pairs))){
-    row <- sig_pairs[i,1]; col <- sig_pairs[i,2]
-    pval <- pw$p.value[row,col]
-    out <- rbind(out, data.frame(
-      spot = spot_name,
-      group1 = rownames(pw$p.value)[row],
-      group2 = colnames(pw$p.value)[col],
-      p_value = pval,
-      signif = signif_code(pval)
-    ))
-  }
-  return(out)
-}
-
-spot_signifs_v1 <- bind_rows(lapply(unique(datos_filtrados$spot), function(p){
-  df_spot <- datos_filtrados %>% filter(spot == p)
-  get_signif_df_v1(df_spot, p)
-}))
-
-
-spot_signifs_v1 %>% filter(signif != "ns") %>%
-  gt() %>%
-  tab_header(
-    title = "Wilcoxon test (Bonferroni adjustment) ",
-    subtitle = "significant results by reef spot"
-  ) %>%
-  fmt_number(columns = c(p_value, signif),
-             decimals = 3)
-
-get_signif_df <- function(df, spot_name){
-  combos_validas <- names(which(table(df$ClimateCombo) >= 3))
-  df <- df %>% filter(ClimateCombo %in% combos_validas)
-  
-  if(length(unique(df$ClimateCombo)) < 3){
-    return(data.frame())
-  }
-  
-  pw <- pairwise.wilcox.test(df$density, df$ClimateCombo,
-                             p.adjust.method = "bonferroni",
-                             exact = FALSE)
-  
-  sig_pairs <- which(pw$p.value < 0.05, arr.ind = TRUE)
-  if(nrow(sig_pairs) == 0){
-    return(data.frame())
-  }
-  
-  signif_code <- function(p){
-    if(p < 0.001) return("***")
-    else if(p < 0.01) return("**")
-    else if(p < 0.05) return("*")
-    else if(p < 0.1) return(".")
-    else return("ns")
-  }
-  
-  max_y <- max(df$density, na.rm = TRUE)
-  step_y <- max_y * 0.08
-  
-  out <- data.frame()
-  for(i in seq_len(nrow(sig_pairs))){
-    row <- sig_pairs[i,1]; col <- sig_pairs[i,2]
-    pval <- pw$p.value[row,col]
-    out <- rbind(out, data.frame(
-      spot = spot_name,
-      group1 = rownames(pw$p.value)[row],
-      group2 = colnames(pw$p.value)[col],
-      annotation = signif_code(pval),  
-      y_position = max_y * 1.1 + (i-1) * step_y
-    ))
-  }
-  return(out)
-}
-
-spots <- unique(datos_filtrados$spot)
-
-spot_signifs <- bind_rows(lapply(spots, function(p){
-  df_spot <- datos_filtrados %>% filter(spot == p)
-  get_signif_df(df_spot, p)
-}))
-
-panel_map <- datos_filtrados %>% distinct(spot, panel)
-spot_signifs <- spot_signifs %>% left_join(panel_map, by = "spot")
+# get_signif_df_v1 <- function(df, spot_name){
+#   pw <- pairwise.wilcox.test(df$density, df$ClimateCombo,
+#                              p.adjust.method = "bonferroni", exact = FALSE)
+#   sig_pairs <- which(!is.na(pw$p.value), arr.ind = TRUE)
+#   signif_code <- function(p){
+#     if(p < 0.001) return("***")
+#     else if(p < 0.01) return("**")
+#     else if(p < 0.05) return("*")
+#     else return("ns")
+#   }
+#   out <- data.frame()
+#   for(i in seq_len(nrow(sig_pairs))){
+#     row <- sig_pairs[i,1]; col <- sig_pairs[i,2]
+#     pval <- pw$p.value[row,col]
+#     out <- rbind(out, data.frame(
+#       spot = spot_name,
+#       group1 = rownames(pw$p.value)[row],
+#       group2 = colnames(pw$p.value)[col],
+#       p_value = pval,
+#       signif = signif_code(pval)
+#     ))
+#   }
+#   return(out)
+# }
+# 
+# spot_signifs_v1 <- bind_rows(lapply(unique(datos_filtrados$spot), function(p){
+#   df_spot <- datos_filtrados %>% filter(spot == p)
+#   get_signif_df_v1(df_spot, p)
+# }))
+# 
+# 
+# spot_signifs_v1 %>% filter(signif != "ns") %>%
+#   gt() %>%
+#   tab_header(
+#     title = "Wilcoxon test (Bonferroni adjustment) ",
+#     subtitle = "significant results by reef spot"
+#   ) %>%
+#   fmt_number(columns = c(p_value, signif),
+#              decimals = 3)
+# 
+# get_signif_df <- function(df, spot_name){
+#   combos_validas <- names(which(table(df$ClimateCombo) >= 3))
+#   df <- df %>% filter(ClimateCombo %in% combos_validas)
+#   
+#   if(length(unique(df$ClimateCombo)) < 3){
+#     return(data.frame())
+#   }
+#   
+#   pw <- pairwise.wilcox.test(df$density, df$ClimateCombo,
+#                              p.adjust.method = "bonferroni",
+#                              exact = FALSE)
+#   
+#   sig_pairs <- which(pw$p.value < 0.05, arr.ind = TRUE)
+#   if(nrow(sig_pairs) == 0){
+#     return(data.frame())
+#   }
+#   
+#   signif_code <- function(p){
+#     if(p < 0.001) return("***")
+#     else if(p < 0.01) return("**")
+#     else if(p < 0.05) return("*")
+#     else if(p < 0.1) return(".")
+#     else return("ns")
+#   }
+#   
+#   max_y <- max(df$density, na.rm = TRUE)
+#   step_y <- max_y * 0.08
+#   
+#   out <- data.frame()
+#   for(i in seq_len(nrow(sig_pairs))){
+#     row <- sig_pairs[i,1]; col <- sig_pairs[i,2]
+#     pval <- pw$p.value[row,col]
+#     out <- rbind(out, data.frame(
+#       spot = spot_name,
+#       group1 = rownames(pw$p.value)[row],
+#       group2 = colnames(pw$p.value)[col],
+#       annotation = signif_code(pval),  
+#       y_position = max_y * 1.1 + (i-1) * step_y
+#     ))
+#   }
+#   return(out)
+# }
+# 
+# spots <- unique(datos_filtrados$spot)
+# 
+# spot_signifs <- bind_rows(lapply(spots, function(p){
+#   df_spot <- datos_filtrados %>% filter(spot == p)
+#   get_signif_df(df_spot, p)
+# }))
+# 
+# panel_map <- datos_filtrados %>% distinct(spot, panel)
+# spot_signifs <- spot_signifs %>% left_join(panel_map, by = "spot")
 ```
 
-### 2.4 Coral-climate combo trends (KDE density based)
+### ~~2.4 Coral-climate combo trends (KDE density based)~~
 
-Next, we continue with the exploratory analysis by detecting combinations of used thermal, hydro climatic and hurricane related variables and how these combinations correlate with the acroporid' density response. 
+~~Next, we continue with the exploratory analysis by detecting combinations of used thermal, hydro climatic and hurricane related variables and how these combinations correlate with the acroporid' density response.~~
 
-12. This code block refines the non‑parametric testing framework and integrates the results into a comprehensive figure. A tailored function (`get_signif_df`) is defined to perform pairwise Wilcoxon rank‑sum tests between climatic combinations, applying Bonferroni correction and restricting analyses to combinations with sufficient sample size (≥3 observations). The function returns significant contrasts along with annotation codes and vertical positioning for graphical overlays. These results are aggregated across sites (`spot_signifs`) and linked to panel metadata for visualization. The plotting routine then constructs boxplots of coral fossil density by climatic combination, with jittered points to display individual observations and facets to separate local, zonal, and regional scales. Statistically significant pairwise differences are highlighted directly on the plots using annotated brackets. The `Supplementary Figure 2` is formatted with consistent color schemes, bold axis labels, and a consolidated legend, and exported as a high‑resolution PDF for publication. This chunk thus integrates statistical inference with graphical representation, providing a clear depiction of how coral fossil densities vary across climatic regimes and spatial scales, while explicitly marking significant contrasts.
+12. ~~This code block refines the non‑parametric testing framework and integrates the results into a comprehensive figure. A tailored function (`get_signif_df`) is defined to perform pairwise Wilcoxon rank‑sum tests between climatic combinations, applying Bonferroni correction and restricting analyses to combinations with sufficient sample size (≥3 observations). The function returns significant contrasts along with annotation codes and vertical positioning for graphical overlays. These results are aggregated across sites (`spot_signifs`) and linked to panel metadata for visualization. The plotting routine then constructs boxplots of coral fossil density by climatic combination, with jittered points to display individual observations and facets to separate local, zonal, and regional scales. Statistically significant pairwise differences are highlighted directly on the plots using annotated brackets. The `Supplementary Figure 2` is formatted with consistent color schemes, bold axis labels, and a consolidated legend, and exported as a high‑resolution PDF for publication. This chunk thus integrates statistical inference with graphical representation, providing a clear depiction of how coral fossil densities vary across climatic regimes and spatial scales, while explicitly marking significant contrasts.~~
 
 ```{r,fig.width=12, fig.height=10,echo=FALSE}
 
-get_signif_df <- function(df, spot_name){
-  combos_validas <- names(which(table(df$ClimateCombo) >= 3))
-  df <- df %>% filter(ClimateCombo %in% combos_validas)
-  
-  if(length(unique(df$ClimateCombo)) < 3){
-    return(data.frame())
-  }
-  
-  # Ad-hoc Bonferroni Test 
-  pw <- pairwise.wilcox.test(df$density, df$ClimateCombo,
-                             p.adjust.method = "bonferroni",
-                             exact = FALSE)
-  
-  sig_pairs <- which(pw$p.value < 0.05, arr.ind = TRUE)
-  if(nrow(sig_pairs) == 0){
-    return(data.frame())
-  }
-  
-  signif_code <- function(p){
-    if(p < 0.001) return("***")
-    else if(p < 0.01) return("**")
-    else if(p < 0.05) return("*")
-    else if(p < 0.1) return(".")
-    else return("ns")
-  }
-  
-  max_y <- max(df$density, na.rm = TRUE)
-  step_y <- max_y * 0.08
-  
-  out <- data.frame()
-  for(i in seq_len(nrow(sig_pairs))){
-    row <- sig_pairs[i,1]; col <- sig_pairs[i,2]
-    pval <- pw$p.value[row,col]
-    out <- rbind(out, data.frame(
-      spot = spot_name,
-      group1 = rownames(pw$p.value)[row],
-      group2 = colnames(pw$p.value)[col],
-      annotation = signif_code(pval),  
-      y_position = max_y * 1.1 + (i-1) * step_y
-    ))
-  }
-  return(out)
-}
-
-spots <- unique(datos_filtrados$spot)
-
-spot_signifs <- bind_rows(lapply(spots, function(p){
-  df_spot <- datos_filtrados %>% filter(spot == p)
-  get_signif_df(df_spot, p)
-}))
-
-panel_map <- datos_filtrados %>% distinct(spot, panel)
-spot_signifs <- spot_signifs %>% left_join(panel_map, by = "spot")
-
-
-
-fig3<-suppressWarnings(
-  ggplot(datos_filtrados, aes(x = reorder(ClimateCombo, density, FUN = median), y = density, fill = spot)) +
-    geom_boxplot(position = position_dodge(width = 0.8)) +
-    geom_jitter(
-      aes(fill = spot), 
-      position = position_jitterdodge(jitter.width = 0.05, dodge.width = 0.8),
-      shape = 21,                                
-      size = 2, 
-      alpha = 0.7,
-      color = darken(custom_colors[datos_filtrados$spot], 0.3) 
-    ) +
-    facet_wrap(~panel, ncol = 2, scales = "free_y") +
-    scale_fill_manual(values = custom_colors) +
-    geom_signif(
-      data = spot_signifs,
-      aes(xmin = group1, xmax = group2,
-          annotations = annotation, y_position = y_position),
-      inherit.aes = FALSE,
-      manual = TRUE
-    ) +
-    theme_bw() +
-    theme(axis.text.x = element_text(size= 14, angle = 45, hjust = 1),
-          axis.text.y  = element_text(size = 14),
-          axis.title.x = element_text(size = 16, face = "bold"),
-          axis.title.y = element_text(size = 16, face = "bold"),
-          strip.text   = element_text(size = 15, face = "bold"),  
-          legend.text  = element_text(size = 13),
-          legend.title = element_text(size = 14, face = "bold"),
-          legend.position = "bottom") +
-    labs(x = "Climate combinations (arranged by median)",
-         y = "Coral density (avg_median)",
-         fill = "Region/Source")
-)
-fig3
-ggsave("Figure_3.pdf", plot = fig3, width = 8, height = 8, dpi = 300, device = cairo_pdf)
+# get_signif_df <- function(df, spot_name){
+#   combos_validas <- names(which(table(df$ClimateCombo) >= 3))
+#   df <- df %>% filter(ClimateCombo %in% combos_validas)
+#   
+#   if(length(unique(df$ClimateCombo)) < 3){
+#     return(data.frame())
+#   }
+#   
+#   # Ad-hoc Bonferroni Test 
+#   pw <- pairwise.wilcox.test(df$density, df$ClimateCombo,
+#                              p.adjust.method = "bonferroni",
+#                              exact = FALSE)
+#   
+#   sig_pairs <- which(pw$p.value < 0.05, arr.ind = TRUE)
+#   if(nrow(sig_pairs) == 0){
+#     return(data.frame())
+#   }
+#   
+#   signif_code <- function(p){
+#     if(p < 0.001) return("***")
+#     else if(p < 0.01) return("**")
+#     else if(p < 0.05) return("*")
+#     else if(p < 0.1) return(".")
+#     else return("ns")
+#   }
+#   
+#   max_y <- max(df$density, na.rm = TRUE)
+#   step_y <- max_y * 0.08
+#   
+#   out <- data.frame()
+#   for(i in seq_len(nrow(sig_pairs))){
+#     row <- sig_pairs[i,1]; col <- sig_pairs[i,2]
+#     pval <- pw$p.value[row,col]
+#     out <- rbind(out, data.frame(
+#       spot = spot_name,
+#       group1 = rownames(pw$p.value)[row],
+#       group2 = colnames(pw$p.value)[col],
+#       annotation = signif_code(pval),  
+#       y_position = max_y * 1.1 + (i-1) * step_y
+#     ))
+#   }
+#   return(out)
+# }
+# 
+# spots <- unique(datos_filtrados$spot)
+# 
+# spot_signifs <- bind_rows(lapply(spots, function(p){
+#   df_spot <- datos_filtrados %>% filter(spot == p)
+#   get_signif_df(df_spot, p)
+# }))
+# 
+# panel_map <- datos_filtrados %>% distinct(spot, panel)
+# spot_signifs <- spot_signifs %>% left_join(panel_map, by = "spot")
+# 
+# 
+# 
+# fig3<-suppressWarnings(
+#   ggplot(datos_filtrados, aes(x = reorder(ClimateCombo, density, FUN = median), y = density, fill = spot)) +
+#     geom_boxplot(position = position_dodge(width = 0.8)) +
+#     geom_jitter(
+#       aes(fill = spot), 
+#       position = position_jitterdodge(jitter.width = 0.05, dodge.width = 0.8),
+#       shape = 21,                                
+#       size = 2, 
+#       alpha = 0.7,
+#       color = darken(custom_colors[datos_filtrados$spot], 0.3) 
+#     ) +
+#     facet_wrap(~panel, ncol = 2, scales = "free_y") +
+#     scale_fill_manual(values = custom_colors) +
+#     geom_signif(
+#       data = spot_signifs,
+#       aes(xmin = group1, xmax = group2,
+#           annotations = annotation, y_position = y_position),
+#       inherit.aes = FALSE,
+#       manual = TRUE
+#     ) +
+#     theme_bw() +
+#     theme(axis.text.x = element_text(size= 14, angle = 45, hjust = 1),
+#           axis.text.y  = element_text(size = 14),
+#           axis.title.x = element_text(size = 16, face = "bold"),
+#           axis.title.y = element_text(size = 16, face = "bold"),
+#           strip.text   = element_text(size = 15, face = "bold"),  
+#           legend.text  = element_text(size = 13),
+#           legend.title = element_text(size = 14, face = "bold"),
+#           legend.position = "bottom") +
+#     labs(x = "Climate combinations (arranged by median)",
+#          y = "Coral density (avg_median)",
+#          fill = "Region/Source")
+# )
+# fig3
+# ggsave("Figure_3.pdf", plot = fig3, width = 8, height = 8, dpi = 300, device = cairo_pdf)
 ```
 
 **Supplementary Figure 2.** **Boxplots of *A. palmata* densities (population) under Holocene climate combinations.** Highest and lowest acroporid density values both occur under warmer intervals associated with wet conditions and variable hurricane frequency (HF). Whereas the bulk of density values occur under cooler intervals with combinations of frequent hurricanes and wet conditions, or infrequent hurricanes and dry conditions. The densities from these cool scenarios differ significantly from other climate regimes, as shown by ad‑hoc Wilcoxon pairwise comparisons with Bonferroni adjustment (p‑values indicated). Boxes are colored by thermal trends following color code from Figure 1.
@@ -882,6 +887,197 @@ merged_df_g <- bind_rows(datos_pm, datos_fl, datos_bz, datos_sc, datos_reg)
 
 14. This code block normalizes fossil counts across sites and constructs the final dataset for comparative modeling. A custom function (`normalize_counts`) is defined to scale raw counts relative to the maximum within each panel, producing standardized values (`counts_norm`). To address boundary cases where normalized values equal 0 or 1, a small‑sample variance correction is applied (`counts_norm_sv`), ensuring statistical stability. The dataset is then partitioned by site (***Punta Maroma*****, *Florida*, *Belize*, *Saint Croix***) and aggregated by centennial age bins, with associated climatic and disturbance predictors summarized as means. Each subset is normalized and labeled with its respective panel name. A regional dataset is additionally created by pooling all sites, normalized in the same manner, and explicitly tagged as “**Regional**.” Finally, all site‑level and regional subsets are merged into a consolidated dataset (`merged_df_g`), which provides harmonized counts and predictor variables for subsequent generalized additive modeling and comparative analyses.
 
+    ```{r}
+    #---------------------------------------------------------
+    # Función de normalización
+    #---------------------------------------------------------
+
+    normalize_counts <- function(df, panel_name){
+      
+      df %>%
+        mutate(
+          counts_norm = round(
+            counts / max(counts, na.rm = TRUE),
+            4
+          ),
+          
+          counts_norm_sv = ifelse(
+            counts_norm %in% c(0,1),
+            ((counts_norm * (n() - 1)) + 0.5) / n(),
+            counts_norm
+          ),
+          
+          panel = panel_name
+        )
+      
+    }
+
+    #---------------------------------------------------------
+    # PUNTA MAROMA
+    #---------------------------------------------------------
+
+    datos_pm <- merged_df %>%
+      filter(spot == "Punta Maroma") %>%
+      group_by(age) %>%
+      summarise(
+        counts = sum(counts, na.rm = TRUE),
+        Hur100_av = mean(Hur100_av, na.rm = TRUE),
+        Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
+        GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE),
+        dT_raw = mean(dT_raw, na.rm = TRUE),
+        Hydro = first(Hydro),
+        Thermal = first(Thermal),
+        Hurricane = first(Hurricane),
+        .groups = "drop"
+      ) %>%
+      normalize_counts("Punta Maroma")
+
+    #---------------------------------------------------------
+    # BELIZE
+    #---------------------------------------------------------
+
+    datos_bz <- merged_df %>%
+      filter(spot == "Belize") %>%
+      group_by(age) %>%
+      summarise(
+        counts = sum(counts, na.rm = TRUE),
+        Hur100_av = mean(Hur100_av, na.rm = TRUE),
+        Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
+        GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE),
+        dT_raw = mean(dT_raw, na.rm = TRUE),
+        Hydro = first(Hydro),
+        Thermal = first(Thermal),
+        Hurricane = first(Hurricane),
+        .groups = "drop"
+      ) %>%
+      normalize_counts("Belize")
+
+    #---------------------------------------------------------
+    # SAINT CROIX
+    #---------------------------------------------------------
+
+    datos_sc <- merged_df %>%
+      filter(spot == "Saint Croix") %>%
+      group_by(age) %>%
+      summarise(
+        counts = sum(counts, na.rm = TRUE),
+        Hur100_av = mean(Hur100_av, na.rm = TRUE),
+        Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
+        GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE),
+        dT_raw = mean(dT_raw, na.rm = TRUE),
+        Hydro = first(Hydro),
+        Thermal = first(Thermal),
+        Hurricane = first(Hurricane),
+        .groups = "drop"
+      ) %>%
+      normalize_counts("Saint Croix")
+
+    #---------------------------------------------------------
+    # FLORIDA
+    # Estandarización independiente por SOURCE
+    # (esto es lo que solicita Lauren)
+    #---------------------------------------------------------
+
+    datos_fl_std <- merged_df %>%
+      filter(spot == "Florida") %>%
+      
+      group_by(source, age) %>%
+      summarise(
+        counts = sum(counts, na.rm = TRUE),
+        
+        Hur100_av = mean(Hur100_av, na.rm = TRUE),
+        Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
+        GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE),
+        dT_raw = mean(dT_raw, na.rm = TRUE),
+        Hydro = first(Hydro),
+        Thermal = first(Thermal),
+        Hurricane = first(Hurricane),
+        .groups = "drop"
+      ) %>%
+      
+      group_by(source) %>%
+      mutate(
+        
+        counts_std = counts / max(counts, na.rm = TRUE),
+        
+        counts_std = ifelse(
+          counts_std %in% c(0,1),
+          ((counts_std * (n() - 1)) + 0.5) / n(),
+          counts_std
+        )
+        
+      ) %>%
+      ungroup() %>%
+      
+      group_by(age) %>%
+      summarise(
+        
+        counts = sum(counts_std, na.rm = TRUE),
+        
+        Hur100_av = mean(Hur100_av, na.rm = TRUE),
+        Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
+        GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE),
+        dT_raw = mean(dT_raw, na.rm = TRUE),
+        
+        Hydro = first(Hydro),
+        Thermal = first(Thermal),
+        Hurricane = first(Hurricane),
+        
+        .groups = "drop"
+        
+      ) %>%
+      normalize_counts("Florida")
+
+    #---------------------------------------------------------
+    # REGIONAL
+    # Construido a partir de los paneles ya normalizados
+    #---------------------------------------------------------
+
+    datos_reg <- bind_rows(
+      datos_pm,
+      datos_fl_std,
+      datos_bz,
+      datos_sc
+    ) %>%
+      group_by(age) %>%
+      summarise(
+        
+        counts = sum(counts_norm_sv, na.rm = TRUE),
+        
+        Hur100_av = mean(Hur100_av, na.rm = TRUE),
+        Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
+        GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE),
+        dT_raw = mean(dT_raw, na.rm = TRUE),
+        
+        Hydro = first(Hydro),
+        Thermal = first(Thermal),
+        Hurricane = first(Hurricane),
+        
+        .groups = "drop"
+        
+      ) %>%
+      normalize_counts("Regional")
+
+    #---------------------------------------------------------
+    # DATASET FINAL
+    #---------------------------------------------------------
+
+    merged_df_g <- bind_rows(
+      datos_pm,
+      datos_fl_std,
+      datos_bz,
+      datos_sc,
+      datos_reg
+    )
+
+
+
+    ```
+
+#### ================================================================Quick assessment of Florida source-drived segments' impact ============================================================
+
+previous
+
 ```{r,echo=FALSE}
 
 normalize_counts <- function(df, panel_name){
@@ -895,28 +1091,28 @@ normalize_counts <- function(df, panel_name){
       panel = panel_name
     )
 }
-
-datos_pm <- merged_df %>%
-  filter(spot == "Punta Maroma") %>%
-  group_by(age) %>%
-  summarise(
-    counts = sum(counts, na.rm = TRUE), 
-    Hur100_av = mean(Hur100_av, na.rm = TRUE),
-    Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
-    GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE),
-    dT_raw = mean(dT_raw, na.rm = TRUE),
-    Hydro = first(Hydro),
-    Thermal = first(Thermal),
-    Hurricane = first(Hurricane),
-    .groups = "drop"
-  ) %>%
-  normalize_counts("Punta Maroma")
-
-datos_fl <- merged_df %>%
+# 
+# datos_pm <- merged_df %>%
+#   filter(spot == "Punta Maroma") %>%
+#   group_by(age) %>%
+#   summarise(
+#     counts = sum(counts, na.rm = TRUE), 
+#     Hur100_av = mean(Hur100_av, na.rm = TRUE),
+#     Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
+#     GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE),
+#     dT_raw = mean(dT_raw, na.rm = TRUE),
+#     Hydro = first(Hydro),
+#     Thermal = first(Thermal),
+#     Hurricane = first(Hurricane),
+#     .groups = "drop"
+#   ) %>%
+#   normalize_counts("Punta Maroma")
+# 
+datos_fl_norm <- merged_df %>%
   filter(spot == "Florida") %>%
   group_by(age) %>%
   summarise(
-    counts = sum(counts, na.rm = TRUE), 
+    counts = sum(counts, na.rm = TRUE),
     Hur100_av = mean(Hur100_av, na.rm = TRUE),
     Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
     GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE),
@@ -927,58 +1123,423 @@ datos_fl <- merged_df %>%
     .groups = "drop"
   ) %>%
   normalize_counts("Florida")
+# 
+# datos_bz <- merged_df %>%
+#   filter(spot == "Belize") %>%
+#   group_by(age) %>%
+#   summarise(
+#     counts = sum(counts, na.rm = TRUE), 
+#     Hur100_av = mean(Hur100_av, na.rm = TRUE),
+#     Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
+#     GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE),
+#     dT_raw = mean(dT_raw, na.rm = TRUE),
+#     Hydro = first(Hydro),
+#     Thermal = first(Thermal),
+#     Hurricane = first(Hurricane),
+#     .groups = "drop"
+#   ) %>%
+#   normalize_counts("Belize")
+# 
+# datos_sc <- merged_df %>%
+#   filter(spot == "Saint Croix") %>%
+#   group_by(age) %>%
+#   summarise(
+#     counts = sum(counts, na.rm = TRUE), 
+#     Hur100_av = mean(Hur100_av, na.rm = TRUE),
+#     Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
+#     GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE),
+#     dT_raw = mean(dT_raw, na.rm = TRUE),
+#     Hydro = first(Hydro),
+#     Thermal = first(Thermal),
+#     Hurricane = first(Hurricane),
+#     .groups = "drop"
+#   ) %>%
+#   normalize_counts("Saint Croix")
+# 
+# datos_reg <- merged_df %>%
+#   filter(spot %in% c("Punta Maroma", "Florida", "Belize", "Saint Croix")) %>%
+#   group_by(age) %>%
+#   summarise(
+#     counts = sum(counts, na.rm = TRUE),   
+#     Hur100_av = mean(Hur100_av, na.rm = TRUE),
+#     Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
+#     GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE),
+#     dT_raw = mean(dT_raw, na.rm = TRUE),
+#     Hydro = first(Hydro),
+#     Thermal = first(Thermal),
+#     Hurricane = first(Hurricane),
+#     .groups = "drop"
+#   ) %>%
+#   normalize_counts("Regional") %>%
+#   mutate(panel = "Regional")   
+# 
+# 
+# merged_df_g <- bind_rows(datos_pm, datos_fl, datos_bz, datos_sc, datos_reg)
+```
 
-datos_bz <- merged_df %>%
-  filter(spot == "Belize") %>%
-  group_by(age) %>%
-  summarise(
-    counts = sum(counts, na.rm = TRUE), 
-    Hur100_av = mean(Hur100_av, na.rm = TRUE),
-    Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
-    GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE),
-    dT_raw = mean(dT_raw, na.rm = TRUE),
-    Hydro = first(Hydro),
-    Thermal = first(Thermal),
-    Hurricane = first(Hurricane),
-    .groups = "drop"
+Florida comparisson
+
+```{r}
+fl_compare <- full_join(
+
+  datos_fl_norm %>%
+    select(age, counts_norm_sv) %>%
+    rename(norm = counts_norm_sv),
+
+  datos_fl_std %>%
+    select(age, counts_norm_sv) %>%
+    rename(std = counts_norm_sv),
+
+  by = "age"
+
+)
+
+```
+
+Quick assessment of source-drived segments' imapct in Florida trajectory
+
+```{r}
+
+summary(fl_compare$std - fl_compare$norm)
+
+max(abs(fl_compare$std - fl_compare$norm),
+    na.rm = TRUE)
+
+fl_compare <- fl_compare %>%
+  mutate(
+    delta = std - norm
+  )
+
+fl_compare %>%
+  mutate(
+    delta = std - norm,
+    abs_delta = abs(delta)
   ) %>%
-  normalize_counts("Belize")
+  arrange(desc(abs_delta)) %>%
+  select(age, norm, std, delta) %>%
+  slice(1:20)
 
-datos_sc <- merged_df %>%
-  filter(spot == "Saint Croix") %>%
-  group_by(age) %>%
+
+cor(
+  fl_compare$norm,
+  fl_compare$std,
+  use = "complete.obs"
+)
+
+
+ggplot(fl_compare, aes(age)) +
+  
+  geom_ribbon(
+    aes(
+      ymin = pmin(norm, std),
+      ymax = pmax(norm, std)
+    ),
+    fill = "grey70",
+    alpha = 0.5
+  ) +
+  
+  geom_line(
+    aes(y = norm,
+        colour = "Original"),
+    linewidth = 1
+  ) +
+  
+  geom_line(
+    aes(y = std,
+        colour = "Standardized"),
+    linewidth = 1
+  ) +
+  
+  scale_color_manual(
+    values = c(
+      "Original" = "black",
+      "Standardized" = "red"
+    )
+  ) +
+  
+  scale_x_reverse() +
+  
+  theme_bw() +
+  
+  labs(
+    x = "Age (yr BP)",
+    y = "Relative abundance",
+    colour = NULL
+  )
+
+ggplot(
+  fl_compare,
+  aes(age, delta)
+) +
+  
+  geom_hline(
+    yintercept = 0,
+    linetype = 2
+  ) +
+  
+  geom_area(
+    fill = "steelblue",
+    alpha = 0.6
+  ) +
+  
+  scale_x_reverse() +
+  
+  labs(
+    x = "Age (yr BP)",
+    y = "Standardized - Original"
+  ) +
+  
+  theme_bw(base_size = 12)
+```
+
+### 3.2 **EDA descriptivo**
+
+```{r}
+
+#=========================================================
+# EDA de combinaciones climáticas usando counts_norm_sv
+#=========================================================
+
+eda_counts <- merged_df_g %>%
+  
+  mutate(
+    ClimateCombo = interaction(
+      Thermal,
+      Hydro,
+      Hurricane,
+      sep = "_"
+    )
+  )
+
+#---------------------------------------------------------
+# Verificación de NA
+#---------------------------------------------------------
+
+eda_counts[!complete.cases(eda_counts), ]
+
+#---------------------------------------------------------
+# Ordenar niveles por abundancia mediana
+#---------------------------------------------------------
+
+eda_counts$ClimateCombo <- reorder(
+  eda_counts$ClimateCombo,
+  eda_counts$counts_norm_sv,
+  median
+)
+
+#---------------------------------------------------------
+# Frecuencias por combinación climática
+#---------------------------------------------------------
+
+combo_freq <- eda_counts %>%
+  count(panel, ClimateCombo)
+
+totales <- combo_freq %>%
+  group_by(panel) %>%
   summarise(
-    counts = sum(counts, na.rm = TRUE), 
-    Hur100_av = mean(Hur100_av, na.rm = TRUE),
-    Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
-    GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE),
-    dT_raw = mean(dT_raw, na.rm = TRUE),
-    Hydro = first(Hydro),
-    Thermal = first(Thermal),
-    Hurricane = first(Hurricane),
+    total = sum(n),
     .groups = "drop"
-  ) %>%
-  normalize_counts("Saint Croix")
+  )
 
-datos_reg <- merged_df %>%
-  filter(spot %in% c("Punta Maroma", "Florida", "Belize", "Saint Croix")) %>%
-  group_by(age) %>%
+total_general <- data.frame(
+  panel = "TOTAL",
+  total = sum(totales$total)
+)
+
+totales <- bind_rows(
+  totales,
+  total_general
+)
+
+combo_freq %>%
+  gt() %>%
+  tab_header(
+    title = "Climate combinations (frequencies)",
+    subtitle = "Counts per panel and climatic combination"
+  ) %>%
+  fmt_number(
+    columns = n,
+    decimals = 0
+  )
+
+totales %>%
+  gt() %>%
+  tab_header(
+    title = "Totals per panel",
+    subtitle = "Sum of climatic combinations"
+  ) %>%
+  fmt_number(
+    columns = total,
+    decimals = 0
+  )
+
+#---------------------------------------------------------
+# Filtrar combinaciones poco representadas
+#---------------------------------------------------------
+
+combos_validos <- combo_freq %>%
+  filter(n >= 3) %>%
+  pull(ClimateCombo) %>%
+  as.character()
+
+invisible(
+  combo_freq %>%
+    filter(n >= 3)
+)
+
+invisible(
+  combo_freq %>%
+    filter(n < 3)
+)
+
+#---------------------------------------------------------
+# Dataset filtrado
+#---------------------------------------------------------
+
+datos_filtrados <- eda_counts %>%
+  filter(
+    ClimateCombo %in% combos_validos
+  )
+
+datos_filtrados <- datos_filtrados %>%
+  group_by(panel) %>%
+  mutate(
+    ClimateCombo = fct_reorder(
+      ClimateCombo,
+      counts_norm_sv,
+      .fun = median
+    )
+  ) %>%
+  ungroup()
+
+#---------------------------------------------------------
+# Resumen por panel
+#---------------------------------------------------------
+
+resumen_panel <- datos_filtrados %>%
+  group_by(panel) %>%
   summarise(
-    counts = sum(counts, na.rm = TRUE),   
-    Hur100_av = mean(Hur100_av, na.rm = TRUE),
-    Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
-    GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE),
-    dT_raw = mean(dT_raw, na.rm = TRUE),
-    Hydro = first(Hydro),
-    Thermal = first(Thermal),
-    Hurricane = first(Hurricane),
+    n_obs = n(),
+    mean_abund = mean(counts_norm_sv, na.rm = TRUE),
+    sd_abund = sd(counts_norm_sv, na.rm = TRUE),
+    min_abund = min(counts_norm_sv, na.rm = TRUE),
+    max_abund = max(counts_norm_sv, na.rm = TRUE),
     .groups = "drop"
+  )
+
+#---------------------------------------------------------
+# Resumen por panel y combinación climática
+#---------------------------------------------------------
+
+resumen_panel_combo <- datos_filtrados %>%
+  group_by(
+    panel,
+    ClimateCombo
   ) %>%
-  normalize_counts("Regional") %>%
-  mutate(panel = "Regional")   
+  summarise(
+    n_obs = n(),
+    mean_abund = mean(counts_norm_sv, na.rm = TRUE),
+    sd_abund = sd(counts_norm_sv, na.rm = TRUE),
+    min_abund = min(counts_norm_sv, na.rm = TRUE),
+    max_abund = max(counts_norm_sv, na.rm = TRUE),
+    .groups = "drop"
+  )
 
+#---------------------------------------------------------
+# Tabla descriptiva final
+#---------------------------------------------------------
 
-merged_df_g <- bind_rows(datos_pm, datos_fl, datos_bz, datos_sc, datos_reg)
+resumen_panel_combo %>%
+  gt() %>%
+  tab_header(
+    title = "Climate-combination summary",
+    subtitle = "Standardized Acropora abundance by climatic regime"
+  ) %>%
+  fmt_number(
+    columns = c(
+      mean_abund,
+      sd_abund,
+      min_abund,
+      max_abund
+    ),
+    decimals = 3
+  )
+```
+
+visual
+
+```{r,fig.width=12, fig.height=10,echo=FALSE}
+
+#=========================================================
+# FIGURE
+#=========================================================
+
+fig3 <- ggplot(
+  datos_filtrados,
+  aes(
+    x = fct_reorder(
+      ClimateCombo,
+      counts_norm_sv,
+      .fun = median
+    ),
+    y = counts_norm_sv,
+    fill = panel
+  )
+) +
+  
+  geom_boxplot(
+    outlier.shape = NA,
+    alpha = 0.7
+  ) +
+  
+  geom_jitter(
+    width = 0.12,
+    size = 2,
+    alpha = 0.6,
+    shape = 21,
+    colour = "black"
+  ) +
+  
+  facet_wrap(
+    ~ panel,
+    scales = "free_y",
+    ncol = 2
+  ) +
+  
+  scale_fill_manual(
+    values = custom_colors
+  ) +
+  
+  theme_bw() +
+  
+  theme(
+    axis.text.x = element_text(
+      angle = 45,
+      hjust = 1,
+      size = 12
+    ),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_text(
+      size = 14,
+      face = "bold"
+    ),
+    axis.title.y = element_text(
+      size = 14,
+      face = "bold"
+    ),
+    strip.text = element_text(
+      size = 14,
+      face = "bold"
+    ),
+    legend.position = "none"
+  ) +
+  
+  labs(
+    x = "Climate combinations (ordered by median abundance)",
+    y = "Standardized abundance (counts_norm_sv)"
+  )
+
+fig3
 ```
 
 Because of our interest in assessing temporal trends in continuous variables (e.g., temperature, hurricane frequency), we employ a **Beta regression family** with a **logit link function** and **regression splines**. This family regression distribution also responds to the inherent properties of the selected response variable which is bounded between 0 and 1. Finally, we define reference baselines for the thermal and hydro climatic predictors and set the model baseline to conditions 'warmer' than the 18th-century average, 'wet' hydro climatic periods, and 'calm' hurricane intervals. By establishing these baselines, we enable the model to accurately capture the effects of known periods of heightened climate variability, such as the Little Ice Age or the Caribbean Warm Period in concordance with our goals.
@@ -1019,74 +1580,593 @@ compare_gams <- function(fits) {
 }
 ```
 
-**Suppl. Table 1. Explained coral climate interaction within univariate GAM settings:** definition and relative marginal effect (measured as Chi.sq) and statistical significance (p-value, Pr(\>\|z\|)) of the relevant climate variables on *A. palmata* population trajectory response.
+**Suppl. Table 1. Explained coral climate interaction within univariate GAM settings (full model rank):** definition and relative marginal effect (measured as Chi.sq) and statistical significance (p-value, Pr(\>\|z\|)) of the relevant climate variables on *A. palmata* population trajectory response.
 
 ```{r best-gams, echo=FALSE}
 library(broom)
 
-fit_best_gam <- function(formula, data, model_name, segment_name, outdir = "gam_outputs") {
-  gam_model <- gam(
-    formula = formula,
-    data = data,
-    family = betar(link = "logit"),
-    method = "REML"
+# fit_best_gam <- function(formula, data, model_name, segment_name, outdir = "gam_outputs") {
+#   gam_model <- gam(
+#     formula = formula,
+#     data = data,
+#     family = betar(link = "logit"),
+#     method = "REML"
+#   )
+#   
+#   cat("\n============================\n")
+#   cat("Best GAM for", segment_name, "-", model_name, "\n")
+#   cat("============================\n")
+#   print(summary(gam_model))
+#   
+#   gam_summary <- summary(gam_model)
+#   
+#   tidy_terms <- broom::tidy(gam_model) %>%
+#     filter(p.value < 0.05) %>%
+#     select(term, p.value)
+#   
+#   edf_info <- gam_summary$s.table
+#   edf_terms <- paste0(rownames(edf_info), " (EDF=", round(edf_info[,"edf"],2), ")")
+#   
+#   summary_df <- data.frame(
+#     Segment = segment_name,
+#     Model   = model_name,
+#     AIC     = AIC(gam_model),
+#     DevianceExplained = gam_summary$dev.expl,
+#     R2_Adj  = gam_summary$r.sq,
+#     SignificantTerms  = paste(tidy_terms$term, collapse = "; "),
+#     EDF_Terms = paste(edf_terms, collapse = "; ")
+#   )
+#   
+#   return(list(model = gam_model, summary = summary_df))
+# }
+
+#=================================================
+# Definición de grupos de modelos
+#=================================================
+
+linear_models <- c(
+  "M_the",
+  "M_hyd",
+  "M_hur"
+)
+
+smooth_models <- c(
+  "M_temp",
+  "M_dt",
+  "M_hf",
+  "M_hav"
+)
+
+#=================================================
+# Ajustar modelos y extraer rankings
+#=================================================
+
+get_best_models <- function(data, formulas){
+  
+  fits <- fit_gams_panel(data, formulas)
+  
+  ranking <- compare_gams(fits) %>%
+    arrange(AIC) %>%
+    mutate(
+      Rank = row_number()
+    )
+  
+  best_linear <- ranking %>%
+    filter(Model %in% linear_models) %>%
+    slice_min(AIC, n = 1)
+  
+  best_smooth <- ranking %>%
+    filter(Model %in% smooth_models) %>%
+    slice_min(AIC, n = 1)
+  
+  list(
+    fits = fits,
+    ranking = ranking,
+    best_linear = best_linear,
+    best_smooth = best_smooth
   )
   
-  cat("\n============================\n")
-  cat("Best GAM for", segment_name, "-", model_name, "\n")
-  cat("============================\n")
-  print(summary(gam_model))
-  
-  gam_summary <- summary(gam_model)
-  
-  tidy_terms <- broom::tidy(gam_model) %>%
-    filter(p.value < 0.05) %>%
-    select(term, p.value)
-  
-  edf_info <- gam_summary$s.table
-  edf_terms <- paste0(rownames(edf_info), " (EDF=", round(edf_info[,"edf"],2), ")")
-  
-  summary_df <- data.frame(
-    Segment = segment_name,
-    Model   = model_name,
-    AIC     = AIC(gam_model),
-    DevianceExplained = gam_summary$dev.expl,
-    R2_Adj  = gam_summary$r.sq,
-    SignificantTerms  = paste(tidy_terms$term, collapse = "; "),
-    EDF_Terms = paste(edf_terms, collapse = "; ")
-  )
-  
-  return(list(model = gam_model, summary = summary_df))
 }
+
+#=================================================
+# Ejecutar una sola vez por panel
+#=================================================
+
+best_pm <- get_best_models(datos_pm, formulas_mg)
+best_fl <- get_best_models(datos_fl_std, formulas_mg)
+best_bz <- get_best_models(datos_bz, formulas_mg)
+best_sc <- get_best_models(datos_sc, formulas_mg)
+best_reg <- get_best_models(datos_reg, formulas_mg)
+
+#=================================================
+# Tabla única de ranking
+#=================================================
+
+tbl_models <- bind_rows(
+  
+  best_pm$ranking %>%
+    mutate(Panel = "Punta Maroma"),
+  
+  best_fl$ranking %>%
+    mutate(Panel = "Florida"),
+  
+  best_bz$ranking %>%
+    mutate(Panel = "Belize"),
+  
+  best_sc$ranking %>%
+    mutate(Panel = "Saint Croix"),
+  
+  best_reg$ranking %>%
+    mutate(Panel = "Regional")
+  
+)
+
+#=================================================
+# GT: Ranking completo
+#=================================================
+
+gt_ranking <- tbl_models %>%
+  
+  gt(groupname_col = "Panel") %>%
+  
+  fmt_number(
+    columns = c(AIC, deltaAIC, weight),
+    decimals = 3
+  ) %>%
+  
+  cols_label(
+    Rank = "Rank",
+    Model = "Model",
+    AIC = "AIC",
+    deltaAIC = "ΔAIC",
+    weight = "Akaike Weight"
+  ) %>%
+  
+  tab_header(
+    title = md("**GAM model selection by panel**")
+  )
+
+gt_ranking
+
+
+# tbl_winners <- tbl_models %>%
+#   group_by(Panel) %>%
+#   slice_min(AIC, n = 1) %>%
+#   ungroup() %>%
+#   select(
+#     Panel,
+#     Best_Model = Model,
+#     AIC,
+#     weight
+#   )
+
+
+# tbl_winners %>%
+#   gt() %>%
+#   fmt_number(
+#     columns = c(AIC, weight),
+#     decimals = 3
+#   ) %>%
+#   cols_label(
+#     Panel = "Panel",
+#     Best_Model = "Best GAM",
+#     AIC = "AIC",
+#     weight = "Akaike Weight"
+#   ) %>%
+#   tab_header(
+#     title = md("**Best-supported GAM by panel**")
+#   )
+# 
+
+```
+
+**Suppl. Table 2. Marginal effects models explained by linear and smooth terms**
+
+```{r}
+tbl_winners <- bind_rows(
+  
+  data.frame(
+    Panel = "Punta Maroma",
+    Best_Linear = best_pm$best_linear$Model,
+    Best_Smooth = best_pm$best_smooth$Model
+  ),
+  
+  data.frame(
+    Panel = "Florida",
+    Best_Linear = best_fl$best_linear$Model,
+    Best_Smooth = best_fl$best_smooth$Model
+  ),
+  
+  data.frame(
+    Panel = "Belize",
+    Best_Linear = best_bz$best_linear$Model,
+    Best_Smooth = best_bz$best_smooth$Model
+  ),
+  
+  data.frame(
+    Panel = "Saint Croix",
+    Best_Linear = best_sc$best_linear$Model,
+    Best_Smooth = best_sc$best_smooth$Model
+  ),
+  
+  data.frame(
+    Panel = "Regional",
+    Best_Linear = best_reg$best_linear$Model,
+    Best_Smooth = best_reg$best_smooth$Model
+  )
+  
+)
+
+gt_winners <- tbl_winners %>%
+  gt() %>%
+  cols_label(
+    Panel = "Panel",
+    Best_Linear = "Best Linear",
+    Best_Smooth = "Best Smooth"
+  ) %>%
+  tab_header(
+    title = md("**Best-supported linear and smooth GAMs**")
+  )
+
+gt_winners
 ```
 
 **Explained coral climate interaction within univariate GAM settings:** definition and relative marginal effect (measured as Chi.sq) and statistical significance (p-value, Pr(\>\|z\|)) of the relevant climate variables on *A. palmata* population trajectory response.
 
 ```{r best-gams-summary, echo=FALSE}
 
-gam_pm  <- fit_best_gam(formulas_mg$M_hav, datos_pm,  "M_hav", "Punta Maroma")
-gam_fl  <- fit_best_gam(formulas_mg$M_hf, datos_fl,  "M_hf", "Florida")
-gam_bz  <- fit_best_gam(formulas_mg$M_hf, datos_bz,  "M_hf", "Belize")
-gam_sc  <- fit_best_gam(formulas_mg$M_dt, datos_sc,  "M_dt", "Saint Croix")
-gam_all <- fit_best_gam(formulas_mg$M_hav, datos_reg, "M_hav", "Regional")
+# gam_pm  <- fit_best_gam(formulas_mg$M_hav, datos_pm,  "M_hav", "Punta Maroma")
+# gam_fl  <- fit_best_gam(formulas_mg$M_hf, datos_fl_std,  "M_hf", "Florida")
+# gam_bz  <- fit_best_gam(formulas_mg$M_hf, datos_bz,  "M_hf", "Belize")
+# gam_sc  <- fit_best_gam(formulas_mg$M_dt, datos_sc,  "M_dt", "Saint Croix")
+# gam_all <- fit_best_gam(formulas_mg$M_hav, datos_reg, "M_hav", "Regional")
+
+print_best_models <- function(best_obj,
+                              panel_name,
+                              formulas,
+                              data){
+  
+  lin_name <- best_obj$best_linear$Model
+  smo_name <- best_obj$best_smooth$Model
+  
+  cat("\n========================================\n")
+  cat(panel_name,"\n")
+  cat("========================================\n")
+  
+  cat("\nBEST LINEAR MODEL:", lin_name, "\n\n")
+  
+  print(
+    summary(
+      gam(
+        formulas[[lin_name]],
+        data = data,
+        family = betar(link="logit"),
+        method = "REML"
+      )
+    )
+  )
+  
+  cat("\n----------------------------------------\n")
+  
+  cat("\nBEST SMOOTH MODEL:", smo_name, "\n\n")
+  
+  print(
+    summary(
+      gam(
+        formulas[[smo_name]],
+        data = data,
+        family = betar(link="logit"),
+        method = "REML"
+      )
+    )
+  )
+  
+}
+
+print_best_models(best_pm,
+                  "Punta Maroma",
+                  formulas_mg,
+                  datos_pm)
+
+print_best_models(best_fl,
+                  "Florida",
+                  formulas_mg,
+                  datos_fl_std)
+
+print_best_models(best_bz,
+                  "Belize",
+                  formulas_mg,
+                  datos_bz)
+
+print_best_models(best_sc,
+                  "Saint Croix",
+                  formulas_mg,
+                  datos_sc)
+
+print_best_models(best_reg,
+                  "Regional",
+                  formulas_mg,
+                  datos_reg)
 
 ```
 
 **Suppl. Table 2. Best GAMs by site (marginal effects resume).** Summary of model fit statistics, deviance explained, adjusted R², significant smooth terms and EDFs for the best marginal GAM at each site
 
 ```{r comparison-table, echo=FALSE}
-comparison_table <- bind_rows(
-  gam_pm$summary,
-  gam_fl$summary,
-  gam_bz$summary,
-  gam_sc$summary,
-  gam_all$summary
+# comparison_table <- bind_rows(
+#   gam_pm$summary,
+#   gam_fl$summary,
+#   gam_bz$summary,
+#   gam_sc$summary,
+#   gam_all$summary
+# )
+# 
+# comparison_table %>%
+#   gt() %>%
+#   tab_header(title = "Best GAMs by site (marginal effects resume)") %>%
+#   fmt_number(columns = c(AIC, DevianceExplained, R2_Adj), decimals = 3)
+
+#=================================================
+#Función para extraer estadísticas del modelo
+#=================================================
+
+extract_gam_stats <- function(model, panel, model_type, model_name){
+  
+  gam_summary <- summary(model)
+  
+  tidy_terms <- broom::tidy(model)
+  
+  climate_terms <- tidy_terms %>%
+    filter(term != "s(age)") %>%
+    arrange(p.value)
+  
+  if(nrow(climate_terms) == 0){
+    
+    sig_terms <- "Not significant"
+    climate_p <- NA
+    
+  } else {
+    
+    best_term <- climate_terms[1, ]
+    
+    climate_p <- signif(best_term$p.value, 4)
+    
+    sig_terms <- ifelse(
+      best_term$p.value < 0.05,
+      best_term$term,
+      "Not significant"
+    )
+    
+  }
+  
+  edf_info <- gam_summary$s.table
+  
+  edf_terms <- paste0(
+    rownames(edf_info),
+    " (EDF=",
+    round(edf_info[, "edf"], 2),
+    ")",
+    collapse = "; "
+  )
+  
+  inference <- if(
+    !is.na(climate_p) &&
+    climate_p < 0.05
+  ){
+    "Supported"
+  } else {
+    "Weak support"
+  }
+  
+  data.frame(
+    Panel = panel,
+    Type = model_type,
+    Model = model_name,
+    AIC = round(AIC(model),3),
+    DevianceExplained = round(gam_summary$dev.expl,3),
+    R2_Adj = round(gam_summary$r.sq,3),
+    SignificantTerms = sig_terms,
+    Climate_p = climate_p,
+    EDF_Terms = edf_terms,
+    Inference = inference,
+    stringsAsFactors = FALSE
+  )
+  
+}
+
+#=================================================
+#Función que obtiene los winners y crea la tabla
+#=================================================
+
+model_labels <- c(
+  M_the = "Thermal regime",
+  M_hyd = "Hydroclimatic trends",
+  M_hur = "Hurricane regime",
+  M_temp = "GMHT anomalies",
+  M_dt = "thermal rate of change δT",
+  M_hf = "Hurricane frequency",
+  M_hav = "Hurricane average"
 )
 
-comparison_table %>%
-  gt() %>%
-  tab_header(title = "Best GAMs by site (marginal effects resume)") %>%
-  fmt_number(columns = c(AIC, DevianceExplained, R2_Adj), decimals = 3)
+
+build_panel_summary <- function(best_obj,
+                                panel_name,
+                                formulas,
+                                data){
+  
+  lin_name <- best_obj$best_linear$Model
+  smo_name <- best_obj$best_smooth$Model
+  
+  lin_model <- gam(
+    formulas[[lin_name]],
+    data = data,
+    family = betar(link="logit"),
+    method = "REML"
+  )
+  
+  smo_model <- gam(
+    formulas[[smo_name]],
+    data = data,
+    family = betar(link="logit"),
+    method = "REML"
+  )
+  
+  bind_rows(
+    
+    extract_gam_stats(
+      lin_model,
+      panel_name,
+      "Linear",
+      lin_name
+    ),
+    
+    extract_gam_stats(
+      smo_model,
+      panel_name,
+      "Smooth",
+      smo_name
+    )
+    
+  )
+}
+
+tbl_summary <- bind_rows(
+  
+  build_panel_summary(
+    best_pm,
+    "Punta Maroma",
+    formulas_mg,
+    datos_pm
+  ),
+  
+  build_panel_summary(
+    best_fl,
+    "Florida",
+    formulas_mg,
+    datos_fl_std
+  ),
+  
+  build_panel_summary(
+    best_bz,
+    "Belize",
+    formulas_mg,
+    datos_bz
+  ),
+  
+  build_panel_summary(
+    best_sc,
+    "Saint Croix",
+    formulas_mg,
+    datos_sc
+  ),
+  
+  build_panel_summary(
+    best_reg,
+    "Regional",
+    formulas_mg,
+    datos_reg
+  )
+  
+)
+
+tbl_summary <- tbl_summary %>%
+  mutate(
+    Model_Label = recode(Model, !!!model_labels)
+  ) %>%
+  select(
+    Panel,
+    Type,
+    Model,
+    Model_Label,
+    AIC,
+    DevianceExplained,
+    R2_Adj,
+    SignificantTerms,
+    Climate_p,
+    EDF_Terms,
+    Inference
+  )
+
+gt_summary <- tbl_summary %>%
+  
+  arrange(
+    factor(
+      Panel,
+      levels = c(
+        "Punta Maroma",
+        "Florida",
+        "Belize",
+        "Saint Croix",
+        "Regional"
+      )
+    ),
+    Type
+  ) %>%
+  
+  gt(groupname_col = "Panel") %>%
+  
+  fmt_scientific(
+    columns = c(
+      Climate_p
+    ),
+    decimals = 3
+  ) %>%
+  fmt_number(
+    columns = c(
+      AIC,
+      DevianceExplained,
+      R2_Adj
+    ),
+    decimals = 3
+  ) %>%
+  
+  cols_label(
+    Type = "Model Type",
+    Model = "Model",
+    Model_Label = "Climate Driver",
+    AIC = "AIC",
+    DevianceExplained = "Deviance\nExplained",
+    R2_Adj = "R² Adj",
+    SignificantTerms = "Significant Terms",
+    Climate_p = "Climate p-value",
+    EDF_Terms = "EDF Terms",
+    Inference = "Inference"
+  ) %>%
+  
+  cols_width(
+    Model ~ px(140),
+    SignificantTerms ~ px(220),
+    EDF_Terms ~ px(260)
+  ) %>%
+  
+  tab_style(
+    style = list(
+      cell_fill(color = "#7298c2"),
+      cell_text(
+        color = "white",
+        weight = "bold"
+      )
+    ),
+    locations = cells_column_labels()
+  ) %>%
+  
+  tab_header(
+    title = md(
+      "**Best-supported GAMs by panel**"
+    ),
+    subtitle = md(
+      "*Top Linear and Smooth candidates*"
+    )
+  ) %>%
+  
+  opt_row_striping() %>%
+  
+  tab_options(
+    table.font.size = 12,
+    data_row.padding = px(5)
+  )
+
+gt_summary
 ```
 
 ```{r marginal-results, echo=FALSE, fig.width=8, fig.height=6}
@@ -1140,6 +2220,225 @@ sup_fig1
 ```
 
 **Suppl. Figure 3. Model comparison based on information-theoretic criteria**. Left panels show ΔAIC values by reef spot for each candidate model evaluating marginal effects for smooth and linear variables. Right panels illustrate the AIC weights, representing the relative probability that each model is the best among the candidate.The dashed vertical red line in upper panels indicates the conventional threshold of ΔAIC = 2, below which models are considered statistically competitive. Lower ΔAIC values denote closer fit to the best-supported model.  Higher weights indicate stronger support. Together, these plots illustrate both the relative fit (ΔAIC) and the strength of evidence (AIC weights) for competing ecological models, allowing transparent evaluation of model performance and selection. Marginal effect evaluations: M_hyd: hydroclimatic effects; M_the: thermal effects; M_hur: hurricane impacts effect; M_temp: temperature anomalies effect; M_hf: 100yr hurricane impact frequency effect; M_hav: 100yr hurricane impacts average and M_dT: 100yr rate of change in temperature anomalies effect.
+
+[Significant climatic relationships were detected in Punta Maroma, Belize and the regional reconstruction, whereas Florida and Saint Croix did not exhibit statistically supported responses to any individual climatic predictor evaluated. This suggests that local-scale processes, reduced statistical power, or interactions among multiple drivers may play a larger role in these reconstructions.]{.underline}
+
+====================================================================
+
+Marginal Supplementary Analysis (ELIMINAR)
+
+====================================================================
+
+If the best model by AIC doesn't have significant terms, is there any significant signal in the competing models?
+
+```{r}
+# extract_candidate_models <- function(data,
+#                                      formulas,
+#                                      panel_name){
+# 
+#   fits <- fit_gams_panel(data, formulas)
+# 
+#   ranking <- compare_gams(fits) %>%
+#     arrange(AIC) %>%
+#     mutate(
+#       Rank = row_number()
+#     )
+# 
+#   model_stats <- lapply(names(fits), function(m){
+# 
+#     fit <- fits[[m]]
+# 
+#     sm <- summary(fit)
+# 
+#     if(is.null(sm$s.table)){
+# 
+#       return(
+#         data.frame(
+#           Model = m,
+#           SignificantTerms = "Not significant",
+#           ClimateTerm = NA,
+#           ClimateEDF = NA,
+#           ClimateP = NA
+#         )
+#       )
+# 
+#     }
+# 
+#     s_table <- as.data.frame(sm$s.table)
+# 
+#     s_table$Term <- rownames(sm$s.table)
+# 
+#     climate_terms <- s_table %>%
+#       filter(
+#         Term != "s(age)"
+#       ) %>%
+#       arrange(`p-value`)
+# 
+#     if(nrow(climate_terms) == 0){
+# 
+#       data.frame(
+#         Model = m,
+#         SignificantTerms = "Not significant",
+#         ClimateTerm = NA,
+#         ClimateEDF = NA,
+#         ClimateP = NA
+#       )
+# 
+#     } else {
+# 
+#       best_term <- climate_terms[1, ]
+# 
+#       sig_label <- ifelse(
+#         best_term$`p-value` < 0.05,
+#         best_term$Term,
+#         "Not significant"
+#       )
+# 
+#       data.frame(
+#         Model = m,
+#         SignificantTerms = sig_label,
+#         ClimateTerm = best_term$Term,
+#         ClimateEDF = round(best_term$edf, 2),
+#         ClimateP = signif(best_term$`p-value`, 4)
+#       )
+# 
+#     }
+# 
+#   }) %>%
+#     bind_rows()
+# 
+#   ranking %>%
+#     left_join(
+#       model_stats,
+#       by = "Model"
+#     ) %>%
+#     mutate(
+#       Panel = panel_name,
+#       ClimateSignal =
+#         !is.na(ClimateP) &
+#         ClimateP < 0.05
+#     )
+# 
+# }
+# 
+# tbl_support <- bind_rows(
+# 
+#   extract_candidate_models(
+#     datos_pm,
+#     formulas_mg,
+#     "Punta Maroma"
+#   ),
+# 
+#   extract_candidate_models(
+#     datos_fl_std,
+#     formulas_mg,
+#     "Florida"
+#   ),
+# 
+#   extract_candidate_models(
+#     datos_bz,
+#     formulas_mg,
+#     "Belize"
+#   ),
+# 
+#   extract_candidate_models(
+#     datos_sc,
+#     formulas_mg,
+#     "Saint Croix"
+#   ),
+# 
+#   extract_candidate_models(
+#     datos_reg,
+#     formulas_mg,
+#     "Regional"
+#   )
+# 
+# )
+# 
+# tbl_first_supported <- tbl_support %>%
+# 
+#   filter(ClimateSignal) %>%
+# 
+#   group_by(Panel) %>%
+# 
+#   slice_min(
+#     Rank,
+#     n = 1
+#   ) %>%
+# 
+#   ungroup() %>%
+# 
+#   mutate(
+#     Driver = recode(Model, !!!model_labels)
+#   ) %>%
+# 
+#   rename(
+#     SupportedTerm = ClimateTerm,
+#     EDF = ClimateEDF,
+#     P_value = ClimateP
+#   ) %>%
+# 
+#   select(
+#     Panel,
+#     Rank,
+#     Model,
+#     Driver,
+#     AIC,
+#     weight,
+#     SupportedTerm,
+#     EDF,
+#     P_value
+#   )
+# 
+# gt_supported <- tbl_first_supported %>%
+# 
+#   gt() %>%
+# 
+#   fmt_number(
+#     columns = c(
+#       AIC,
+#       weight
+#     ),
+#     decimals = 3
+#   ) %>%
+# 
+#   fmt_number(
+#     columns = c(
+#       EDF
+#     ),
+#     decimals = 2
+#   ) %>%
+# 
+#   fmt_scientific(
+#     columns = c(
+#       P_value
+#     ),
+#     decimals = 3
+#   ) %>%
+# 
+#   cols_label(
+#     Panel = "Panel",
+#     Rank = "AIC Rank",
+#     Model = "Model",
+#     Driver = "Climate Driver",
+#     AIC = "AIC",
+#     weight = "Akaike Weight",
+#     SupportedTerm = "Supported Term",
+#     EDF = "EDF",
+#     P_value = "p-value"
+#   ) %>%
+# 
+#   tab_header(
+#     title = md(
+#       "**Highest-ranked model with significant climatic support**"
+#     ),
+#     subtitle = md(
+#       "*First climate-supported model after excluding s(age)*"
+#     )
+#   )
+# 
+# gt_supported
+```
 
 ### 3.3 GAMM combined effects analysis
 
@@ -1420,6 +2719,355 @@ ggsave("Supp.Fig.2.pdf", plot = sup_fig2, width = 8, height = 7, dpi = 300, devi
 
 **Suppl. Figure 4. Model comparison by reef spots based on information-theoretic criteria**. Upper panels show ΔAIC values for each candidate model evaluating joint effects of both types of variables in an increasingly complex model configuration as described in **Suppl. table 2**. Lower panels illustrate the AIC weights, representing the relative probability that each model is the best among the candidate set in joint model versions.The dashed vertical red line in upper panels indicates the conventional threshold of ΔAIC = 2, below which models are considered statistically competitive. Lower ΔAIC values denote closer fit to the best-supported model. Higher weights indicate stronger support.
 
+```{r}
+get_best_combined <- function(results_obj){
+  
+  ranking <- results_obj$stats %>%
+    arrange(AIC)
+  
+  winner_name <- ranking$Model[1]
+  
+  list(
+    best_model = winner_name,
+    ranking = ranking,
+    fit = results_obj$fits[[winner_name]]
+  )
+  
+}
+
+best_pm_cb <- get_best_combined(results_pm)
+best_fl_cb <- get_best_combined(results_fl)
+best_bz_cb <- get_best_combined(results_bz)
+best_sc_cb <- get_best_combined(results_sc)
+best_reg_cb <- get_best_combined(results_reg)
+
+extract_combined_stats <- function(best_obj,
+                                   panel_name){
+  
+  model <- best_obj$fit
+  
+  sm <- summary(model)
+  
+  #-------------------------------------
+  # Parametric terms
+  #-------------------------------------
+  
+  param_terms <- NULL
+  
+  if(!is.null(sm$p.table)){
+    
+    ptab <- as.data.frame(sm$p.table)
+    
+    ptab$Term <- rownames(ptab)
+    
+    param_terms <- ptab %>%
+      filter(
+        Term != "(Intercept)",
+        `Pr(>|z|)` < 0.05
+      ) %>%
+      mutate(
+        Label = paste0(
+          Term,
+          " (p=",
+          signif(`Pr(>|z|)`,3),
+          ")"
+        )
+      )
+    
+  }
+  
+  #-------------------------------------
+  # Smooth terms
+  #-------------------------------------
+  
+  smooth_terms <- NULL
+  
+  if(!is.null(sm$s.table)){
+    
+    stab <- as.data.frame(sm$s.table)
+    
+    stab$Term <- rownames(stab)
+    
+    smooth_terms <- stab %>%
+      filter(
+        Term != "s(age)",
+        `p-value` < 0.05
+      ) %>%
+      mutate(
+        Label = paste0(
+          Term,
+          " (EDF=",
+          round(edf,2),
+          ", p=",
+          signif(`p-value`,3),
+          ")"
+        )
+      )
+    
+  }
+  
+  sig_terms <- c(
+    param_terms$Label,
+    smooth_terms$Label
+  )
+  
+  sig_terms <- sig_terms[!is.na(sig_terms)]
+  
+  sig_text <- if(
+    length(sig_terms) == 0
+  ){
+    "Not significant"
+  } else {
+    paste(
+      sig_terms,
+      collapse = "; "
+    )
+  }
+  
+  #-------------------------------------
+  # EDF summary
+  #-------------------------------------
+  
+  edf_terms <- if(!is.null(sm$s.table)){
+    
+    paste0(
+      rownames(sm$s.table),
+      " (EDF=",
+      round(sm$s.table[, "edf"],2),
+      ")",
+      collapse = "; "
+    )
+    
+  } else {
+    NA
+  }
+  
+  #-------------------------------------
+  # Global p-value
+  #-------------------------------------
+  
+  pvals <- c()
+  
+  if(!is.null(param_terms))
+    pvals <- c(
+      pvals,
+      param_terms$`Pr(>|z|)`
+    )
+  
+  if(!is.null(smooth_terms))
+    pvals <- c(
+      pvals,
+      smooth_terms$`p-value`
+    )
+  
+  climate_p <- if(
+    length(pvals) > 0
+  ){
+    signif(min(pvals),4)
+  } else {
+    NA
+  }
+  
+  
+  data.frame(
+    Panel = panel_name,
+    Model = best_obj$best_model,
+    AIC = round(AIC(model),3),
+    DevianceExplained =
+      round(sm$dev.expl,3),
+    R2_Adj =
+      round(sm$r.sq,3),
+    SignificantTerms =
+      sig_text,
+    Climate_p =
+      climate_p,
+    EDF_Terms =
+      edf_terms,
+    stringsAsFactors = FALSE
+  )
+  
+}
+
+tbl_combined <- bind_rows(
+  
+  extract_combined_stats(
+    best_pm_cb,
+    "Punta Maroma"
+  ),
+  
+  extract_combined_stats(
+    best_fl_cb,
+    "Florida"
+  ),
+  
+  extract_combined_stats(
+    best_bz_cb,
+    "Belize"
+  ),
+  
+  extract_combined_stats(
+    best_sc_cb,
+    "Saint Croix"
+  ),
+  
+  extract_combined_stats(
+    best_reg_cb,
+    "Regional"
+  )
+  
+)
+
+combined_labels <- c(
+  
+  M1 =
+    "Temporal baseline",
+  
+  M2 =
+    "Background temperature model",
+  
+  M3 =
+    "Thermal forcing model",
+  
+  M4_fqcy =
+    "Thermal–disturbance model (frequency)",
+  
+  M5_fqcy =
+    "Thermal–disturbance–hydroclimate model",
+  
+  M6_fqcy =
+    "Integrated climate model (frequency)",
+  
+  M7_fqcy =
+    "Full climate-regime model (frequency)",
+  
+  M4_av =
+    "Thermal–disturbance model (intensity)",
+  
+  M5_av =
+    "Thermal–disturbance–hydroclimate model",
+  
+  M6_av =
+    "Integrated climate model (intensity)",
+  
+  M7_av =
+    "Full climate-regime model (intensity)"
+)
+
+tbl_combined <- tbl_combined %>%
+  mutate(
+    Model_Label =
+      recode(Model,
+             !!!combined_labels)
+  )
+
+
+tbl_combined <- tbl_combined %>%
+  mutate(
+    Weight = c(
+      best_pm_cb$ranking$weight[1],
+      best_fl_cb$ranking$weight[1],
+      best_bz_cb$ranking$weight[1],
+      best_sc_cb$ranking$weight[1],
+      best_reg_cb$ranking$weight[1]
+    )
+  )
+
+tbl_combined <- tbl_combined %>%
+  select(
+    Panel,
+    Model,
+    Model_Label,
+    AIC,
+    Weight,
+    DevianceExplained,
+    R2_Adj,
+    SignificantTerms,
+    Climate_p,
+EDF_Terms
+)
+
+
+gt_combined <- tbl_combined %>%
+  
+  arrange(
+    factor(
+      Panel,
+      levels = c(
+        "Punta Maroma",
+        "Florida",
+        "Belize",
+        "Saint Croix",
+        "Regional"
+      )
+    )
+  ) %>%
+  
+  gt() %>%
+  
+  fmt_scientific(
+    columns = Climate_p,
+    decimals = 3
+  ) %>%
+  
+  fmt_number(
+    columns = c(
+      AIC,
+      DevianceExplained,
+      R2_Adj
+    ),
+    decimals = 3
+  ) %>%
+  
+  cols_label(
+    Panel = "Panel",
+    Model = "Model",
+    Model_Label = "Climate Model",
+    AIC = "AIC",
+    Weight = "Akaike Weight",
+    DevianceExplained = "Deviance\nExplained",
+    R2_Adj = "R² Adj",
+    SignificantTerms = "Significant Terms",
+    Climate_p = "Climate p-value",
+    EDF_Terms = "EDF Terms"
+  ) %>%
+  
+  cols_width(
+    Model ~ px(100),
+    Model_Label ~ px(320),
+    SignificantTerms ~ px(220),
+    EDF_Terms ~ px(320)
+  ) %>%
+  
+  tab_style(
+    style = list(
+      cell_fill(color = "#7298c2"),
+      cell_text(
+        color = "white",
+        weight = "bold"
+      )
+    ),
+    locations = cells_column_labels()
+  ) %>%
+  
+  tab_header(
+    title = md(
+      "**Best-supported combined GAMs by panel**"
+    ),
+    subtitle = md(
+      "*Top multivariate model selected by AIC*"
+    )
+  ) %>%
+  
+  opt_row_striping() %>%
+  
+  tab_options(
+    table.font.size = 12,
+    data_row.padding = px(5)
+  )
+
+gt_combined
+```
+
 ### 4. Models' Quality Control
 
 ### 4.1 Parsimony analysis Results
@@ -1479,7 +3127,7 @@ library(caret)
 set.seed(123)
 
 df_cv <- merged_df_g %>%
-  filter(panel %in% c("Punta Maroma", "Florida", "Belize", "Regional"))
+  filter(panel %in% c("Punta Maroma", "Florida", "Saint Croix", "Belize", "Regional"))
 
 folds <- createFolds(df_cv$panel, k = 5)
 
@@ -1547,7 +3195,7 @@ cv_summary_avg %>%
 set.seed(123)
 
 df_cv <- merged_df_g %>%
-  filter(panel %in% c("Punta Maroma", "Florida", "Belize", "Regional"))
+  filter(panel %in% c("Punta Maroma", "Florida", "Belize","Saint Croix", "Regional"))
 
 folds <- createFolds(df_cv$panel, k = 5)
 
