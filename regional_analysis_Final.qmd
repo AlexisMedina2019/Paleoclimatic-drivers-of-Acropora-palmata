@@ -1,0 +1,2639 @@
+---
+title: "6000-yr APAL-Climate Regional Analysis"
+author: "Alexis E Medina Valmaseda"
+format: html
+editor: visual
+abstract: The Quarto document provides a complete workflow for evaluating coral fossil density dynamics across reef sites, including data preparation, model fitting with GAMs, parsimony analysis, cross‑validation, diagnostic checks, visualization of predictor effects, and tests for residual independence and concurvity. It integrates site‑specific and regional analyses into a reproducible framework, ensuring both statistical rigor and ecological interpretability.
+---
+
+# REGIONAL ACROPORA PALMATA ANALYSIS
+
+1.  This initial block establishes the analytical environment and prepares the dataset for subsequent modeling. It begins by clearing the workspace and loading the required libraries (`here`, `readxl`, `dplyr`, `ggplot2`, `stargazer`). The script then imports the updated regional chronology file (`ages_kernel_reg_updt.xlsx`) and filters the records to retain only *Acropora palmata* within the 0–6 ka interval. A custom function, `calc_density_summary()`, is defined to generate kernel density estimates through repeated resampling, thereby producing robust distributions of temporal signals. The function calculates quantiles (2.5%, 25%, 50%, 75%, 97.5%) and summarizes the median density across centennial intervals, including measures of variability and standard error. Finally, the procedure is applied to each site and to the aggregated regional dataset, yielding two consolidated objects: `signal_all`, which contains the simulated density curves, and `centennial_density_all`, which provides centennial summaries of temporal variability. This chunk thus establishes the foundation for reproducible density analyses across sites and at the regional scale.
+
+```{r,echo=FALSE}
+rm(list=ls(all=TRUE))
+gc()
+#install.packages("here")
+library(here)
+here()
+library(readxl)
+library(dplyr)
+library(ggplot2)
+library(stargazer)
+
+datos_reg <- read_excel(here("ages_kernel_reg_updt.xlsx"))
+
+datos_reg_pal <- datos_reg %>%
+  filter(group == "palmata", t_ka >= 0 & t_ka <= 6)
+
+calc_density_summary <- function(df, spot_name){
+  df$t_ka <- as.numeric(df$t_ka)
+  
+signalmx <- matrix(ncol = 512, nrow = 1000)
+  for(i in 1:nrow(signalmx)){
+    signalmx[i,] <- density(df$t_ka[sample(1:nrow(df), min(40, nrow(df)))],
+                            bw = 0.09, from = 0, to = 6)$y
+  }
+  
+  x <- seq(0, 5.999, length.out = 512)   
+  
+signal_df <- data.frame(
+    x      = x,
+    q025   = apply(signalmx, 2, quantile, 0.025),
+    q975   = apply(signalmx, 2, quantile, 0.975),
+    q25    = apply(signalmx, 2, quantile, 0.25),
+    q75    = apply(signalmx, 2, quantile, 0.75),
+    median = apply(signalmx, 2, median),
+    spot   = spot_name
+  )
+  
+ breaks <- seq(0, 6, by = 0.1)
+  mids   <- breaks[-length(breaks)] + diff(breaks)/2
+  
+  centennial_summary <- signal_df %>%
+    mutate(interval = cut(x, breaks = breaks, include.lowest = TRUE, right = TRUE)) %>%
+    group_by(interval) %>%
+    summarise(
+      avg_median = mean(median, na.rm = TRUE),
+      sd_median  = sd(median, na.rm = TRUE),
+      n_obs      = n(),
+      .groups = "drop"
+    ) %>%
+    mutate(
+      se_median    = sd_median / sqrt(n_obs),
+      interval_mid = mids[as.numeric(interval)],
+      spot         = spot_name
+    )
+  
+  return(list(signal_df = signal_df, centennial_summary = centennial_summary))
+}
+
+spots <- unique(datos_reg_pal$spot)
+results_list <- lapply(spots, function(sp){
+  df_spot <- datos_reg_pal %>% filter(spot == sp)
+  calc_density_summary(df_spot, sp)
+})
+
+results_list <- c(results_list, list(calc_density_summary(datos_reg_pal, "Regional (All spots)")))
+
+signal_all <- bind_rows(lapply(results_list, function(x) x$signal_df))
+centennial_density_all <- bind_rows(lapply(results_list, function(x) x$centennial_summary))
+```
+
+2.  This code block constructs centennial binning of fossil ages for both site‑specific and regional datasets. After defining the temporal breaks (0–6 ka at 0.1‑ka intervals), the script filters the records of *Acropora palmata* and assigns each observation to an interval bin. For site‑level data, the maximum value of each bin is recorded to facilitate centennial alignment. A parallel procedure is applied to the full dataset, designating all observations as **“Regional”** and similarly calculating bin maxima. The two outputs are then merged into a single object (`centennial_counts_all`), which consolidates site‑specific and regional counts by centennial interval. This chunk therefore establishes the discrete temporal framework required for subsequent aggregation and comparative analyses across sites and scales.
+
+```{r,echo=FALSE}
+library(dplyr)
+
+breaks <- seq(0, 6, by = 0.1)
+
+datos_reg_pal <- datos_reg %>%
+  filter(group == "palmata", t_ka >= 0 & t_ka <= 6)
+
+centennial_counts_sites <- datos_reg_pal %>%
+  mutate(interval_bin = cut(
+    t_ka,
+    breaks = breaks,
+    include.lowest = TRUE,
+    right = TRUE
+  )) %>%
+  mutate(interval_max = breaks[match(interval_bin, levels(interval_bin)) + 1])
+
+centennial_counts_regional <- datos_reg %>%
+  filter(group == "palmata", t_ka >= 0 & t_ka <= 6) %>%
+  mutate(interval_bin = cut(
+    t_ka,
+    breaks = breaks,
+    include.lowest = TRUE,
+    right = TRUE
+  )) %>%
+  mutate(
+    spot = "Regional",
+    interval_max = breaks[match(interval_bin, levels(interval_bin)) + 1]
+  )
+
+centennial_counts_all <- bind_rows(centennial_counts_sites, centennial_counts_regional)
+```
+
+## *1. Data Overview*
+
+3.  In this section we establish the graphical representation of centennial fossil counts, providing a visual foundation for comparative analysis across sites and define the color palette for generating site‑specific bar plots of fossil counts by centennial interval. A custom set of colors is assigned to each locality to ensure consistent visual identity across figures. The dataset is then binned into 0.1‑ka intervals, and counts of *Acropora palmata* fossils are aggregated by site. The resulting table is structured to include both the bin maxima and a fixed ordering of sites for reproducibility. Using `ggplot2`, the script produces a stacked bar chart in which fossil counts per 100‑year interval are displayed along the temporal axis (0–6 ka BP). The figure corresponds to the **Figure 3a** within the main text (**Reconstruction of regional coral abundance and paleoclimate trends. a. Counts of *Acropora palmata* ages in 100-year intervals from reef sites are used as response variables for modelling)** and emphasizes site‑level differences in temporal distribution, with clear labeling, minimal gridlines, and a standardized legend.
+
+```{r,echo=FALSE}
+library(ggplot2)
+library(dplyr)
+
+custom_colors <- c(
+  "Punta Maroma" = "#F2941A",   #D3410F           
+  "Regional (All spots)" = "#4D4D4D",
+  "Regional"             = "#4D4D4D",
+  "Saint Croix" = "#CC79A7",         
+  "Belize" = "#7D9E5F",    
+  "Florida" = "#0072B2"
+)
+
+breaks <- seq(0, 6, by = 0.1)
+
+centennial_counts_sites <- datos_reg_pal %>%
+  mutate(interval_bin = cut(t_ka, breaks = breaks, include.lowest = TRUE, right = TRUE)) %>%
+  group_by(spot, interval_bin) %>%
+  summarise(counts = n(), .groups = "drop") %>%
+  mutate(interval_max = breaks[match(interval_bin, levels(interval_bin)) + 1],
+         spot = factor(spot, levels = c("Belize", "Saint Croix", "Florida", "Punta Maroma")))
+
+
+pr<-ggplot(centennial_counts_sites,
+       aes(x = interval_max, y = counts, fill = spot)) +
+  geom_bar(stat = "identity", position = "stack", alpha = 0.85) +
+  scale_fill_manual(values = custom_colors) +
+  labs(
+    x = "Time (ka BP)",
+    y = "Acropora palmata  \n fossils/100 years",
+    fill = "Site"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+    legend.position = "bottom",
+    strip.text = element_text(face = "bold")
+  ) +
+  scale_x_continuous(
+    breaks = seq(0, 6, 0.5),
+    minor_breaks = seq(0, 6, 0.5)
+  ) +
+  coord_cartesian(xlim = c(0, 6))
+pr
+ggsave("counts_plot.pdf", plot = pr, width = 8, height = 5, dpi = 300, device = cairo_pdf)
+```
+
+### *1.1 Acropora palmata* age densities (Site specific KDE)
+
+4.  This code block integrates site‑level and regional density outputs into a structured comparative framework and produces both tabular and graphical summaries. After loading the necessary libraries and defining a consistent color palette, the script specifies temporal rectangles to highlight intervals of interest across sites. The `signal_all` and `centennial_density_all` objects are annotated with panel labels to distinguish local, zonal, and consolidated regional scales. Data are filtered to retain valid centennial intervals within the 0–6 ka range, and a summary table (`tabla_resumen`) is generated using the `gt` package to report mean densities, measures of dispersion, and extreme values by site. The graphical routine then overlays uncertainty ribbons, median density curves, and highlighted intervals on a unified plot, with customized legends and standardized axes.
+
+```{r, echo=FALSE}
+library(dplyr)
+library(knitr)
+library(scales) 
+library(colorspace)
+library(ggplot2)
+library(gt)
+
+rects<-data.frame(
+  xmin = c(0.71, 1.99, 2.2,3.68,5.1,5.54),
+  xmax = c(1.44, 2.72,3.0, 4.20,5.9,6.00),
+  ymin = -Inf,
+  ymax = Inf,
+  spot = c("Punta Maroma", "Belize","Regional (All spots)","Belize", "Regional (All spots)","Belize"))
+
+signal_all <- signal_all %>%
+  mutate(panel = case_when(
+    spot == "Punta Maroma" ~ "a) Local (Punta Maroma)",
+    spot == "Florida" ~ "b) Local (Florida)",
+    spot %in% c("Saint Croix","Belize") ~ "c) Regional (by zones)",
+    spot == "Regional (All spots)" ~ "d) Consolidated Regional"
+  ))
+
+centennial_density_all <- centennial_density_all %>%
+  mutate(panel = case_when(
+    spot == "Punta Maroma" ~ "Punta Maroma",
+    spot == "Florida" ~ "Florida",
+    spot == "Belize" ~ "Belize",
+    spot == "Saint Croix" ~ "Saint Croix",
+    spot == "Regional (All spots)" ~ "Regional"
+  ))
+
+signal_all <- signal_all %>%
+  filter(!is.na(panel)) %>%
+  mutate(panel = droplevels(factor(panel)))
+
+centennial_density_all <- centennial_density_all %>%
+  filter(!is.na(panel)) %>%
+  mutate(panel = droplevels(factor(panel)))
+centennial_density_all <- centennial_density_all %>%
+  filter(!is.na(interval_mid), interval_mid >= 0, interval_mid <= 6)
+
+
+tabla_resumen <- centennial_density_all %>%
+  group_by(panel) %>%
+  summarise(
+    mean_density = mean(avg_median, na.rm = TRUE),
+    sd_density   = mean(sd_median, na.rm = TRUE),
+    se_density   = mean(se_median, na.rm = TRUE),
+    min_density  = min(avg_median, na.rm = TRUE),
+    min_interval = interval_mid[which.min(avg_median)],
+    max_density  = max(avg_median, na.rm = TRUE),
+    max_interval = interval_mid[which.max(avg_median)],
+    n_intervals  = n(),
+    .groups = "drop"
+  ) %>%
+  arrange(panel)
+
+tabla_resumen %>%
+  gt() %>%
+  tab_header(
+    title = "Summary of centenarian densities by site",
+    subtitle = "average, dispersion, and extremes"
+  ) %>%
+  fmt_number(columns = c(mean_density, sd_density, se_density,
+                         min_density, max_density,
+                         min_interval, max_interval),
+             decimals = 3)
+```
+
+4.  The figure represents the raw version of **Figure 2** from the main text (**Composite age-density plot of *Acropora palmata* abundance across Caribbean)** and is exported as a high‑resolution PDF, ensuring reproducibility and clarity for publication. This chunk thus consolidates the analytical outputs into interpretable visual and tabular formats, enabling direct comparison of temporal density patterns across spatial scales.
+
+```{r,fig.width=12, fig.height=6,echo=FALSE}
+custom_colors_plot <- custom_colors[names(custom_colors) %in% unique(signal_all$spot)]
+
+p<-ggplot(signal_all, aes(x = x)) +
+  geom_rect(data = rects,
+    aes(xmin = xmin, xmax = xmax, ymin = 0.88, ymax = 0.98, fill = spot),
+      inherit.aes = FALSE,
+    alpha = 0.5) +
+  geom_ribbon(data = subset(signal_all, spot == "Regional (All spots)"),
+    aes(ymin = q025, ymax = q975, fill = spot), alpha = 0.15) +
+  geom_ribbon(data = subset(signal_all, spot == "Regional (All spots)"),
+    aes(ymin = q25, ymax = q75, fill = spot), alpha = 0.20) +
+  geom_line(aes(y = median, color = spot), linewidth = 1.5) +
+  scale_color_manual(values = custom_colors, guide = "legend") +
+  scale_fill_manual(values = custom_colors, guide = "none") +
+  guides(color = guide_legend("Region/Source",
+                              override.aes = list(fill = custom_colors_plot)),
+        shape = guide_legend("Region/Source")) +
+  labs(x = "Time (ka BP)", y = "Density") +
+  theme(strip.background = element_blank(),
+        panel.background = element_blank(),
+        legend.position = "bottom") +
+  scale_x_continuous(breaks = seq(0, 6, 0.5),
+                     minor_breaks = seq(0, 6, 0.5)) +
+  coord_cartesian(xlim = c(0, 6))
+p
+ggsave("Figure_2.pdf", plot = p, width = 8, height = 5, dpi = 300, device = cairo_pdf)
+```
+
+### 1.2 Densities' and fossil' counts manipulation & aggregation
+
+5.  With this code block we initiate data manipulation adn data aggregation. Here we extract site‑specific and regional centennial density summaries using the previously defined function. The dataset is partitioned by locality (***Punta Maroma*****, *Florida*, *Belize*, *Saint Croix***) and each subset is processed through `calc_density_summary()` to generate centennial statistics of kernel density estimates. In addition, the full dataset is analyzed to produce a consolidated regional summary labeled “**Regional (All spots)**.” The outputs (`res_pm`, `res_fl`, `res_bz`, `res_sc`, `res_all`) contain centennial averages, dispersion measures, and interval midpoints for each spatial unit. This step ensures that both local and regional temporal signals are consistently quantified, providing the basis for comparative analyses across sites and scales.
+
+```{r,echo=FALSE}
+library(readxl)
+
+df_pm <- datos_reg_pal %>% filter(spot == "Punta Maroma")
+res_pm <- calc_density_summary(df_pm, "Punta Maroma")$centennial_summary
+
+df_fl <- datos_reg_pal %>% filter(spot == "Florida")
+res_fl <- calc_density_summary(df_fl, "Florida")$centennial_summary
+
+df_bz <- datos_reg_pal %>% filter(spot == "Belize")
+res_bz <- calc_density_summary(df_bz, "Belize")$centennial_summary
+
+df_sc <- datos_reg_pal %>% filter(spot == "Saint Croix")
+res_sc <- calc_density_summary(df_sc, "Saint Croix")$centennial_summary
+
+res_all <- calc_density_summary(datos_reg_pal, "Regional (All spots)")$centennial_summary
+```
+
+6.  This code block summarizes the raw temporal distribution of fossil records across sites. Using the consolidated centennial dataset, the script groups observations by locality and calculates descriptive statistics for the age variable (*t_ka*). For each site, the output reports the number of records, mean and standard deviation of ages, minimum and maximum values, and the corresponding centennial intervals in which these extremes occur. The resulting table (`tabla_resumen_counts`) is formatted with the `gt` package to present a clear summary of sample size, central tendency, dispersion, and temporal range per site. This step provides a baseline characterization of the dataset, documenting the extent and variability of fossil ages before applying more complex density analyses.
+
+```{r,echo=FALSE}
+library(dplyr)
+library(purrr)
+library(gt)
+library(stringr)
+
+tabla_resumen_counts <- centennial_counts_all %>%
+  group_by(spot) %>%
+  summarise(
+    n_records   = n(),                               
+    mean_t_ka   = mean(t_ka, na.rm = TRUE),         
+    sd_t_ka     = sd(t_ka, na.rm = TRUE),           
+    min_t_ka    = min(t_ka, na.rm = TRUE),          
+    max_t_ka    = max(t_ka, na.rm = TRUE),          
+    min_interval = interval_max[which.min(t_ka)],   
+    max_interval = interval_max[which.max(t_ka)],   
+    .groups = "drop"  ) %>%
+  arrange(spot)
+
+
+tabla_resumen_counts %>%
+  gt() %>%
+  tab_header(
+    title = "Summary of fossil records by site (raw data)",
+    subtitle = "Temporal distribution and dispersion per 0.1 ka bin"
+  ) %>%
+  fmt_number(
+    columns = c(mean_t_ka, sd_t_ka, min_t_ka, max_t_ka,
+                min_interval, max_interval),
+    decimals = 3
+  )
+```
+
+### 1.3 Climatic variables manipulation & aggregation
+
+7.  This code block integrates climatic predictor data with the centennial fossil counts. The climate dataset (`df_GAM130326.xlsx`) is imported and converted to a data frame, after which temporal bins are defined at 0.1‑ka intervals. Each climatic record is assigned to its corresponding interval and the maximum boundary of the bin is calculated to ensure alignment with the fossil chronology. The centennial fossil counts (`centennial_counts_all`) are then merged with the climatic dataset by matching interval maxima, producing a unified table (`merged_df`). This merged dataset provides a consistent temporal framework in which fossil occurrence and climatic variables are directly comparable, thereby enabling subsequent statistical modeling of ecological responses to climate variability.
+
+```{r, echo=FALSE}
+datos_cli <- read_excel(here("df_GAM130326.xlsx"))
+datos_cli<-as.data.frame(datos_cli)
+
+library(dplyr)
+
+breaks <- seq(0, 6, by = 0.1)
+
+datos_cli <- datos_cli %>%
+  mutate(interval = factor(interval, levels = unique(interval))) %>%
+  mutate(interval_max = breaks[match(interval, levels(interval)) + 1])
+
+merged_df <- centennial_counts_all %>%
+  left_join(datos_cli, by = "interval_max") %>%
+  rename( age = interval_max)
+```
+
+### 1.4 Holocene trends in climatic variables
+
+8.  This code block synthesizes climatic and disturbance predictors with fossil counts into a multi‑panel figure. First, site‑level and regional data are aggregated by centennial intervals to calculate mean anomalies in global mean surface temperature (GMST; panel *p1*) and rates of temperature change (ΔT per 100 years; panel *p2*). Hurricane metrics are then summarized, including average intensity and frequency with associated standard deviations, and plotted as combined bar, step, and ribbon elements (panel *p3*). Finally, categorical states of thermal, hydroclimatic, and hurricane regimes are reorganized into contiguous temporal segments and visualized as labeled rectangles (panel *p4*), providing a nominal classification of climatic phases. The four predictor panels are arranged vertically beneath the fossil count plot (`pr`) to produce a consolidated figure (`combined_plot`) that integrates ecological and climatic signals across the 0–6 ka interval. The visual outcome corresponds to the **Figure 3**. **Reconstruction of regional coral abundance and paleoclimate trends** from the main text and establishes a coherent framework for interpreting temporal associations between coral fossil records, temperature anomalies, and disturbance regimes.
+
+```{r,fig.width=12, fig.height=10,echo=FALSE}
+
+library(dplyr)
+library(tidyr)
+library(patchwork)
+
+p1 <- merged_df %>%
+  group_by(age) %>%
+  summarise(GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE)) %>%
+  ggplot(aes(x = age, y = GMHT_CPS0_30N, fill = GMHT_CPS0_30N > 0)) +
+  geom_col() +
+  scale_fill_manual(values = c("TRUE" = "#B8860B", "FALSE" = "#0072B2")) +
+  coord_cartesian(ylim = c(-1.2, 1.2), xlim = c(0, 6)) +
+  scale_x_continuous(position = "top", breaks = seq(0, 6)) +
+  geom_hline(yintercept = 1.2, color = "black", linewidth = 0.4) +
+  theme_minimal() +
+  theme(
+    strip.background = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "none",
+    axis.title.x = element_blank()
+  ) +
+  labs(y = "GMST(°C)\nanomalies")
+
+p2 <- merged_df %>%
+  group_by(age) %>%
+  summarise(dT_raw = mean(dT_raw, na.rm = TRUE)) %>%
+  ggplot(aes(x = age, y = dT_raw, fill = dT_raw > 0)) +
+  geom_col() +
+  scale_fill_manual(values = c("TRUE" = "#E69F00", "FALSE" = "#56B4E9")) +
+  coord_cartesian(ylim = c(-1.2, 0.7)) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  ) +
+  labs(y = expression("Rate of Change\nẟT(°C) / 100 yr"))
+
+
+hur_plot_data <- merged_df %>%
+  group_by(age) %>%
+  summarise(
+    Hur100_av = mean(Hur100_av, na.rm = TRUE),
+    Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
+    Hur100_fqcy_sd = sd(Hur100_fqcy, na.rm = TRUE)
+  ) %>%
+  arrange(age)
+
+p3 <- ggplot(hur_plot_data, aes(x = age)) +
+  geom_col(aes(y = Hur100_av, fill = Hur100_av > 10), alpha = 0.6) +
+  geom_step(aes(y = Hur100_fqcy), color = "darkblue", linewidth = 0.8) +
+  scale_fill_manual(values = c("TRUE" = "#4D4D4D", "FALSE" = "#999999")) +
+  coord_cartesian(ylim = c(0, 50)) +
+  theme_minimal() +
+  theme(
+    strip.background = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "none",
+    axis.title.x = element_blank()
+  ) +
+  labs(y = "Hurricane Average\n(events/100 yr)")
+
+df_segments <- merged_df %>%
+  pivot_longer(cols = c(Thermal, Hydro, Hurricane),
+               names_to = "variable",
+               values_to = "state") %>%
+  arrange(variable, age) %>%
+  group_by(variable) %>%
+  mutate(change = state != lag(state, default = first(state)),
+         segment_id = cumsum(change)) %>%
+  group_by(variable, state, segment_id) %>%
+  summarise(age_start = min(age),
+            age_end   = max(age),
+            .groups = "drop") %>%
+  mutate(label_x = (age_start + age_end)/2)
+
+df_segments <- df_segments %>%
+  group_by(variable) %>%
+  arrange(age_start) %>%
+  mutate(age_end = lead(age_start, default = max(age_end)))
+
+p4<-ggplot(df_segments) +
+  geom_rect(aes(xmin = age_start, xmax = age_end,
+                ymin = as.numeric(factor(variable)) - 0.4,
+                ymax = as.numeric(factor(variable)) + 0.4,
+                fill = state)) +
+  geom_text(aes(x = label_x,
+                y = as.numeric(factor(variable)),
+                label = state),
+            color = "black", size = 3) +
+  scale_y_continuous(breaks = 1:3,
+                     labels = levels(factor(df_segments$variable))) +
+scale_fill_manual(values = c(
+    "warmer"   = "#DAA520",
+    "cooler"   = "#56B4E9",
+    "LIA"      = "#56B4E9",
+    "CWP&MWA"  = "#DAA520",
+    "wet"      = "#999933",
+    "dry"      = "#CCBB44",
+    "variable" = "#DDCC77",
+    "low"      = "#FFFFFF",
+    "medium"   = "#CCCCCC",
+    "high"     = "#999999"))+
+  theme_minimal() +
+  theme(legend.position = "none")+
+  labs(x = "Age (ka)", y = "Nominal Terms")
+
+combined_plot <- pr/ p1 / p2 / p3 / p4 + plot_layout(ncol = 1, heights = c(1,1, 1, 1, 1.2))
+combined_plot
+
+ggsave("combined_plot.pdf", plot = combined_plot, width = 8, height = 5, dpi = 300, device = cairo_pdf)
+```
+
+To initiate the modelling of climate impacts on acroporid density we start with theory-driven variable selection and data preparation, including **Exploratory Data Analysis (EDA)** for autocorrelation checks and to identify colinearities between explanatory and response variables. Although colinearity does not strictly invalidate the GAM process, we exclude redundant variables with a correlation coefficient \> 0.5 to refine the final model.
+
+### **2. Variables correlation plot (EDA)**
+
+9.  This code block evaluates the relationships among numeric variables in the merged dataset. After isolating all numeric fields and excluding the identifier column, a correlation matrix is computed using complete cases to ensure robustness against missing values. The resulting matrix quantifies pairwise linear associations among climatic, ecological, and disturbance predictors. The `corrplot` function is then employed to visualize the upper triangle of the matrix, displaying correlation coefficients as circles with annotated values. The graphical representation (**Supplementary Figure 1**) highlights the strength and direction of associations, facilitating the identification of potential collinearity or redundancy among predictors prior to statistical modeling.
+
+```{r,fig.width=12, fig.height=10, echo=FALSE}
+library(corrplot)
+library(ggsignif)
+
+numeric_vars <- merged_df[, sapply(merged_df, is.numeric)]
+numeric_vars <- numeric_vars[, !colnames(numeric_vars) %in% "ID"]
+
+cor_matrix <- cor(numeric_vars, use = "complete.obs")
+
+corrplot(cor_matrix, method = "circle", type = "upper",
+         tl.col = "black", tl.srt = 45, addCoef.col = "black")
+```
+
+## 3. GAM analysis
+
+### 3.1 Modelling data preparation
+
+13. This code block prepares the dataset for generalized additive modeling by re‑leveling categorical predictors and structuring site‑specific and regional panels. The climatic variables (`Thermal`, `Hydro`, `Hurricane`) are converted to factors with defined reference states (“warmer,” “wet,” and “low”), ensuring consistent contrasts in subsequent statistical analyses. The dataset is then filtered to retain observations from the four focal reef sites (***Punta Maroma*****, *Florida*, *Belize*, *Saint Croix***), with each assigned to its own panel. A regional dataset is additionally constructed by pooling all sites under the label “**Regional**.” To facilitate count‑based modeling, a constant variable (`counts = 1`) is introduced, representing the presence of each record. Finally, all site‑level and regional subsets are merged into a unified dataset (`merged_df_g`), which provides a standardized structure for comparative modeling of coral fossil densities across spatial scales and climatic regimes.
+
+```{r,echo=FALSE}
+library(mgcv)
+library(dplyr)
+library(patchwork)
+
+merged_df <- merged_df %>%
+  mutate(
+    Thermal   = relevel(as.factor(Thermal), ref = "warmer"),
+    Hydro     = relevel(as.factor(Hydro), ref = "wet"),
+    Hurricane = relevel(as.factor(Hurricane), ref = "low")
+  )%>%
+  filter(spot %in% c("Punta Maroma", "Florida", "Belize", "Saint Croix")) %>%
+  mutate(panel = spot)
+
+datos_pm <- merged_df %>% filter(spot == "Punta Maroma")
+datos_fl <- merged_df %>% filter(spot == "Florida")
+datos_bz <- merged_df %>% filter(spot == "Belize")
+datos_sc <- merged_df %>% filter(spot == "Saint Croix")
+datos_reg <- merged_df %>%
+  filter(spot %in% c("Punta Maroma", "Florida", "Belize", "Saint Croix")) %>%
+  mutate(spot = "Regional")
+
+merged_df <- merged_df %>%
+   mutate(counts = 1)
+
+merged_df_g <- bind_rows(datos_pm, datos_fl, datos_bz, datos_sc, datos_reg)
+
+```
+
+### 3.2 Data preparation
+
+### 3.2.1 Response variable normalization
+
+14. This code block prepares the abundance dataset used for generalized additive modeling (GAM) analyses. A custom function (`normalize_counts`) standardizes fossil counts within each panel by scaling values relative to the panel-specific maximum and generating normalized abundances (`counts_norm`). Because beta-regression models require response values strictly bounded within the open interval (0,1), a small-sample variance correction is subsequently applied (`counts_norm_sv`) to adjust boundary values equal to 0 or 1 while preserving their relative magnitude. Site-specific datasets are then aggregated into centennial age bins, with fossil abundances summed within intervals and associated climatic predictors summarized by their mean values. Climatic regime classifications (`Hydro`, `Thermal`, and `Hurricane`) are retained as categorical descriptors for each time bin.
+
+    **Punta Maroma**, **Belize**, and **Saint Croix** are standardized independently at the site level following aggregation. **Florida** differs from the other regions because the reconstruction integrates multiple underlying source datasets. To ensure that individual source records contribute proportionally to the final reconstruction, fossil abundances are first standardized within each source independently and subsequently combined into a single age-binned Florida series. This procedure minimizes potential dominance by any single source while preserving the common temporal signal.
+
+    A regional reconstruction is then generated by pooling the normalized site-level datasets and aggregating abundances across all locations. Climatic predictors are averaged within age bins, and the resulting regional series is normalized using the same procedure applied to individual panels. Finally, all site-level and regional datasets are merged into a consolidated modeling object (`merged_df_g`), providing harmonized abundance estimates, climatic predictors, and climatic-regime classifications for subsequent marginal and multivariate GAM analyses.
+
+    ```{r,echo=FALSE}
+
+    normalize_counts <- function(df, panel_name){
+      
+      df %>%
+        mutate(
+          counts_norm = round(
+            counts / max(counts, na.rm = TRUE),
+            4
+          ),
+          
+          counts_norm_sv = ifelse(
+            counts_norm %in% c(0,1),
+            ((counts_norm * (n() - 1)) + 0.5) / n(),
+            counts_norm
+          ),
+          
+          panel = panel_name
+        )
+      
+    }
+
+    #---------------------------------------------------------
+    # PUNTA MAROMA
+    #---------------------------------------------------------
+
+    datos_pm <- merged_df %>%
+      filter(spot == "Punta Maroma") %>%
+      group_by(age) %>%
+      summarise(
+        counts = sum(counts, na.rm = TRUE),
+        Hur100_av = mean(Hur100_av, na.rm = TRUE),
+        Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
+        GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE),
+        dT_raw = mean(dT_raw, na.rm = TRUE),
+        Hydro = first(Hydro),
+        Thermal = first(Thermal),
+        Hurricane = first(Hurricane),
+        .groups = "drop"
+      ) %>%
+      normalize_counts("Punta Maroma")
+
+    #---------------------------------------------------------
+    # BELIZE
+    #---------------------------------------------------------
+
+    datos_bz <- merged_df %>%
+      filter(spot == "Belize") %>%
+      group_by(age) %>%
+      summarise(
+        counts = sum(counts, na.rm = TRUE),
+        Hur100_av = mean(Hur100_av, na.rm = TRUE),
+        Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
+        GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE),
+        dT_raw = mean(dT_raw, na.rm = TRUE),
+        Hydro = first(Hydro),
+        Thermal = first(Thermal),
+        Hurricane = first(Hurricane),
+        .groups = "drop"
+      ) %>%
+      normalize_counts("Belize")
+
+    #---------------------------------------------------------
+    # SAINT CROIX
+    #---------------------------------------------------------
+
+    datos_sc <- merged_df %>%
+      filter(spot == "Saint Croix") %>%
+      group_by(age) %>%
+      summarise(
+        counts = sum(counts, na.rm = TRUE),
+        Hur100_av = mean(Hur100_av, na.rm = TRUE),
+        Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
+        GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE),
+        dT_raw = mean(dT_raw, na.rm = TRUE),
+        Hydro = first(Hydro),
+        Thermal = first(Thermal),
+        Hurricane = first(Hurricane),
+        .groups = "drop"
+      ) %>%
+      normalize_counts("Saint Croix")
+
+    #---------------------------------------------------------
+    # FLORIDA
+    # Independently standardized by source dataset 
+    #---------------------------------------------------------
+
+    datos_fl_std <- merged_df %>%
+      filter(spot == "Florida") %>%
+      
+      group_by(source, age) %>%
+      summarise(
+        counts = sum(counts, na.rm = TRUE),
+        
+        Hur100_av = mean(Hur100_av, na.rm = TRUE),
+        Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
+        GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE),
+        dT_raw = mean(dT_raw, na.rm = TRUE),
+        Hydro = first(Hydro),
+        Thermal = first(Thermal),
+        Hurricane = first(Hurricane),
+        .groups = "drop"
+      ) %>%
+      
+      group_by(source) %>%
+      mutate(
+        
+        counts_std = counts / max(counts, na.rm = TRUE),
+        
+        counts_std = ifelse(
+          counts_std %in% c(0,1),
+          ((counts_std * (n() - 1)) + 0.5) / n(),
+          counts_std
+        )
+        
+      ) %>%
+      ungroup() %>%
+      
+      group_by(age) %>%
+      summarise(
+        
+        counts = sum(counts_std, na.rm = TRUE),
+        
+        Hur100_av = mean(Hur100_av, na.rm = TRUE),
+        Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
+        GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE),
+        dT_raw = mean(dT_raw, na.rm = TRUE),
+        
+        Hydro = first(Hydro),
+        Thermal = first(Thermal),
+        Hurricane = first(Hurricane),
+        
+        .groups = "drop"
+        
+      ) %>%
+      normalize_counts("Florida")
+
+    #---------------------------------------------------------
+    # REGIONAL
+    # build upon normalized datasets
+    #---------------------------------------------------------
+
+    datos_reg <- bind_rows(
+      datos_pm,
+      datos_fl_std,
+      datos_bz,
+      datos_sc
+    ) %>%
+      group_by(age) %>%
+      summarise(
+        
+        counts = sum(counts_norm_sv, na.rm = TRUE),
+        
+        Hur100_av = mean(Hur100_av, na.rm = TRUE),
+        Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
+        GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE),
+        dT_raw = mean(dT_raw, na.rm = TRUE),
+        
+        Hydro = first(Hydro),
+        Thermal = first(Thermal),
+        Hurricane = first(Hurricane),
+        
+        .groups = "drop"
+        
+      ) %>%
+      normalize_counts("Regional")
+
+    #---------------------------------------------------------
+    # Ready-to use dataset
+    #---------------------------------------------------------
+
+    merged_df_g <- bind_rows(
+      datos_pm,
+      datos_fl_std,
+      datos_bz,
+      datos_sc,
+      datos_reg
+    )
+    ```
+
+#### 3.2.1.a. Quick Assessment of Florida data preparation
+
+##### Full database normalization
+
+This code block implements an alternative abundance-standardization procedure used to evaluate the influence of data aggregation on the Florida reconstruction. A custom normalization function (`normalize_counts`) rescales fossil counts relative to the maximum abundance observed within a dataset, generating standardized values (`counts_norm`). Because beta-regression models require responses constrained to the open interval (0,1), a small-sample variance correction is applied to boundary values equal to 0 or 1, producing adjusted abundances (`counts_norm_sv`) suitable for subsequent modeling.
+
+The Florida dataset is then aggregated into centennial age bins, with fossil abundances summed within each interval and associated climatic predictors summarized by their mean values. Climatic regime classifications (`Hydro`, `Thermal`, and `Hurricane`) are retained as categorical descriptors of each interval. Unlike the source-standardized Florida reconstruction used in the primary analyses, this workflow treats the combined Florida record as a single dataset prior to normalization. The resulting series provides a sensitivity-test reconstruction that preserves the original pooling structure and enables direct comparison with the source-standardized approach, thereby assessing the robustness of climatic inferences to alternative abundance-scaling strategies.
+
+```{r,echo=FALSE}
+
+normalize_counts <- function(df, panel_name){
+  df %>%
+    mutate(
+      counts_norm = round(counts / max(counts, na.rm = TRUE), 4),
+      # aplicar SV si hay 0 o 1
+      counts_norm_sv = ifelse(counts_norm %in% c(0,1),
+                              ((counts_norm * (n() - 1)) + 0.5) / n(),
+                              counts_norm),
+      panel = panel_name
+    )
+}
+
+datos_fl_norm <- merged_df %>%
+  filter(spot == "Florida") %>%
+  group_by(age) %>%
+  summarise(
+    counts = sum(counts, na.rm = TRUE),
+    Hur100_av = mean(Hur100_av, na.rm = TRUE),
+    Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
+    GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE),
+    dT_raw = mean(dT_raw, na.rm = TRUE),
+    Hydro = first(Hydro),
+    Thermal = first(Thermal),
+    Hurricane = first(Hurricane),
+    .groups = "drop"
+  ) %>%
+  normalize_counts("Florida")
+```
+
+##### Florida's data treatment comparison
+
+This code block generates two alternative Florida abundance reconstructions used for sensitivity analysis. The first reconstruction (`datos_fl_norm`) aggregates fossil counts across all source datasets before normalization, treating the Florida record as a single pooled series. Normalized abundances are calculated using the `normalize_counts` function, which rescales counts relative to the maximum observed abundance and applies a small-sample variance correction to boundary values. The resulting reconstruction provides a baseline representation of Florida abundance dynamics and serves as a reference for comparison with the source-standardized reconstruction (`datos_fl_std`).
+
+```{r,echo=FALSE}
+fl_compare <- full_join(
+
+  datos_fl_norm %>%
+    select(age, counts_norm_sv) %>%
+    rename(norm = counts_norm_sv),
+
+  datos_fl_std %>%
+    select(age, counts_norm_sv) %>%
+    rename(std = counts_norm_sv),
+
+  by = "age"
+
+)
+```
+
+##### Quick assessment
+
+This code block aligns the pooled (`datos_fl_norm`) and source-standardized (`datos_fl_std`) Florida reconstructions by age and combines them into a single comparison dataset (`fl_compare`). The resulting table allows direct evaluation of how alternative standardization strategies influence reconstructed abundance patterns through time and provides the basis for the Florida sensitivity analysis.
+
+```{r,echo=FALSE}
+
+summary(fl_compare$std - fl_compare$norm)
+
+max(abs(fl_compare$std - fl_compare$norm),
+    na.rm = TRUE)
+
+fl_compare <- fl_compare %>%
+  mutate(
+    delta = std - norm
+  )
+
+fl_compare %>%
+  mutate(
+    delta = std - norm,
+    abs_delta = abs(delta)
+  ) %>%
+  arrange(desc(abs_delta)) %>%
+  select(age, norm, std, delta) %>%
+  slice(1:20)
+
+
+cor(
+  fl_compare$norm,
+  fl_compare$std,
+  use = "complete.obs"
+)
+
+
+ggplot(fl_compare, aes(age)) +
+  
+  geom_ribbon(
+    aes(
+      ymin = pmin(norm, std),
+      ymax = pmax(norm, std)
+    ),
+    fill = "grey70",
+    alpha = 0.5
+  ) +
+  
+  geom_line(
+    aes(y = norm,
+        colour = "Original"),
+    linewidth = 1
+  ) +
+  
+  geom_line(
+    aes(y = std,
+        colour = "Standardized"),
+    linewidth = 1
+  ) +
+  
+  scale_color_manual(
+    values = c(
+      "Original" = "black",
+      "Standardized" = "red"
+    )
+  ) +
+  
+  scale_x_reverse() +
+  
+  theme_bw() +
+  
+  labs(
+    x = "Age (yr BP)",
+    y = "Relative abundance",
+    colour = NULL
+  )
+
+ggplot(
+  fl_compare,
+  aes(age, delta)
+) +
+  
+  geom_hline(
+    yintercept = 0,
+    linetype = 2
+  ) +
+  
+  geom_area(
+    fill = "steelblue",
+    alpha = 0.6
+  ) +
+  
+  scale_x_reverse() +
+  
+  labs(
+    x = "Age (yr BP)",
+    y = "Standardized - Original"
+  ) +
+  
+  theme_bw(base_size = 12)
+```
+
+### 3.3 **Descriptive EDA for coral-climate interactions**
+
+In this code block we perform an exploratory assessment of climatic-regime combinations using the standardized abundance dataset (`merged_df_g`). To that, we generate a composite climatic factor (`ClimateCombo`) by combining the categorical thermal, hydroclimatic, and hurricane-regime classifications, creating unique environmental states for each centennial interval. The frequency of each climatic combination is then summarized within panels, allowing evaluation of representation and sampling balance across climatic conditions.
+
+To reduce the influence of sparsely represented environmental states, climatic combinations occurring fewer than three times, we then excluded those from subsequent analyses. The retained observations are reordered according to the median standardized abundance (`counts_norm_sv`) within each panel, facilitating visual and descriptive comparison among climatic regimes.
+
+Descriptive statistics are subsequently calculated both at the panel level and for each panel–climate-combination pair, including sample size, mean abundance, standard deviation, and abundance range. These summaries provide an exploratory characterization of how standardized *Acropora palmata* abundance varies across distinct combinations of thermal, hydroclimatic, and hurricane regimes and serve as a preliminary context for the subsequent generalized additive modeling analyses.
+
+Within this section we also quantify the occurrence of climatic-regime combinations within each panel and identifies combinations represented by at least three observations. Rare combinations are excluded to improve the stability and interpretability of subsequent exploratory comparisons.
+
+```{r, echo=FALSE}
+
+library(forcats)
+eda_counts <- merged_df_g %>%
+  
+  mutate(
+    ClimateCombo = interaction(
+      Thermal,
+      Hydro,
+      Hurricane,
+      sep = "_"
+    )
+  )
+
+eda_counts[!complete.cases(eda_counts), ]
+
+eda_counts$ClimateCombo <- reorder(
+  eda_counts$ClimateCombo,
+  eda_counts$counts_norm_sv,
+  median
+)
+
+combo_freq <- eda_counts %>%
+  count(panel, ClimateCombo)
+
+totales <- combo_freq %>%
+  group_by(panel) %>%
+  summarise(
+    total = sum(n),
+    .groups = "drop"
+  )
+
+total_general <- data.frame(
+  panel = "TOTAL",
+  total = sum(totales$total)
+)
+
+totales <- bind_rows(
+  totales,
+  total_general
+)
+
+combo_freq %>%
+  gt() %>%
+  tab_header(
+    title = "Climate combinations (frequencies)",
+    subtitle = "Counts per panel and climatic combination"
+  ) %>%
+  fmt_number(
+    columns = n,
+    decimals = 0
+  )
+
+totales %>%
+  gt() %>%
+  tab_header(
+    title = "Totals per panel",
+    subtitle = "Sum of climatic combinations"
+  ) %>%
+  fmt_number(
+    columns = total,
+    decimals = 0
+  )
+
+combos_validos <- combo_freq %>%
+  filter(n >= 3) %>%
+  pull(ClimateCombo) %>%
+  as.character()
+
+invisible(
+  combo_freq %>%
+    filter(n >= 3)
+)
+
+invisible(
+  combo_freq %>%
+    filter(n < 3)
+)
+
+datos_filtrados <- eda_counts %>%
+  filter(
+    ClimateCombo %in% combos_validos
+  )
+
+datos_filtrados <- datos_filtrados %>%
+  group_by(panel) %>%
+  mutate(
+    ClimateCombo = fct_reorder(
+      ClimateCombo,
+      counts_norm_sv,
+      .fun = median
+    )
+  ) %>%
+  ungroup()
+
+resumen_panel <- datos_filtrados %>%
+  group_by(panel) %>%
+  summarise(
+    n_obs = n(),
+    mean_abund = mean(counts_norm_sv, na.rm = TRUE),
+    sd_abund = sd(counts_norm_sv, na.rm = TRUE),
+    min_abund = min(counts_norm_sv, na.rm = TRUE),
+    max_abund = max(counts_norm_sv, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+resumen_panel_combo <- datos_filtrados %>%
+  group_by(
+    panel,
+    ClimateCombo
+  ) %>%
+  summarise(
+    n_obs = n(),
+    mean_abund = mean(counts_norm_sv, na.rm = TRUE),
+    sd_abund = sd(counts_norm_sv, na.rm = TRUE),
+    min_abund = min(counts_norm_sv, na.rm = TRUE),
+    max_abund = max(counts_norm_sv, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+resumen_panel_combo %>%
+  gt() %>%
+  tab_header(
+    title = "Climate-combination summary",
+    subtitle = "Standardized Acropora abundance by climatic regime"
+  ) %>%
+  fmt_number(
+    columns = c(
+      mean_abund,
+      sd_abund,
+      min_abund,
+      max_abund
+    ),
+    decimals = 3
+  )
+```
+
+#### 3.3.1 Coral-Climate Interactions
+
+The figure bellow summarizes the distribution of standardized *A. palmata* abundance across climatic-regime combinations. Climatic states are ordered by median abundance within panels, allowing visual comparison of abundance patterns and variability among environmental conditions.
+
+```{r,fig.width=12, fig.height=10,echo=FALSE}
+
+fig3 <- ggplot(
+  datos_filtrados,
+  aes(
+    x = fct_reorder(
+      ClimateCombo,
+      counts_norm_sv,
+      .fun = median
+    ),
+    y = counts_norm_sv,
+    fill = panel
+  )
+) +
+  
+  geom_boxplot(
+    outlier.shape = NA,
+    alpha = 0.7
+  ) +
+  
+  geom_jitter(
+    width = 0.12,
+    size = 2,
+    alpha = 0.6,
+    shape = 21,
+    colour = "black"
+  ) +
+  
+  facet_wrap(
+    ~ panel,
+    scales = "free_y",
+    ncol = 2
+  ) +
+  
+  scale_fill_manual(
+    values = custom_colors
+  ) +
+  
+  theme_bw() +
+  
+  theme(
+    axis.text.x = element_text(
+      angle = 45,
+      hjust = 1,
+      size = 12
+    ),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_text(
+      size = 14,
+      face = "bold"
+    ),
+    axis.title.y = element_text(
+      size = 14,
+      face = "bold"
+    ),
+    strip.text = element_text(
+      size = 14,
+      face = "bold"
+    ),
+    legend.position = "none"
+  ) +
+  
+  labs(
+    x = "Climate combinations (ordered by median abundance)",
+    y = "Standardized abundance (counts_norm_sv)"
+  )
+
+fig3
+```
+
+**Supplementary Figure 2.** **Boxplots of *A. palmata* abundance under Holocene climate combinations.** Highest and lowest acroporid abundance values both occur under warmer intervals associated with wet conditions and variable hurricane frequency (HF). Whereas the bulk of abundance values occur under cooler intervals with combinations of frequent hurricanes and wet conditions, or infrequent hurricanes and dry conditions.
+
+### 3.4. GAM Approach
+
+These fossil abundance reconstructions consist of standardized count data aggregated into centennial bins that characterize by strong temporal variability, heterogeneous variance, and non-normal distributions. Because the response variable was continuous, bounded, and exhibited properties incompatible with conventional Gaussian assumptions, we chose to fit generalized additive models (GAMs) using a Beta regression family with a logit link. Following normalization, a small-sample variance correction was applied to observations equal to 0 or 1, ensuring compatibility with the Beta distribution while preserving the relative structure of the abundance series. Smooth terms were then represented using penalized regression splines to allow flexible estimation of potentially non-linear relationships between coral abundance and climatic predictors.
+
+Thermal, hydroclimatic, and hurricane-regime classifications were incorporated as categorical predictors, using “warmer”, “wet”, and “calm” conditions as reference levels, respectively. Coefficients associated with these factors therefore represent contrasts relative to the selected baseline state and should be interpreted as conditional effects estimated after accounting for the temporal structure represented by the smooth age term.
+
+Model development followed a hierarchical strategy. Marginal GAMs were first used to evaluate the isolated contribution of individual climatic predictors. A second suite of multivariate GAMs was then constructed to assess combined climatic effects. To reduce redundancy among closely related hurricane metrics, multivariate candidate models were organized into two parallel branches, separately incorporating hurricane frequency and average hurricane intensity. Model selection was based on AIC, ΔAIC, Akaike weights, explanatory power, effective degrees of freedom (EDF), and diagnostic assessments of residual structure and concurvity.
+
+Candidate models were evaluated using Akaike's Information Criterion (AIC), ΔAIC statistics, and Akaike weights. Models within ΔAIC ≤ 2 were considered competitively supported. Final model evaluation included examination of fitted smooth terms, effective degrees of freedom (EDF), residual behaviour, explanatory power (adjusted R² and deviance explained), and concurvity diagnostics to assess potential dependence among climatic predictors.
+
+#### 3.4.1 Evaluating marginal effects. Results.
+
+To test the degree of concordance between local *A. palmata* population trajectories and regional climate trends, we first investigate the explanatory power of climatic predictor marginal (isolated) effects of both types, smooth and linear.
+
+#### 3.4.2 Candidate model formulation
+
+15. In the following code blocks, we fit generalized additive models (GAMs) to evaluate the marginal effects of individual climatic and disturbance predictors on standardized coral abundance. We define a candidate model set (`formulas_mg`) in which each model combines temporal structure (`s(age)`) with a single climatic predictor. Using `fit_gams_panel`, we fit all candidate models independently for each panel, while `compare_gams` extracts AIC values, ΔAIC statistics, and Akaike weights for model comparison.
+
+    We separate candidate models into two groups: categorical climatic-regime models (thermal, hydroclimatic, and hurricane regimes) and continuous climatic models (temperature anomalies, thermal rate of change, hurricane frequency, and hurricane intensity). We then identify the highest-ranked model within each group, allowing us to compare support for discrete climatic states versus continuous environmental gradients.
+
+    Finally, we summarize the best-supported linear and smooth models for each panel, extracting model diagnostics, explained deviance, adjusted R², effective degrees of freedom (EDF), and the significance of climatic predictors. These outputs provide the basis for subsequent model comparison and interpretation.
+
+```{r setup-formulas, echo=FALSE}
+formulas_mg <- list(
+  M_temp = counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N),
+  M_dt   = counts_norm_sv ~ s(age) + s(dT_raw),          
+  M_hf   = counts_norm_sv ~ s(age) + s(Hur100_fqcy),
+  M_hav  = counts_norm_sv ~ s(age) + s(Hur100_av),
+  M_the  = counts_norm_sv ~ s(age) + Thermal,
+  M_hyd  = counts_norm_sv ~ s(age) + Hydro,
+  M_hur  = counts_norm_sv ~ s(age) + Hurricane
+)
+
+fit_gams_panel <- function(data, formulas) {
+  lapply(formulas, function(f)
+    gam(f, data = data, family = betar(link = "logit"), method = "REML"))
+}
+
+compare_gams <- function(fits) {
+  stats <- lapply(fits, AIC)
+  df <- data.frame(Model = names(stats), AIC = unlist(stats))
+  df <- df %>%
+    mutate(deltaAIC = AIC - min(AIC),
+           weight = exp(-0.5 * deltaAIC) / sum(exp(-0.5 * deltaAIC)))
+  return(df)
+}
+```
+
+#### 3.4.3 Competitive models for climate marginal effects
+
+In this code block, we fit all marginal GAM candidates across panels and compile model-selection statistics into a consolidated dataset (`stats_all`). We then visualize ΔAIC values and Akaike weights to compare the relative support of competing climatic and disturbance predictors within each panel.
+
+```{r marginal-results, echo=FALSE, fig.width=8, fig.height=6}
+panels <- unique(merged_df_g$panel)
+
+results <- lapply(panels, function(p) {
+  
+  df_panel <- merged_df_g %>%
+    filter(panel == p)
+  
+  if(nrow(df_panel) < 3 ||
+     all(is.na(df_panel$counts_norm_sv)))
+    return(NULL)
+  
+  fits <- fit_gams_panel(
+    df_panel,
+    formulas_mg
+  )
+  
+  stats <- compare_gams(fits)
+  
+  stats$panel <- p
+  
+  stats
+  
+})
+
+results <- Filter(
+  Negate(is.null),
+  results
+)
+
+stats_all <- bind_rows(results)
+
+p_delta <- ggplot(stats_all, aes(x = reorder(Model, deltaAIC), y = deltaAIC, fill = panel)) +
+  geom_col() +
+  geom_hline(yintercept = 2, linetype = "dashed", color = "red") +
+  coord_flip() +
+  scale_fill_manual(values = custom_colors) +
+  facet_wrap(~panel, ncol = 1, scales = "free_y") +
+  labs(title = "ΔAIC by model & site",
+       subtitle = "Dashed line = ΔAIC = 2 (competitive threshold)",
+       x = "Model", y = "ΔAIC") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+p_weight <- ggplot(stats_all, aes(x = reorder(Model, -weight), y = weight, fill = panel)) +
+  geom_col() +
+  coord_flip() +
+  scale_fill_manual(values = custom_colors) +
+  facet_wrap(~panel, ncol = 1, scales = "free_y") +
+  labs(title = "AIC weights by model & site",
+       subtitle = "Relative probability each model is best",
+       x = "Model", y = "AIC weight") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+sup_fig1 <- p_delta + p_weight
+sup_fig1
+```
+
+**Suppl. Table 1. Marginal GAM model selection by panel.** Candidate univariate generalized additive models (GAMs) were ranked according to Akaike's Information Criterion (AIC). For each panel, models are ordered by increasing AIC, and ΔAIC and Akaike weights are reported to evaluate relative support among competing climatic and disturbance predictors. Models associated with thermal, hydroclimatic, hurricane-frequency, hurricane-intensity, and climatic-regime hypotheses are shown for comparison.
+
+```{r best-gams, echo=FALSE}
+library(broom)
+
+linear_models <- c(
+  "M_the",
+  "M_hyd",
+  "M_hur"
+)
+
+smooth_models <- c(
+  "M_temp",
+  "M_dt",
+  "M_hf",
+  "M_hav"
+)
+
+get_best_models <- function(data, formulas){
+  
+  fits <- fit_gams_panel(data, formulas)
+  
+  ranking <- compare_gams(fits) %>%
+    arrange(AIC) %>%
+    mutate(
+      Rank = row_number()
+    )
+  
+  best_linear <- ranking %>%
+    filter(Model %in% linear_models) %>%
+    slice_min(AIC, n = 1)
+  
+  best_smooth <- ranking %>%
+    filter(Model %in% smooth_models) %>%
+    slice_min(AIC, n = 1)
+  
+  list(
+    fits = fits,
+    ranking = ranking,
+    best_linear = best_linear,
+    best_smooth = best_smooth
+  )
+  
+}
+
+best_pm <- get_best_models(datos_pm, formulas_mg)
+best_fl <- get_best_models(datos_fl_std, formulas_mg)
+best_bz <- get_best_models(datos_bz, formulas_mg)
+best_sc <- get_best_models(datos_sc, formulas_mg)
+best_reg <- get_best_models(datos_reg, formulas_mg)
+
+
+tbl_models <- bind_rows(
+  
+  best_pm$ranking %>%
+    mutate(Panel = "Punta Maroma"),
+  
+  best_fl$ranking %>%
+    mutate(Panel = "Florida"),
+  
+  best_bz$ranking %>%
+    mutate(Panel = "Belize"),
+  
+  best_sc$ranking %>%
+    mutate(Panel = "Saint Croix"),
+  
+  best_reg$ranking %>%
+    mutate(Panel = "Regional")
+  
+)
+
+gt_ranking <- tbl_models %>%
+  
+  gt(groupname_col = "Panel") %>%
+  
+  fmt_number(
+    columns = c(AIC, deltaAIC, weight),
+    decimals = 3
+  ) %>%
+  
+  cols_label(
+    Rank = "Rank",
+    Model = "Model",
+    AIC = "AIC",
+    deltaAIC = "ΔAIC",
+    weight = "Akaike Weight"
+  ) %>%
+  
+  tab_header(
+    title = md("**GAM model selection by panel**")
+  )
+
+gt_ranking
+```
+
+**Suppl. Table 2. Best-supported marginal GAMs by panel.** Highest-ranked categorical-regime and continuous-climate models are summarized for each panel. Reported statistics include AIC, explained deviance, adjusted R², effective degrees of freedom (EDF), and significance of climatic predictors.
+
+```{r winners,echo=FALSE}
+tbl_winners <- bind_rows(
+  
+  data.frame(
+    Panel = "Punta Maroma",
+    Best_Linear = best_pm$best_linear$Model,
+    Best_Smooth = best_pm$best_smooth$Model
+  ),
+  
+  data.frame(
+    Panel = "Florida",
+    Best_Linear = best_fl$best_linear$Model,
+    Best_Smooth = best_fl$best_smooth$Model
+  ),
+  
+  data.frame(
+    Panel = "Belize",
+    Best_Linear = best_bz$best_linear$Model,
+    Best_Smooth = best_bz$best_smooth$Model
+  ),
+  
+  data.frame(
+    Panel = "Saint Croix",
+    Best_Linear = best_sc$best_linear$Model,
+    Best_Smooth = best_sc$best_smooth$Model
+  ),
+  
+  data.frame(
+    Panel = "Regional",
+    Best_Linear = best_reg$best_linear$Model,
+    Best_Smooth = best_reg$best_smooth$Model
+  )
+  
+)
+
+gt_winners <- tbl_winners %>%
+  gt() %>%
+  cols_label(
+    Panel = "Panel",
+    Best_Linear = "Best Linear",
+    Best_Smooth = "Best Smooth"
+  ) %>%
+  tab_header(
+    title = md("**Best-supported linear and smooth GAMs**")
+  )
+
+gt_winners
+```
+
+In this code block, we refit the best-supported linear and smooth marginal GAMs for each panel and print their complete model summaries. We use these outputs to inspect term significance, EDF values, adjusted R², explained deviance, and other diagnostic statistics supporting model interpretation.
+
+```{r best-gams-summary, echo=FALSE}
+
+print_best_models <- function(best_obj,
+                              panel_name,
+                              formulas,
+                              data){
+  
+  lin_name <- best_obj$best_linear$Model
+  smo_name <- best_obj$best_smooth$Model
+  
+  cat("\n========================================\n")
+  cat(panel_name,"\n")
+  cat("========================================\n")
+  
+  cat("\nBEST LINEAR MODEL:", lin_name, "\n\n")
+  
+  print(
+    summary(
+      gam(
+        formulas[[lin_name]],
+        data = data,
+        family = betar(link="logit"),
+        method = "REML"
+      )
+    )
+  )
+  
+  cat("\n----------------------------------------\n")
+  
+  cat("\nBEST SMOOTH MODEL:", smo_name, "\n\n")
+  
+  print(
+    summary(
+      gam(
+        formulas[[smo_name]],
+        data = data,
+        family = betar(link="logit"),
+        method = "REML"
+      )
+    )
+  )
+  
+}
+
+print_best_models(best_pm,
+                  "Punta Maroma",
+                  formulas_mg,
+                  datos_pm)
+
+print_best_models(best_fl,
+                  "Florida",
+                  formulas_mg,
+                  datos_fl_std)
+
+print_best_models(best_bz,
+                  "Belize",
+                  formulas_mg,
+                  datos_bz)
+
+print_best_models(best_sc,
+                  "Saint Croix",
+                  formulas_mg,
+                  datos_sc)
+
+print_best_models(best_reg,
+                  "Regional",
+                  formulas_mg,
+                  datos_reg)
+
+```
+
+In this code block, we refit the highest-ranked linear and smooth marginal GAMs for each panel and extract a standardized set of model statistics. For each selected model, we summarize explanatory power (AIC, explained deviance, adjusted R²), identify the most significant climatic predictor, record effective degrees of freedom (EDF), and classify the level of statistical support. We then compile these outputs into a comparative table that facilitates direct evaluation of the best-supported categorical and continuous climatic drivers across panels. **Table corresponds to main text Table 1**
+
+[**(Best-supported marginal GAMs by panel.** For each panel, we report the highest-ranked categorical-regime (linear) and continuous-climate (smooth) models identified through AIC-based model selection. Reported statistics include model fit (AIC, explained deviance, adjusted R²), the most significant climatic predictor, associated p-values, effective degrees of freedom (EDF), and overall model support. The table summarizes the strongest marginal climatic relationships detected prior to multivariate model evaluation).]{.underline}
+
+```{r comparison-table, echo=FALSE}
+
+extract_gam_stats <- function(model, panel, model_type, model_name){
+  
+  gam_summary <- summary(model)
+  
+  tidy_terms <- broom::tidy(model)
+  
+  climate_terms <- tidy_terms %>%
+    filter(term != "s(age)") %>%
+    arrange(p.value)
+  
+  if(nrow(climate_terms) == 0){
+    
+    sig_terms <- "Not significant"
+    climate_p <- NA
+    
+  } else {
+    
+    best_term <- climate_terms[1, ]
+    
+    climate_p <- signif(best_term$p.value, 4)
+    
+    sig_terms <- ifelse(
+      best_term$p.value < 0.05,
+      best_term$term,
+      "Not significant"
+    )
+    
+  }
+  
+  edf_info <- gam_summary$s.table
+  
+  edf_terms <- paste0(
+    rownames(edf_info),
+    " (EDF=",
+    round(edf_info[, "edf"], 2),
+    ")",
+    collapse = "; "
+  )
+  
+  inference <- if(
+    !is.na(climate_p) &&
+    climate_p < 0.05
+  ){
+    "Supported"
+  } else {
+    "Weak support"
+  }
+  
+  data.frame(
+    Panel = panel,
+    Type = model_type,
+    Model = model_name,
+    AIC = round(AIC(model),3),
+    DevianceExplained = round(gam_summary$dev.expl,3),
+    R2_Adj = round(gam_summary$r.sq,3),
+    SignificantTerms = sig_terms,
+    Climate_p = climate_p,
+    EDF_Terms = edf_terms,
+    Inference = inference,
+    stringsAsFactors = FALSE
+  )
+  
+}
+
+model_labels <- c(
+  M_the = "Thermal regime",
+  M_hyd = "Hydroclimatic trends",
+  M_hur = "Hurricane regime",
+  M_temp = "GMHT anomalies",
+  M_dt = "thermal rate of change δT",
+  M_hf = "Hurricane frequency",
+  M_hav = "Hurricane average"
+)
+
+
+build_panel_summary <- function(best_obj,
+                                panel_name,
+                                formulas,
+                                data){
+  
+  lin_name <- best_obj$best_linear$Model
+  smo_name <- best_obj$best_smooth$Model
+  
+  lin_model <- gam(
+    formulas[[lin_name]],
+    data = data,
+    family = betar(link="logit"),
+    method = "REML"
+  )
+  
+  smo_model <- gam(
+    formulas[[smo_name]],
+    data = data,
+    family = betar(link="logit"),
+    method = "REML"
+  )
+  
+  bind_rows(
+    
+    extract_gam_stats(
+      lin_model,
+      panel_name,
+      "Linear",
+      lin_name
+    ),
+    
+    extract_gam_stats(
+      smo_model,
+      panel_name,
+      "Smooth",
+      smo_name
+    )
+    
+  )
+}
+
+tbl_summary <- bind_rows(
+  
+  build_panel_summary(
+    best_pm,
+    "Punta Maroma",
+    formulas_mg,
+    datos_pm
+  ),
+  
+  build_panel_summary(
+    best_fl,
+    "Florida",
+    formulas_mg,
+    datos_fl_std
+  ),
+  
+  build_panel_summary(
+    best_bz,
+    "Belize",
+    formulas_mg,
+    datos_bz
+  ),
+  
+  build_panel_summary(
+    best_sc,
+    "Saint Croix",
+    formulas_mg,
+    datos_sc
+  ),
+  
+  build_panel_summary(
+    best_reg,
+    "Regional",
+    formulas_mg,
+    datos_reg
+  )
+  
+)
+
+tbl_summary <- tbl_summary %>%
+  mutate(
+    Model_Label = recode(Model, !!!model_labels)
+  ) %>%
+  select(
+    Panel,
+    Type,
+    Model,
+    Model_Label,
+    AIC,
+    DevianceExplained,
+    R2_Adj,
+    SignificantTerms,
+    Climate_p,
+    EDF_Terms,
+    Inference
+  )
+
+gt_summary <- tbl_summary %>%
+  
+  arrange(
+    factor(
+      Panel,
+      levels = c(
+        "Punta Maroma",
+        "Florida",
+        "Belize",
+        "Saint Croix",
+        "Regional"
+      )
+    ),
+    Type
+  ) %>%
+  
+  gt(groupname_col = "Panel") %>%
+  
+  fmt_scientific(
+    columns = c(
+      Climate_p
+    ),
+    decimals = 3
+  ) %>%
+  fmt_number(
+    columns = c(
+      AIC,
+      DevianceExplained,
+      R2_Adj
+    ),
+    decimals = 3
+  ) %>%
+  
+  cols_label(
+    Type = "Model Type",
+    Model = "Model",
+    Model_Label = "Climate Driver",
+    AIC = "AIC",
+    DevianceExplained = "Deviance\nExplained",
+    R2_Adj = "R² Adj",
+    SignificantTerms = "Significant Terms",
+    Climate_p = "Climate p-value",
+    EDF_Terms = "EDF Terms",
+    Inference = "Inference"
+  ) %>%
+  
+  cols_width(
+    Model ~ px(140),
+    SignificantTerms ~ px(220),
+    EDF_Terms ~ px(260)
+  ) %>%
+  
+  tab_style(
+    style = list(
+      cell_fill(color = "#7298c2"),
+      cell_text(
+        color = "white",
+        weight = "bold"
+      )
+    ),
+    locations = cells_column_labels()
+  ) %>%
+  
+  tab_header(
+    title = md(
+      "**Best-supported GAMs by panel**"
+    ),
+    subtitle = md(
+      "*Top Linear and Smooth candidates*"
+    )
+  ) %>%
+  
+  opt_row_striping() %>%
+  
+  tab_options(
+    table.font.size = 12,
+    data_row.padding = px(5)
+  )
+
+gt_summary
+```
+
+In this code block, we fit all marginal GAM candidates across panels and compile model-selection statistics into a consolidated dataset (`stats_all`). We then visualize ΔAIC values and Akaike weights to compare the relative support of competing climatic and disturbance predictors within each panel.
+
+[Significant climatic relationships were detected in Punta Maroma, Belize and the regional reconstruction, whereas Florida and Saint Croix did not exhibit statistically supported responses to any individual climatic predictor evaluated. This suggests that local-scale processes, reduced statistical power, or interactions among multiple drivers may play a larger role in these reconstructions.]{.underline}
+
+#### 3.5.1 Evaluating combined effects. Results
+
+To capture the compounded effects of climatic factors on the acroporid population trajectory, we constructed a series of multivariate GAMMs incorporating interactions among variables **(Suppl. Table 2).**
+
+16. This chunk thus establishes the methodological framework for testing additive and interactive influences of multiple climatic drivers on coral fossil density across temporal and spatial scales. This code block outlines the construction of increasingly complex generalized additive mixed models (GAMMs) to evaluate joint effects of climatic and disturbance predictors on normalized coral fossil densities. A structured table (`model_table`) is created to document the progression of models, beginning with a base formulation that includes only age (M1), and sequentially adding predictors such as global mean surface temperature anomalies (GMHT_CPS0_30N), rates of temperature change (dT_raw), hurricane frequency (Hur100_fqcy), hurricane averages (Hur100_av), and categorical climatic states (Hydro, Thermal, Hurricane). Two parallel branches are defined: one incorporating hurricane frequency and the other hurricane averages, each expanded stepwise to include hydroclimatic and thermal predictors. The resulting table provides a transparent design of nested model complexity, facilitating systematic comparison of marginal and joint effects.
+
+#### 3.5.2 Candidate model formulation
+
+**Suppl. Table 2. Design of increasingly complex sequence of joint GAM versions.** Eight versions of GAM models used to evaluate the combined effects of climatic variables on *Acropora palmata* coral density response. The sequence begins with the simplest model considering only age as a baseline and progressively adds other predictors one at a time. Two parallel branches were constructed: one incorporating the 100‑yr hurricane frequency (Hur100_fqcy) and another incorporating the 100‑yr hurricane impact average (Hur100_av). This design avoids including both hurricane metrics simultaneously, ensuring interpretability of marginal and joint effects.
+
+```{r, echo=FALSE}
+model_table <- data.frame(
+  Model = c("M1", "M2", "M3",
+            "M4_fqcy", "M5_fqcy", "M6_fqcy", "M7_fqcy",
+            "M4_av", "M5_av", "M6_av", "M7_av"),
+  Formula = c(
+    "counts_norm_sv ~ s(age)",
+    "counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N)",
+    "counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N) + s(dT_raw)",
+    "counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N) + s(dT_raw) + s(Hur100_fqcy)",
+    "counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N) + s(dT_raw) + s(Hur100_fqcy) + Hydro",
+    "counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N) + s(dT_raw) + s(Hur100_fqcy) + Hydro + Thermal",
+    "counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N) + s(dT_raw) + s(Hur100_fqcy) + Hydro + Thermal + Hurricane",
+    "counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N) + s(dT_raw) + s(Hur100_av)",
+    "counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N) + s(dT_raw) + s(Hur100_av) + Hydro",
+    "counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N) + s(dT_raw) + s(Hur100_av) + Hydro + Thermal",
+    "counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N) + s(dT_raw) + s(Hur100_av) + Hydro + Thermal + Hurricane"
+  ),
+  Added_Predictors = c(
+    "", "GMHT_CPS0_30N", "dT_raw",
+    "Hur100_fqcy", "Hydro", "Thermal", "Hurricane",
+    "Hur100_av", "Hydro", "Thermal", "Hurricane"
+  ),
+  Branch = c(
+    "Base", "Base", "Base",
+    "Hur100_fqcy", "Hur100_fqcy", "Hur100_fqcy", "Hur100_fqcy",
+    "Hur100_av", "Hur100_av", "Hur100_av", "Hur100_av"
+  ),
+  stringsAsFactors = FALSE
+)
+
+model_table %>%
+  gt() %>%
+  tab_header(
+    title = "Design of increasingly complex sequence of joint GAMM versions"
+  ) %>%
+  cols_label(
+    Model = "Model",
+    Formula = "Formula",
+    Added_Predictors = "Added Predictors",
+    Branch = "Branch"
+  )
+
+```
+
+17. This chunk thus establishes a rigorous framework for evaluating additive and joint influences of climatic anomalies, rates of change, and disturbance regimes on coral fossil density, while ensuring model stability across datasets of varying size. Here we implement a sequence of increasingly complex generalized additive models (GAMs) to evaluate joint effects of climatic and disturbance predictors on normalized coral fossil densities. Two parallel branches are defined: one incorporating hurricane frequency (`Hur100_fqcy`) and the other hurricane averages (`Hur100_av`), each progressively expanded to include hydroclimatic and thermal predictors, culminating in full models with all three disturbance categories. A custom function (`fit_combined_gams_safe`) is introduced to fit these models robustly across panels. The function applies data cleaning, selects appropriate fitting strategies (`bam` for larger panels, `gam` for smaller datasets), and includes fallback to quasibinomial regression when beta regression fails. Model summaries are extracted, including AIC, deviance explained, adjusted R², and effective degrees of freedom. Comparative statistics are computed, with ΔAIC and model weights used to assess relative support. Diagnostic plots visualize ΔAIC values (with a dashed threshold at ΔAIC = 2) and AIC weights, highlighting competitive models. The procedure is applied to site‑specific panels (***Punta Maroma*****, *Florida*, Saint Croix & *Belize***) and the **Regional** aggregate, producing structured outputs (`results_pm`, `results_fl`, `results_bz`, `results_reg`).
+
+```{r, echo=FALSE}
+
+formulas_cb <- list(
+  M1 = counts_norm_sv ~ s(age),
+  M2 = counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N),
+  M3 = counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N) + s(dT_raw),
+  M4_fqcy = counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N) + s(dT_raw) + s(Hur100_fqcy),
+  M5_fqcy = counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N) + s(dT_raw) + s(Hur100_fqcy) + Hydro,
+  M6_fqcy = counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N) + s(dT_raw) + s(Hur100_fqcy) + Hydro + Thermal,
+  M7_fqcy = counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N) + s(dT_raw) + s(Hur100_fqcy) + Hydro + Thermal + Hurricane,
+  M4_av = counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N) + s(dT_raw) + s(Hur100_av),
+  M5_av = counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N) + s(dT_raw) + s(Hur100_av) + Hydro,
+  M6_av = counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N) + s(dT_raw) + s(Hur100_av) + Hydro + Thermal,
+  M7_av = counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N) + s(dT_raw) + s(Hur100_av) + Hydro + Thermal + Hurricane
+)
+
+count_smooth_terms <- function(formula) {
+  lengths(regmatches(paste(deparse(formula, width.cutoff = 500L), collapse = " "),
+                      gregexpr("s\\(", paste(deparse(formula, width.cutoff = 500L), collapse = " "))))
+}
+
+cap_smooth_k <- function(formula, k_max, env = parent.frame()) {
+  f_chr <- paste(deparse(formula, width.cutoff = 500L), collapse = " ")
+  f_chr <- gsub("s\\(\\s*([A-Za-z0-9_\\.]+)\\s*\\)",
+                paste0("s(\\1, k = ", k_max, ")"), f_chr)
+  as.formula(f_chr, env = env)
+}
+
+safe_k_for <- function(n_obs, n_smooth_terms) {
+  max(3, min(10, floor((n_obs - 1) / max(1, n_smooth_terms))))
+}
+
+fit_combined_gams_safe <- function(formulas_cb, data, segment_name) {
+  
+ data_clean <- data %>%
+    mutate(across(where(is.numeric), ~replace(., is.infinite(.), NA))) %>%
+    drop_na()
+  
+  n_obs <- nrow(data_clean)
+  
+  fits <- lapply(names(formulas_cb), function(name) {
+    f <- formulas_cb[[name]]
+    n_smooth <- count_smooth_terms(f)
+    if (n_obs < 8 || n_obs <= n_smooth * 3) {
+      message(paste("Skipping model", name, "for", segment_name,
+                    "- insufficient observations (n =", n_obs, ") for",
+                    n_smooth, "smooth term(s)"))
+      return(NULL)
+    }
+
+    k_max <- safe_k_for(n_obs, n_smooth)
+    f_safe <- if (n_smooth > 0) cap_smooth_k(f, k_max) else f
+
+    # mgcv's gam()/bam() resets the fitted model's formula environment
+    # (typically to .GlobalEnv) regardless of the input formula's
+    # environment. Reattach the local frame (which still has `data_clean`
+    # in scope via lexical chaining) so downstream calls needing the
+    # original data for parametric terms (e.g. plot(..., all.terms=TRUE))
+    # don't fail with "object 'data_clean' not found".
+    tryCatch({
+      m <- if (n_obs > 100) {
+       bam(f_safe, data = data_clean, family = betar(link = "logit"),
+            method = "fREML", select = TRUE, discrete = TRUE)
+      } else {
+        gam(f_safe, data = data_clean,
+            family = betar(link = "logit"), method = "REML",
+            select = TRUE)
+      }
+      environment(m$formula) <- environment()
+      m
+    }, error = function(e) {
+      message(paste("Model", name, "fail in", segment_name, 
+                    "using betar:", e$message, "→ testing quasibinomial"))
+      tryCatch({
+        m2 <- gam(f_safe, data = data_clean,
+            family = quasibinomial(link = "logit"), method = "REML",
+            select = TRUE)
+        environment(m2$formula) <- environment()
+        m2
+      }, error = function(e2) {
+        message(paste("Model", name, "also failed with quasibinomial in", segment_name, ":", e2$message))
+        return(NULL)
+      })
+    })
+  })
+  names(fits) <- names(formulas_cb)
+  
+ fits <- fits[!sapply(fits, is.null)]
+  
+  stats <- lapply(names(fits), function(name) {
+    m <- fits[[name]]
+    s <- summary(m)
+    data.frame(
+      Model = name,   
+      AIC = tryCatch(AIC(m), error = function(e) NA),
+      DevianceExplained = s$dev.expl,
+      R2_Adj = s$r.sq,
+      EDF = sum(m$edf),
+      Segment = segment_name,
+      stringsAsFactors = FALSE
+    )
+  })
+  
+  stats_df <- bind_rows(stats)
+  
+  if (nrow(stats_df) > 0) {
+    
+    stats_df <- stats_df %>%
+      mutate(
+        deltaAIC = AIC - min(AIC, na.rm = TRUE),
+        weight = exp(-0.5 * deltaAIC) /
+          sum(exp(-0.5 * deltaAIC), na.rm = TRUE)
+      ) %>%
+      arrange(AIC)
+    
+  }
+  
+ if (nrow(stats_df) > 0) {
+    p_delta <- ggplot(stats_df, aes(x = reorder(Model, deltaAIC), y = deltaAIC)) +
+      geom_col(fill = "steelblue") +
+      geom_hline(yintercept = 2, linetype = "dashed", color = "red") +
+      coord_flip() +
+      labs(title = paste("ΔAIC by model -", segment_name),
+           subtitle = "Dashed line = ΔAIC = 2 (competitive threshold)",
+           x = "Model", y = "ΔAIC") +
+      theme_minimal() +
+      theme(legend.position = "bottom")
+    
+    p_weight <- ggplot(stats_df, aes(x = reorder(Model, -weight), y = weight)) +
+      geom_col(fill = "darkgreen") +
+      coord_flip() +
+      labs(title = paste("AIC weights by model -", segment_name),
+           subtitle = "Relative probability each model is best",
+           x = "Model", y = "AIC weight") +
+      theme_minimal()
+    
+    plots <- list(delta = p_delta, weight = p_weight)
+  } else {
+    plots <- NULL
+  }
+  
+  return(list(fits = fits, stats = stats_df, plots = plots))
+}
+
+datos_pm <- merged_df_g %>% filter(panel == "Punta Maroma")
+results_pm <- fit_combined_gams_safe(formulas_cb, datos_pm, "Punta Maroma")
+
+datos_fl <- merged_df_g %>% filter(panel == "Florida")
+results_fl <- fit_combined_gams_safe(formulas_cb, datos_fl, "Florida")
+
+datos_bz <- merged_df_g %>% filter(panel == "Belize")
+results_bz <- fit_combined_gams_safe(formulas_cb, datos_bz, "Belize")
+
+datos_sc <- merged_df_g %>% filter(panel == "Saint Croix")
+results_sc <- fit_combined_gams_safe(formulas_cb, datos_sc, "Saint Croix")
+
+datos_reg <- merged_df_g %>% filter(panel == "Regional")
+results_reg <- fit_combined_gams_safe(formulas_cb, datos_reg, "Regional")
+
+```
+
+#### 3.5.3 Competitive models for climate combined effects
+
+This chunk thus completes the comparative modeling workflow, offering a transparent assessment of which climatic and disturbance predictors most strongly explain coral fossil density patterns across reef sites. Here we consolidate the results of the combined GAM analyses across sites into a unified comparison framework. Model statistics from each site, and the regional aggregate are merged (`comparison_cb_full`), and models within the competitive threshold (ΔAIC ≤ 2) are identified (`competitive_models`). These competitive models are summarized in a formatted table using the `gt` package, reporting AIC, ΔAIC, effective degrees of freedom, deviance explained, adjusted R², and model weights. Two complementary plots are then generated: one displaying ΔAIC values by model across segments, with a dashed line marking the competitive threshold, and another showing AIC weights as relative probabilities of each model being the best fit. Both plots are faceted by site to highlight spatial differences in model performance. The combined figure (`sup_fig2`) provides a clear visual synthesis of model selection outcomes across local and regional scales, and is exported as a high‑resolution supplementary figure.
+
+```{r,fig.width=12, fig.height=10,echo=FALSE}
+comparison_cb_full <- bind_rows(results_pm$stats,
+                           results_fl$stats,
+                           results_bz$stats,
+                           results_sc$stats,
+                           results_reg$stats)
+
+competitive_models <- comparison_cb_full %>%
+  filter(deltaAIC <= 2)%>%
+  mutate(Segment = factor(Segment,
+                          levels = c("Punta Maroma", "Florida", "Belize", "Saint Croix", "Regional")))
+
+p_delta_all <- ggplot(comparison_cb_full, aes(x = reorder(Model, deltaAIC), y = deltaAIC,fill=Segment)) +
+  geom_col() +
+  scale_fill_manual(values = custom_colors) +
+  geom_hline(yintercept = 2, linetype = "dashed", color = "red") +
+  coord_flip() +
+  facet_wrap(~Segment, ncol = 5) +
+  labs(title = "ΔAIC by model across segments",
+       subtitle = "Dashed line = ΔAIC = 2 (competitive threshold)",
+       x = "Model", y = "ΔAIC") +
+  theme_minimal()+
+  theme(legend.position = "bottom")
+
+
+p_weight_all <- ggplot(comparison_cb_full, aes(x = reorder(Model, -weight), y = weight,fill=Segment)) +
+  geom_col() +
+  coord_flip() +
+  scale_fill_manual(values = custom_colors) +
+  facet_wrap(~Segment, ncol = 5) +
+  labs(title = "AIC weights by model across segments",
+       subtitle = "Relative probability each model is best",
+       x = "Model", y = "AIC weight") +
+  theme_minimal()
+
+sup_fig2<-p_delta_all / p_weight_all
+
+sup_fig2
+ggsave("Supp.Fig.2.pdf", plot = sup_fig2, width = 8, height = 7, dpi = 300, device = cairo_pdf)
+```
+
+**Suppl. Figure 4. Model comparison by reef spots based on information-theoretic criteria**. Upper panels show ΔAIC values for each candidate model evaluating joint effects of both types of variables in an increasingly complex model configuration as described in **Suppl. table 2**. Lower panels illustrate the AIC weights, representing the relative probability that each model is the best among the candidate set in joint model versions.The dashed vertical red line in upper panels indicates the conventional threshold of ΔAIC = 2, below which models are considered statistically competitive. Lower ΔAIC values denote closer fit to the best-supported model. Higher weights indicate stronger support.
+
+```{r,echo=FALSE}
+get_best_combined <- function(results_obj){
+  
+  ranking <- results_obj$stats %>%
+    arrange(AIC)
+  
+  winner_name <- ranking$Model[1]
+  
+  list(
+    best_model = winner_name,
+    ranking = ranking,
+    fit = results_obj$fits[[winner_name]]
+  )
+  
+}
+
+best_pm_cb <- get_best_combined(results_pm)
+best_fl_cb <- get_best_combined(results_fl)
+best_bz_cb <- get_best_combined(results_bz)
+best_sc_cb <- get_best_combined(results_sc)
+best_reg_cb <- get_best_combined(results_reg)
+
+extract_combined_stats <- function(best_obj,
+                                   panel_name){
+  
+  model <- best_obj$fit
+  
+  sm <- summary(model)
+ 
+  param_terms <- NULL
+  
+  if(!is.null(sm$p.table)){
+    
+    ptab <- as.data.frame(sm$p.table)
+    
+    ptab$Term <- rownames(ptab)
+    
+    param_terms <- ptab %>%
+      filter(
+        Term != "(Intercept)",
+        `Pr(>|z|)` < 0.05
+      ) %>%
+      mutate(
+        Label = paste0(
+          Term,
+          " (p=",
+          signif(`Pr(>|z|)`,3),
+          ")"
+        )
+      )
+  
+  }
+
+smooth_terms <- NULL
+  
+  if(!is.null(sm$s.table)){
+    
+    stab <- as.data.frame(sm$s.table)
+    
+    stab$Term <- rownames(stab)
+    
+    smooth_terms <- stab %>%
+      filter(
+        Term != "s(age)",
+        `p-value` < 0.05
+      ) %>%
+      mutate(
+        Label = paste0(
+          Term,
+          " (EDF=",
+          round(edf,2),
+          ", p=",
+          signif(`p-value`,3),
+          ")"
+        )
+      )
+    
+  }
+  
+  sig_terms <- c(
+    param_terms$Label,
+    smooth_terms$Label
+  )
+  
+  sig_terms <- sig_terms[!is.na(sig_terms)]
+  
+  sig_text <- if(
+    length(sig_terms) == 0
+  ){
+    "Not significant"
+  } else {
+    paste(
+      sig_terms,
+      collapse = "; "
+    )
+  }
+  
+  
+  edf_terms <- if(!is.null(sm$s.table)){
+    
+    paste0(
+      rownames(sm$s.table),
+      " (EDF=",
+      round(sm$s.table[, "edf"],2),
+      ")",
+      collapse = "; "
+    )
+    
+  } else {
+    NA
+  }
+  
+  pvals <- c()
+  
+  if(!is.null(param_terms))
+    pvals <- c(
+      pvals,
+      param_terms$`Pr(>|z|)`
+    )
+  
+  if(!is.null(smooth_terms))
+    pvals <- c(
+      pvals,
+      smooth_terms$`p-value`
+    )
+  
+  climate_p <- if(
+    length(pvals) > 0
+  ){
+    signif(min(pvals),4)
+  } else {
+    NA
+  }
+  
+  
+  data.frame(
+    Panel = panel_name,
+    Model = best_obj$best_model,
+    AIC = round(AIC(model),3),
+    DevianceExplained =
+      round(sm$dev.expl,3),
+    R2_Adj =
+      round(sm$r.sq,3),
+    SignificantTerms =
+      sig_text,
+    Climate_p =
+      climate_p,
+    EDF_Terms =
+      edf_terms,
+    stringsAsFactors = FALSE
+  )
+  
+}
+
+tbl_combined <- bind_rows(
+  
+  extract_combined_stats(
+    best_pm_cb,
+    "Punta Maroma"
+  ),
+  
+  extract_combined_stats(
+    best_fl_cb,
+    "Florida"
+  ),
+  
+  extract_combined_stats(
+    best_bz_cb,
+    "Belize"
+  ),
+  
+  extract_combined_stats(
+    best_sc_cb,
+    "Saint Croix"
+  ),
+  
+  extract_combined_stats(
+    best_reg_cb,
+    "Regional"
+  )
+  
+)
+
+combined_labels <- c(
+  
+  M1 =
+    "Temporal baseline",
+  
+  M2 =
+    "Background temperature model",
+  
+  M3 =
+    "Thermal forcing model",
+  
+  M4_fqcy =
+    "Thermal–disturbance model (frequency)",
+  
+  M5_fqcy =
+    "Thermal–disturbance–hydroclimate model",
+  
+  M6_fqcy =
+    "Integrated climate model (frequency)",
+  
+  M7_fqcy =
+    "Full climate-regime model (frequency)",
+  
+  M4_av =
+    "Thermal–disturbance model (intensity)",
+  
+  M5_av =
+    "Thermal–disturbance–hydroclimate model",
+  
+  M6_av =
+    "Integrated climate model (intensity)",
+  
+  M7_av =
+    "Full climate-regime model (intensity)"
+)
+
+tbl_combined <- tbl_combined %>%
+  mutate(
+    Model_Label =
+      recode(Model,
+             !!!combined_labels)
+  )
+
+
+tbl_combined <- tbl_combined %>%
+  mutate(
+    Weight = c(
+      best_pm_cb$ranking$weight[1],
+      best_fl_cb$ranking$weight[1],
+      best_bz_cb$ranking$weight[1],
+      best_sc_cb$ranking$weight[1],
+      best_reg_cb$ranking$weight[1]
+    )
+  )
+
+tbl_combined <- tbl_combined %>%
+  select(
+    Panel,
+    Model,
+    Model_Label,
+    AIC,
+    Weight,
+    DevianceExplained,
+    R2_Adj,
+    SignificantTerms,
+    Climate_p,
+EDF_Terms
+)
+
+
+gt_combined <- tbl_combined %>%
+  
+  arrange(
+    factor(
+      Panel,
+      levels = c(
+        "Punta Maroma",
+        "Florida",
+        "Belize",
+        "Saint Croix",
+        "Regional"
+      )
+    )
+  ) %>%
+  
+  gt() %>%
+  
+  fmt_scientific(
+    columns = Climate_p,
+    decimals = 3
+  ) %>%
+  
+  fmt_number(
+    columns = c(
+      AIC,
+      DevianceExplained,
+      R2_Adj
+    ),
+    decimals = 3
+  ) %>%
+  
+  cols_label(
+    Panel = "Panel",
+    Model = "Model",
+    Model_Label = "Climate Model",
+    AIC = "AIC",
+    Weight = "Akaike Weight",
+    DevianceExplained = "Deviance\nExplained",
+    R2_Adj = "R² Adj",
+    SignificantTerms = "Significant Terms",
+    Climate_p = "Climate p-value",
+    EDF_Terms = "EDF Terms"
+  ) %>%
+  
+  cols_width(
+    Model ~ px(100),
+    Model_Label ~ px(320),
+    SignificantTerms ~ px(220),
+    EDF_Terms ~ px(320)
+  ) %>%
+  
+  tab_style(
+    style = list(
+      cell_fill(color = "#7298c2"),
+      cell_text(
+        color = "white",
+        weight = "bold"
+      )
+    ),
+    locations = cells_column_labels()
+  ) %>%
+  
+  tab_header(
+    title = md(
+      "**Best-supported combined GAMs by panel**"
+    ),
+    subtitle = md(
+      "*Top multivariate model selected by AIC*"
+    )
+  ) %>%
+  
+  opt_row_striping() %>%
+  
+  tab_options(
+    table.font.size = 12,
+    data_row.padding = px(5)
+  )
+
+gt_combined
+```
+
+In this code block, we select the highest-ranked combined GAM for each panel and summarize model performance, significant climatic predictors, EDF values, and Akaike support in a comparative table. This provides a concise overview of the best-supported multivariate climate models prior to detailed diagnostics and model validation.
+
+```{r,echo=FALSE}
+print_best_combined <- function(best_obj,
+                                panel_name){
+  
+  cat("\n====================================\n")
+  cat(panel_name, "\n")
+  cat("====================================\n")
+  
+  cat(
+    "\nBEST COMBINED MODEL:",
+    best_obj$best_model,
+    "\n\n"
+  )
+  
+  print(
+    summary(
+      best_obj$fit
+    )
+  )
+  
+}
+
+print_best_combined(best_pm_cb, "Punta Maroma")
+print_best_combined(best_fl_cb, "Florida")
+print_best_combined(best_bz_cb, "Belize")
+print_best_combined(best_sc_cb, "Saint Croix")
+print_best_combined(best_reg_cb, "Regional")
+```
+
+### 4. Models' Quality Control (combined effects)
+
+To ensure methodological transparency and meet standard practices in GAM-based ecological modeling, we include diagnostic plots of residual behavior in this Supplementary Material. These visual procedures allow us to complement the quantitative metrics (adjusted R², MSE, EDF, k-index), and to confirm that the model does not exhibit systematic bias or structural misfit. We report the diagnostic suite generated by *gam.check()*.
+
+### 4.1 gam.check and plot.gam
+
+The *gam.check()* visual outcome in the **Suppl. Fig. 6** provides a more comprehensive evaluation, including a Q-Q plot to assess normality, a histogram of residuals, residuals versus the linear predictor, and observed versus fitted values for each selected best GAM fitted.  
+
+**Suppl. Material 2. Diagnostic plots for the fitted GAM model, via *gam.check()*** Compilation includes Q-Q plot, histogram of residuals, residuals vs. linear predictor, and response vs. fitted values for each reef site and the regional scope.
+
+**4.2 Combined GAM Visual Outcome**
+
+29. This chunk thus provides a comparative visualization of the fitted GAMs, illustrating how climatic and disturbance predictors shape coral fossil density across local and regional scales for each site (***Punta Maroma*****, *Florida*, *Belize***) and the **regional** aggregate, using beta regression with logit link and restricted maximum likelihood estimation. Summaries of each fitted model are generated to evaluate explanatory power and significance of predictors. A consistent color scheme is defined for sites, and all models are collected into a list for streamlined processing. Smooth estimates and confidence intervals are extracted with the `gratia` package, pooled across sites, and reshaped into a long format for visualization. The resulting plot (`p_all`) displays partial effects of predictors (age, temperature anomalies, rates of change, hurricane frequency and averages) with smooth curves and shaded confidence ribbons, faceted by predictor to highlight variable‑specific responses. Colors and fills distinguish sites, while minimalist formatting emphasizes interpretability. The figure output corresponds to the main text' **Figure 4**. **Generalized Additive Model (GAM) partial effect plots** which here is exported as a high‑resolution PDF for publication.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=12, fig.height=10}
+
+library(gratia)
+library(dplyr)
+library(ggplot2)
+
+best_models <- list(
+  "Punta Maroma" = best_pm_cb$fit,
+  "Florida"      = best_fl_cb$fit,
+  "Belize"       = best_bz_cb$fit,
+  "Saint Croix"  = best_sc_cb$fit,
+  "Regional"     = best_reg_cb$fit
+)
+
+summary(best_models[["Punta Maroma"]])
+summary(best_models[["Florida"]])
+summary(best_models[["Belize"]])
+summary(best_models[["Saint Croix"]])
+summary(best_models[["Regional"]])
+
+df_all <- purrr::map_df(names(best_models), function(site) {
+  smooth_estimates(best_models[[site]], ci_level = 0.95) %>%
+    add_confint() %>%
+    mutate(site = site)
+})
+
+df_all <- df_all %>%
+  mutate(site = factor(site, levels = names(custom_colors)))
+
+smooth_predictor_cols <- intersect(
+  c("age", "GMHT_CPS0_30N", "dT_raw", "Hur100_av", "Hur100_fqcy"),
+  names(df_all)
+)
+
+df_long <- df_all %>%
+  pivot_longer(cols = all_of(smooth_predictor_cols),
+               names_to = "predictor", values_to = "xvar") %>%
+  filter(!is.na(xvar))
+
+p_all <- ggplot(df_long, aes(x = xvar, y = .estimate, colour = site, fill = site)) +
+  geom_ribbon(aes(ymin = .lower_ci, ymax = .upper_ci), alpha = 0.15, colour = NA) +
+  geom_line(linewidth = 1.3) +
+  facet_wrap(~predictor, scales = "free") +   # <- eje X y Y libres
+  scale_colour_manual(values = custom_colors, breaks = names(custom_colors)) +
+  scale_fill_manual(values = custom_colors, breaks = names(custom_colors)) +
+  labs(y = "Partial effect", x = "Predictor") +
+  theme_minimal(base_size = 14) +
+  theme(
+    axis.title = element_text(size = 12),
+    axis.text  = element_text(size = 12),
+    plot.title = element_text(size = 14, face = "bold"),
+    legend.position = "bottom"
+  )
+p_all
+ggsave("Figure_3.pdf", plot = p_all, width = 8, height = 7, dpi = 300, device = cairo_pdf)
+```
+
+Next four code blocks ( 30- 33) perform diagnostic checks and visualizations for each best GAM fitted to the *site-specific* datasets. The `gam.check` function is used to assess model adequacy, producing standard diagnostic plots (residuals vs. fitted values, Q–Q plot, histogram of residuals, and residuals vs. linear predictor). These are arranged in a 2×2 grid for clarity. Subsequently, partial effect plots for all smooth terms are generated with `plot`, using shaded confidence intervals and rug plots to indicate data density along the predictor axes. The layout is set to a 2×3 grid, allowing simultaneous inspection of multiple predictors. Together, these diagnostics provide a comprehensive evaluation of model fit, residual behavior, and the functional form of predictor effects, ensuring both statistical validity and ecological interpretability of the GAM results for *each site*.
+
+##### Punta Maroma
+
+30
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=12, fig.height=10}
+par(mfrow = c(2,2))
+invisible(capture.output(gam.check(best_models[["Punta Maroma"]])))
+par(mfrow = c(2,3))
+plot(best_models[["Punta Maroma"]], shade=TRUE, pages=1, all.terms=TRUE, rug=TRUE)
+```
+
+##### **Florida**
+
+31
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=12, fig.height=10}
+
+par(mfrow = c(2,2))
+invisible(capture.output(gam.check(best_models[["Florida"]])))
+par(mfrow = c(2,3))
+plot(best_models[["Florida"]], shade=TRUE, pages=1, all.terms=TRUE, rug=TRUE)
+```
+
+##### **Belize**
+
+32
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=12, fig.height=10}
+
+par(mfrow = c(2,2))
+invisible(capture.output(gam.check(best_models[["Belize"]])))
+par(mfrow = c(2,3))
+plot(best_models[["Belize"]], shade=TRUE, pages=1, all.terms=TRUE, rug=TRUE)
+```
+
+##### Regional
+
+33
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=12, fig.height=10}
+
+par(mfrow = c(2,2))
+invisible(capture.output(gam.check(best_models[["Regional"]])))
+par(mfrow = c(2,3))
+plot(best_models[["Regional"]], shade=TRUE, pages=1, all.terms=TRUE, rug=TRUE)
+```
+
+##### Saint Croix
+
+33b. Diagnostics for Saint Croix's selected combined GAM, now fit with a safe (capped) basis dimension given its small panel size.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=12, fig.height=10}
+
+par(mfrow = c(2,2))
+invisible(capture.output(gam.check(best_models[["Saint Croix"]])))
+par(mfrow = c(2,3))
+plot(best_models[["Saint Croix"]], shade=TRUE, pages=1, all.terms=TRUE, rug=TRUE)
+```
+
+#### 4.2 Residuals' Temporal Independency Analysis
+
+The residual independency analysis underscores clear site‑specific differences in temporal autocorrelation. While **Punta Maroma** and **Regional** models achieve residual independence, **Belize** demonstrates acceptable independence, whereas **Florida** retains moderate autocorrelation. These diagnostics confirm that temporal dependence is site‑specific, with Florida emerging as the most problematic case.
+
+At **Punta Maroma** (M4_av), residuals show slight negative autocorrelation (φ_AR1 = −0.31, DW = 2.50, p = 0.91; Ljung–Box p = 0.63), indicating overall independence and confirming that the model captures local dynamics without leaving temporal dependence. The **Regional** model (M7_av) also achieves residual independence, with slightly negative autocorrelation (φ_AR1 = −0.22, DW = 2.39, p = 0.81; Ljung–Box p = 0.46), suggesting that aggregated signals, despite diluting site‑specific variability, retain a stable temporal structure. Hence, these two models can be interpreted with confidence.
+
+For **Belize** (M6_fqcy), residuals are close to independence (φ_AR1 = 0.06, DW = 1.83, p = 0.31; Ljung–Box p = 0.70), showing no significant evidence of autocorrelation and suggesting acceptable stability. This site‑specific model provides useful, though somewhat less robust, inference.
+
+In contrast, **Florida** (M7_av) exhibits moderate positive autocorrelation (φ_AR1 = 0.27, DW = 1.44, p = 0.027; Ljung–Box p = 0.11), consistent with short‑term dependence and weaker temporal fit. This residual pattern requires caution: additional model refinement (e.g., incorporating correlation structures or alternative predictors) may be necessary to avoid biased inference.
+
+**Suppl.Table 7. Residual independency analysis across fitted combined model across reef sites and the regional scope.** Reported metrics include lag‑1 autocorrelation (φ_AR1), Durbin–Watson statistics and p‑values, and Ljung–Box test results. Findings highlight strong autocorrelation in Belize and Regional models, moderate dependence in Florida and Saint Croix, and near‑independent residuals in Punta Maroma.
+
+34. This code block evaluates the temporal independence of residuals from the best GAMs across all sites (***Belize*****, *Florida*, *Punta Maroma*, *Regional*, *Saint Croix***). A helper function (`check_temporal_independence`) computes diagnostic statistics: the AR(1) coefficient (ϕ), the Durbin–Watson statistic and p‑value, and the Ljung–Box test statistic and p‑value, using Pearson residuals. For each site, the best model already selected via `get_best_combined()` in the Figure 4 chunk is reused (not refitted), residuals are extracted, and diagnostics are compiled into a summary table. Autocorrelation and partial autocorrelation functions (ACF/PACF) are plotted for each site, saved as a PDF for publication. Additional helper functions (`acf_df`, `pacf_df`) convert ACF/PACF outputs into tidy data frames, which are combined across sites. A comparative visualization (`plot_acf_pacf`) is then generated, showing bar plots of ACF and PACF values by lag, faceted by site and diagnostic type, with dashed lines indicating approximate confidence bounds. This routine provides a systematic assessment of residual independence, ensuring that temporal autocorrelation does not bias inference and highlighting differences in residual structure across reef sites and the regional aggregate.
+
+```{r,echo=FALSE}
+
+data_list <- list(
+  "Belize"       = datos_bz,
+  "Florida"      = datos_fl,
+  "Punta Maroma" = datos_pm,
+  "Regional"     = datos_reg,
+  "Saint Croix"  = datos_sc
+)
+
+library(mgcv)
+library(lmtest)
+
+check_temporal_independence <- function(mod) {
+  # Extraer residuales tipo pearson
+  res_raw <- residuals(mod, type = "pearson")
+  if (is.list(res_raw)) res_raw <- unlist(res_raw)
+  res_raw <- as.numeric(res_raw)
+  
+  # AR(1) coeficiente
+  phi <- cor(res_raw[-1], res_raw[-length(res_raw)])
+  
+  # Durbin–Watson
+  dw <- lmtest::dwtest(res_raw ~ 1)
+  
+  # Ljung–Box
+  lb <- Box.test(res_raw, lag = 10, type = "Ljung-Box")
+  
+  list(
+    phi_AR1 = phi,
+    DW_stat = dw$statistic,
+    DW_pval = dw$p.value,
+    LB_stat = lb$statistic,
+    LB_pval = lb$p.value,
+    res_raw = res_raw
+  )
+}
+
+## Reuse each site's already-selected/fitted best combined GAM (`best_models`,
+## built in the Figure 4 chunk from best_*_cb$fit) instead of refitting via
+## pars_table/formulas_cb, which no longer exist after the parsimony-analysis
+## chunks were removed. Named `best_models_table` (rather than `best_models`)
+## to avoid shadowing that list of fitted model objects.
+best_cb_lookup <- list(
+  "Punta Maroma" = best_pm_cb,
+  "Florida"      = best_fl_cb,
+  "Belize"       = best_bz_cb,
+  "Saint Croix"  = best_sc_cb,
+  "Regional"     = best_reg_cb
+)
+
+best_models_table <- tibble(
+  Segment = names(best_models),
+  Model   = vapply(names(best_models), function(s) best_cb_lookup[[s]]$best_model, character(1))
+)
+
+results_resid <- lapply(seq_len(nrow(best_models_table)), function(i) {
+  seg <- best_models_table$Segment[i]
+  mname <- best_models_table$Model[i]
+  cat("Using model:", mname, "for segment:", seg, "\n")
+
+  mod <- best_models[[seg]]
+
+  diag <- check_temporal_independence(mod)
+  
+  df <- data.frame(Segment = seg,
+                   Model = mname,
+                   phi_AR1 = diag$phi_AR1,
+                   DW_stat = diag$DW_stat,
+                   DW_pval = diag$DW_pval,
+                   LB_stat = diag$LB_stat,
+                   LB_pval = diag$LB_pval)
+  
+  attr(df, "res_raw") <- diag$res_raw
+  df
+})
+
+res_summary <- do.call(rbind, results_resid)
+
+res_summary %>%
+  gt() %>%
+  tab_header(
+    title = "Residual Independency Analysis - All segments"
+  ) %>%
+  fmt_number(columns = c(phi_AR1, DW_stat, DW_pval, LB_stat, LB_pval),
+             decimals = 3)
+
+pdf("acf_pacf_residuals_all.pdf")
+for (i in seq_len(nrow(best_models_table))) {
+  seg <- best_models_table$Segment[i]
+  mname <- best_models_table$Model[i]
+  res_raw <- attr(results_resid[[i]], "res_raw")
+  
+  par(mfrow=c(1,2))
+  acf(res_raw, main=paste("ACF -", seg, mname))
+  pacf(res_raw, main=paste("PACF -", seg, mname))
+}
+dev.off()
+
+acf_df <- function(res, type = "ACF", site) {
+  acf_obj <- acf(res, plot = FALSE)
+  tibble(
+    Lag = acf_obj$lag[, , 1],
+    Value = acf_obj$acf[, , 1],
+    Type = type,
+    Site = site
+  )
+}
+
+pacf_df <- function(res, type = "PACF", site) {
+  pacf_obj <- pacf(res, plot = FALSE)
+  tibble(
+    Lag = pacf_obj$lag,
+    Value = pacf_obj$acf,
+    Type = type,
+    Site = site
+  )
+}
+
+df_all <- bind_rows(lapply(seq_len(nrow(best_models_table)), function(i) {
+  seg <- best_models_table$Segment[i]
+  res_raw <- attr(results_resid[[i]], "res_raw")
+  bind_rows(
+    acf_df(res_raw, "ACF", seg),
+    pacf_df(res_raw, "PACF", seg)
+  )
+}))
+
+plot_acf_pacf <- ggplot(df_all, aes(x = Lag, y = Value, fill = Site)) +
+  geom_col(show.legend = FALSE) +
+  scale_fill_manual(values = custom_colors) +
+  geom_hline(yintercept = 0, color = "black") +
+  geom_hline(yintercept = c(-0.2, 0.2), linetype = "dashed", color = "grey40") +
+  facet_grid(Type ~ Site, scales = "free_y") +
+  labs(title = "ACF and PACF of residuals - Between sites comparisson",
+       y = "Correlación", x = "Lag") +
+  theme_minimal(base_size = 12) +
+  theme(
+    strip.text = element_text(face = "bold"),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
+
+plot_acf_pacf
+```
+
+#### 4.3 Concurvity analysis
+
+Concurvity diagnostics reveal marked differences in predictor redundancy across sites. At **Punta Maroma** (M4_av), concurvity for s(age) is essentially negligible (observed ≈ 1.2 × 10⁻³³), indicating near‑complete independence of age as a predictor. This underscores the robustness of the local specification, as age contributes unique explanatory power without overlap.
+
+In **Florida** (M7_av), concurvity is high for s(age) (observed ≈ 0.92) but low for hurricane impact average (s(Hur100_av) ≈ 0.27). This suggests that while age shares explanatory variance with other predictors, hurricane effects provide independent information, reinforcing their interpretive value.
+
+For **Belize** (M6_fqcy), concurvity values are moderate (observed ≈ 0.71–0.83), reflecting partial redundancy between age and hurricane predictors. This indicates that while the model captures relevant signals, predictor overlap may limit interpretability and requires cautious inference.
+
+At the regional scale (M7_av), concurvity for s(age) is high (observed ≈ 0.92), consistent with strong redundancy in aggregated datasets. However, hurricane predictors retain moderate independence (estimate ≈ 0.67–0.82), supporting their inclusion in combined models to capture non‑redundant climatic signals.
+
+**Interpretation:** These results highlight that predictor independence is strongest in **Punta Maroma**, acceptable in **Florida** for hurricane effects, and more limited in Belize and the regional dataset due to redundancy in age. The site‑specific variability in concurvity emphasizes that model validity depends on local data structure, with **Florida** and **Punta Maroma** offering the most stable predictor independence, while Belize and Regional require more cautious interpretation.
+
+While the temporal spline (*s(age)*) is not a predictor but rather a structural term that preserves the chronology of the record, its concurvity values indicate the degree of overlap between temporal trends and climatic/disturbance predictors. At Punta Maroma, negligible concurvity confirms that the temporal trend is independent of other covariates. In Florida and the Regional panel, higher concurvity for *s(age)* reflects overlap between temporal structure and climatic signals, while hurricane predictors retain independence. In Belize, moderate concurvity suggests partial redundancy between temporal and disturbance terms. Overall, these results show that temporal structure can overlap with climatic variability, but disturbance predictors remain sufficiently independent to justify their inclusion.
+
+**Suppl.Table 8. Concurvity diagnostics across sites.** Observed concurvity values indicate near‑independence of predictors in **Punta Maroma**, low redundancy for hurricane effects in **Florida**, moderate overlap between age and hurricane predictors in **Belize**, and high collinearity of age at the regional scale. These results highlight site‑specific variability in predictor independence, with **Florida** and **Punta Maroma** showing the most stable signals, while Belize and the regional dataset exhibit greater redundancy.
+
+35. This code block assesses concurvity (collinearity among smooth terms) for the best GAM actually selected for each site. Previously this chunk hardcoded which terms to drop before calling `concurvity()`, and did so inconsistently with the model each site actually selected (e.g. it attempted to drop `s(Hur100_fqcy)` from Belize's model even when that model's hurricane term was `Hur100_av`, and vice versa) — a mismatch that could error out entirely. Here, `concurvity()` is instead applied directly to each site's `best_model_*` object (as fit in the previous chunk from `pars_table`/`formulas_cb`), so the smooth terms evaluated always match the model actually in use, for every site including Saint Croix.
+
+```{r, echo=FALSE}
+
+library(reshape2)
+library(dplyr)
+library(gt)
+
+concurvity_results <- lapply(best_models, function(m) concurvity(m, full = TRUE))
+concurvity_results
+
+```
