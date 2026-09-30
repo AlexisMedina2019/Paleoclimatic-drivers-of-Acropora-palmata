@@ -1773,7 +1773,17 @@ model_table %>%
 
 5.  If the beta fit fails, it refits the model as quasibinomial; such a model has no AIC and is excluded from the ranking.
 
-The function returns AIC, deviance explained, adjusted R², total EDF, ΔAIC and Akaike weights for each fitted model.
+6.  The function returns AIC, deviance explained, adjusted R², total EDF, ΔAIC and Akaike weights for each retained model; ΔAIC and weights are computed over the retained candidates only.
+
+    **Excluded candidates.** Because the thermal, hydroclimatic and hurricane regimes are defined on the same regional chronology and each site covers only part of the 60 bins, some regime levels are nested within others at site level:
+
+    - In Florida, Belize and Saint Croix, the "medium" hurricane regime occurs only within the CWP&MWA thermal regime, so M7_fqcy and M7_av are excluded.
+
+    - In Punta Maroma, the "cooler" thermal regime coincides with the wet and dry hydroclimatic states (all LIA and "warmer" bins are "variable"), so M6 and M7 of both branches are excluded.
+
+    - No candidate is excluded in the regional composite.
+
+Consequently, the number of candidates compared is 7 in Punta Maroma, 9 in Florida, Belize and Saint Croix, and 11 in the regional composite.
 
 ```{r function fit combined, echo=TRUE}
 
@@ -1809,7 +1819,7 @@ safe_k_for <- function(n_obs, n_smooth_terms) {
 
 fit_combined_gams_safe <- function(formulas_cb, data, segment_name) {
   
- data_clean <- data %>%
+  data_clean <- data %>%
     mutate(across(where(is.numeric), ~replace(., is.infinite(.), NA))) %>%
     drop_na()
   
@@ -1824,13 +1834,13 @@ fit_combined_gams_safe <- function(formulas_cb, data, segment_name) {
                     n_smooth, "smooth term(s)"))
       return(NULL)
     }
-
+    
     k_max <- safe_k_for(n_obs, n_smooth)
     f_safe <- if (n_smooth > 0) cap_smooth_k(f, k_max) else f
-
-   tryCatch({
+    
+    tryCatch({
       m <- if (n_obs > 100) {
-       bam(f_safe, data = data_clean, family = betar(link = "logit"),
+        bam(f_safe, data = data_clean, family = betar(link = "logit"),
             method = "fREML", select = TRUE, discrete = TRUE)
       } else {
         gam(f_safe, data = data_clean,
@@ -1840,12 +1850,12 @@ fit_combined_gams_safe <- function(formulas_cb, data, segment_name) {
       environment(m$formula) <- environment()
       m
     }, error = function(e) {
-      message(paste("Model", name, "fail in", segment_name, 
+      message(paste("Model", name, "fail in", segment_name,
                     "using betar:", e$message, "→ testing quasibinomial"))
       tryCatch({
         m2 <- gam(f_safe, data = data_clean,
-            family = quasibinomial(link = "logit"), method = "REML",
-            select = TRUE)
+                  family = quasibinomial(link = "logit"), method = "REML",
+                  select = TRUE)
         environment(m2$formula) <- environment()
         m2
       }, error = function(e2) {
@@ -1856,13 +1866,21 @@ fit_combined_gams_safe <- function(formulas_cb, data, segment_name) {
   })
   names(fits) <- names(formulas_cb)
   
- fits <- fits[!sapply(fits, is.null)]
+  fits <- fits[!sapply(fits, is.null)]
+  
+ rank_def <- vapply(fits, function(m) m$rank < length(coef(m)), logical(1))
+  excluded <- names(fits)[rank_def]
+  if (length(excluded)) {
+    message("Excluded as rank-deficient in ", segment_name, ": ",
+            paste(excluded, collapse = ", "))
+    fits <- fits[!rank_def]
+  }
   
   stats <- lapply(names(fits), function(name) {
     m <- fits[[name]]
     s <- summary(m)
     data.frame(
-      Model = name,   
+      Model = name,
       AIC = tryCatch(AIC(m), error = function(e) NA),
       DevianceExplained = s$dev.expl,
       R2_Adj = s$r.sq,
@@ -1886,7 +1904,7 @@ fit_combined_gams_safe <- function(formulas_cb, data, segment_name) {
     
   }
   
- if (nrow(stats_df) > 0) {
+  if (nrow(stats_df) > 0) {
     p_delta <- ggplot(stats_df, aes(x = reorder(Model, deltaAIC), y = deltaAIC)) +
       geom_col(fill = "steelblue") +
       geom_hline(yintercept = 2, linetype = "dashed", color = "red") +
@@ -1910,7 +1928,8 @@ fit_combined_gams_safe <- function(formulas_cb, data, segment_name) {
     plots <- NULL
   }
   
-  return(list(fits = fits, stats = stats_df, plots = plots))
+  return(list(fits = fits, stats = stats_df, plots = plots,
+              excluded = excluded))  
 }
 
 datos_pm <- merged_df_g %>% filter(panel == "Punta Maroma")
@@ -1977,19 +1996,32 @@ ggsave("Supp.Fig.5.pdf", plot = sup_fig5, width = 8, height = 7, dpi = 300, devi
 
 **Supplementary Fig. S5. Information-theoretic comparison of combined GAMs by panel.** Upper row: ΔAIC of each candidate in Table S7; the red dashed line marks ΔAIC = 2. Lower row: Akaike weights.
 
-**Main text Table 2. Best-supported combined GAM per panel** (lowest AIC): model, AIC, Akaike weight, deviance explained, adjusted R², terms with *p* \< 0.05 (`s(age)` excluded) with the smallest such *p*-value, and EDF of every smooth.
+```{r delta aic, echo=TRUE}
+library(dplyr)
+comparison_cb_full %>%
+  filter(deltaAIC <= 2) %>%
+  group_by(Segment) %>%
+  mutate(sum_weight = sum(weight)) %>%
+  ungroup() %>%
+  arrange(Segment, deltaAIC) %>%
+  select(Segment, Model, deltaAIC, weight, sum_weight) %>%
+  mutate(across(c(deltaAIC, weight, sum_weight), ~ round(.x, 2)))
+```
 
-- **Punta Maroma — M4_av** (weight 0.54; deviance explained 82.5 %). s(Hur100_av) is significant (EDF 4.07, *p* = 5.5 × 10⁻⁷), as is s(age) (*p* = 0.009); s(GMHT_CPS0_30N) and s(dT_raw) are not.
+**Main text Table 2. Best-supported combined GAM per panel** (lowest AIC): model, AIC, Akaike weight, deviance explained, adjusted R², climate terms with term-level *p* \< 0.05 (`s(age)` excluded), factor contrasts with *p*-value \< 0.05 versus reference level, and EDF of every smooth.
 
-- **Belize — M6_fqcy** (weight 0.43; 79.0 %). Significant terms: ThermalLIA (−2.39, *p* = 0.003), ThermalCWP&MWA (−1.77, *p* = 0.024), Hydro "variable" (+1.16, *p* = 0.039), s(GMHT_CPS0_30N) (EDF 1.71, *p* = 0.033) and s(Hur100_fqcy) (EDF 1.55, *p* = 0.032). s(dT_raw) is shrunk to EDF ≈ 0.
+- **Punta Maroma — M4_av** ((Akaike weight 0.81; deviance explained 82.5 %; adjusted R² 0.72). s(Hur100_av) is significant (EDF 4.07, *p* \< 10⁻⁴), as is s(age) (EDF 0.83, *p* = 0.009). s(GMHT_CPS0_30N) (EDF 1.12) and s(dT_raw) (EDF 0.52) are not significant.
 
-- **Saint Croix — M4_fqcy** (weight 0.28; 58.3 %). Significant terms: s(dT_raw) (EDF 1.55, *p* = 0.009) and s(Hur100_fqcy) (EDF 0.78, *p* = 0.032). s(GMHT_CPS0_30N) is shrunk to EDF ≈ 0.
+- **Florida — M4_av** (weight 0.32; 28.7 %; adjusted R² 0.18). s(Hur100_av) is the only significant term (EDF 1.59, *p* = 0.009). s(GMHT_CPS0_30N) (EDF 1.49) is retained but not significant, and s(age) and s(dT_raw) are shrunk to EDF ≈ 0.
 
-- **Florida — M7_av** (weight 0.87; 55.1 %). Significant terms: Hydro "dry" (−1.71, *p* = 3.7 × 10⁻⁴), Hydro "variable" (−1.88, *p* = 7.4 × 10⁻⁴), Hurricane "high" (−1.83, *p* = 6.0 × 10⁻⁴) and s(Hur100_av) (EDF 3.01, *p* = 4.3 × 10⁻⁴). s(age) and s(dT_raw) are shrunk to EDF ≈ 0. This model is rank-deficient (rank 43/44): the Hurricane "medium" coefficient cannot be estimated because in Florida that state occurs only together with the CWP&MWA thermal regime. **\[FIX BEFORE SUBMISSION: exclude or recode the aliased candidate and re-run the selection.\]**
+- **Belize — M6_fqcy** (weight 0.64; 79.0 %; adjusted R² 0.60). Significant terms: Thermal (joint test, *p* = 0.002), s(GMHT_CPS0_30N) (EDF 1.71, *p* = 0.033) and s(Hur100_fqcy) (EDF 1.55, *p* = 0.032). Within Thermal, abundance is lower than under the "warmer" reference in LIA (−2.39, *p* = 0.003) and CWP&MWA (−1.77, *p* = 0.024). Hydro is not significant as a term, although its "variable" contrast is (+1.16, *p* = 0.039). s(dT_raw) is shrunk to EDF ≈ 0.
 
-- **Regional composite — M6_av** (weight 0.30; 43.9 %). The only significant climate term is ThermalLIA (−1.96, *p* = 0.003); s(age) is also significant (EDF 2.75, *p* = 2 × 10⁻⁴). s(Hur100_av) and s(dT_raw) are shrunk to EDF ≈ 0, and s(GMHT_CPS0_30N) (EDF 0.60) is not significant.
+- **Saint Croix — M4_fqcy** (weight 0.31; 58.3 %; adjusted R² 0.43). Significant terms: s(dT_raw) (EDF 1.55, *p* = 0.009) and s(Hur100_fqcy) (EDF 0.78, *p* = 0.032). s(GMHT_CPS0_30N) is shrunk to EDF ≈ 0.
+
+- **Regional composite — M6_av** (weight 0.30; 43.9 %; adjusted R² 0.27). The only significant climate term is Thermal (joint test, *p* = 0.025), driven by the LIA contrast (−1.96, *p* = 0.003); s(age) is also significant (EDF 2.75, *p* = 2 × 10⁻⁴). s(Hur100_av) and s(dT_raw) are shrunk to EDF ≈ 0, and s(GMHT_CPS0_30N) (EDF 0.60) is not significant.
 
 ```{r Table 2,echo=TRUE}
+
 get_best_combined <- function(results_obj){
   
   ranking <- results_obj$stats %>%
@@ -2011,136 +2043,55 @@ best_bz_cb <- get_best_combined(results_bz)
 best_sc_cb <- get_best_combined(results_sc)
 best_reg_cb <- get_best_combined(results_reg)
 
-extract_combined_stats <- function(best_obj,
-                                   panel_name){
+extract_combined_stats <- function(best_obj, panel_name,
+                                   alpha = 0.05, p_floor = 1e-4) {
+  
+  fmt_p <- function(p) ifelse(p < p_floor, "<1e-04", sprintf("%.2g", p))
   
   model <- best_obj$fit
+  sm    <- summary(model)
+  av    <- anova(model)
   
-  sm <- summary(model)
- 
-  param_terms <- NULL
+  ## Term-level p-values (s(age) excluded)
+  pt_tab <- av$pTerms.table
+  p_par  <- if (!is.null(pt_tab) && NROW(pt_tab) > 0)
+    setNames(pt_tab[, "p-value"], rownames(pt_tab)) else numeric(0)
+  st_tab <- sm$s.table
+  st_cl  <- st_tab[rownames(st_tab) != "s(age)", , drop = FALSE]
+  p_smo  <- setNames(st_cl[, "p-value"], rownames(st_cl))
   
-  if(!is.null(sm$p.table)){
-    
-    ptab <- as.data.frame(sm$p.table)
-    
-    ptab$Term <- rownames(ptab)
-    
-    param_terms <- ptab %>%
-      filter(
-        Term != "(Intercept)",
-        `Pr(>|z|)` < 0.05
-      ) %>%
-      mutate(
-        Label = paste0(
-          Term,
-          " (p=",
-          signif(`Pr(>|z|)`,3),
-          ")"
-        )
-      )
+  p_all  <- c(p_par, p_smo)
+  p_all  <- pmax(p_all[!is.na(p_all)], 0)
+  sig    <- p_all[p_all < alpha]
   
-  }
-
-smooth_terms <- NULL
+  sig_terms <- if (length(sig))
+    paste0(names(sig), " (p=", fmt_p(sig), ")",
+           collapse = "; ") else "Not significant"
+  climate_p <- if (length(p_all)) min(p_all) else NA_real_
   
-  if(!is.null(sm$s.table)){
-    
-    stab <- as.data.frame(sm$s.table)
-    
-    stab$Term <- rownames(stab)
-    
-    smooth_terms <- stab %>%
-      filter(
-        Term != "s(age)",
-        `p-value` < 0.05
-      ) %>%
-      mutate(
-        Label = paste0(
-          Term,
-          " (EDF=",
-          round(edf,2),
-          ", p=",
-          signif(`p-value`,3),
-          ")"
-        )
-      )
-    
-  }
-  
-  sig_terms <- c(
-    param_terms$Label,
-    smooth_terms$Label
-  )
-  
-  sig_terms <- sig_terms[!is.na(sig_terms)]
-  
-  sig_text <- if(
-    length(sig_terms) == 0
-  ){
-    "Not significant"
-  } else {
-    paste(
-      sig_terms,
-      collapse = "; "
-    )
-  }
-  
-  
-  edf_terms <- if(!is.null(sm$s.table)){
-    
-    paste0(
-      rownames(sm$s.table),
-      " (EDF=",
-      round(sm$s.table[, "edf"],2),
-      ")",
-      collapse = "; "
-    )
-    
-  } else {
-    NA
-  }
-  
-  pvals <- c()
-  
-  if(!is.null(param_terms))
-    pvals <- c(
-      pvals,
-      param_terms$`Pr(>|z|)`
-    )
-  
-  if(!is.null(smooth_terms))
-    pvals <- c(
-      pvals,
-      smooth_terms$`p-value`
-    )
-  
-  climate_p <- if(
-    length(pvals) > 0
-  ){
-    signif(min(pvals),4)
-  } else {
-    NA
-  }
-  
+ptab  <- sm$p.table
+  contr <- ptab[rownames(ptab) != "(Intercept)", , drop = FALSE]
+  contr <- contr[!is.na(contr[, 4]) & contr[, 4] < alpha, , drop = FALSE]
+  sig_contr <- if (NROW(contr))
+    paste0(rownames(contr), " (", sprintf("%.2f", contr[, 1]),
+           ", p=", fmt_p(contr[, 4]), ")",
+           collapse = "; ") else "none"
   
   data.frame(
-    Panel = panel_name,
-    Model = best_obj$best_model,
-    AIC = round(AIC(model),3),
-    DevianceExplained =
-      round(sm$dev.expl,3),
-    R2_Adj =
-      round(sm$r.sq,3),
-    SignificantTerms =
-      sig_text,
-    Climate_p =
-      climate_p,
-    EDF_Terms =
-      edf_terms,
-    stringsAsFactors = FALSE
+    Panel                = panel_name,
+    Model                = best_obj$best_model,
+    AIC                  = round(AIC(model), 3),
+    DevianceExplained    = round(sm$dev.expl, 3),
+    R2_Adj               = round(sm$r.sq, 3),
+    SignificantTerms     = sig_terms,
+    Climate_p            = climate_p,
+    Climate_p_label      = if (is.na(climate_p)) "NA" else
+      fmt_p(climate_p),
+    SignificantContrasts = sig_contr,
+    EDF_Terms            = paste0(rownames(st_tab), " (EDF=",
+                                  round(st_tab[, "edf"], 2), ")", collapse = "; "),
+    stringsAsFactors     = FALSE
   )
-  
 }
 
 tbl_combined <- bind_rows(
@@ -2215,7 +2166,6 @@ tbl_combined <- tbl_combined %>%
              !!!combined_labels)
   )
 
-
 tbl_combined <- tbl_combined %>%
   mutate(
     Weight = c(
@@ -2227,104 +2177,55 @@ tbl_combined <- tbl_combined %>%
     )
   )
 
-tbl_combined <- tbl_combined %>%
-  select(
-    Panel,
-    Model,
-    Model_Label,
-    AIC,
-    Weight,
-    DevianceExplained,
-    R2_Adj,
-    SignificantTerms,
-    Climate_p,
-EDF_Terms
-)
 
+tbl_combined <- tbl_combined %>%
+  select(Panel, Model, Model_Label, AIC, Weight, DevianceExplained, R2_Adj,
+         SignificantTerms, SignificantContrasts, EDF_Terms)
 
 gt_combined <- tbl_combined %>%
-  
-  arrange(
-    factor(
-      Panel,
-      levels = c(
-        "Punta Maroma",
-        "Florida",
-        "Belize",
-        "Saint Croix",
-        "Regional"
-      )
-    )
-  ) %>%
-  
+  arrange(factor(Panel, levels = c("Punta Maroma", "Florida", "Belize",
+                                   "Saint Croix", "Regional"))) %>%
   gt() %>%
-  
-  fmt_scientific(
-    columns = Climate_p,
-    decimals = 3
-  ) %>%
-  
-  fmt_number(
-    columns = c(
-      AIC,
-      DevianceExplained,
-      R2_Adj
-    ),
-    decimals = 3
-  ) %>%
-  
+  fmt_number(columns = c(AIC, DevianceExplained, R2_Adj), decimals = 3) %>%
+  fmt_number(columns = Weight, decimals = 2) %>%
   cols_label(
-    Panel = "Panel",
-    Model = "Model",
-    Model_Label = "Climate Model",
-    AIC = "AIC",
-    Weight = "Akaike Weight",
-    DevianceExplained = "Deviance\nExplained",
-    R2_Adj = "R² Adj",
-    SignificantTerms = "Significant Terms",
-    Climate_p = "Climate p-value",
-    EDF_Terms = "EDF Terms"
+    Panel                = "Panel",
+    Model                = "Model",
+    Model_Label          = "Climate Model",
+    AIC                  = "AIC",
+    Weight               = "Akaike Weight",
+    DevianceExplained    = "Deviance Explained",
+    R2_Adj               = "R² Adj",
+    SignificantTerms     = "Significant terms (term-level p)",
+    SignificantContrasts = "Significant contrasts vs. reference",
+    EDF_Terms            = "EDF Terms"
   ) %>%
-  
-  cols_width(
-    Model ~ px(100),
-    Model_Label ~ px(320),
-    SignificantTerms ~ px(220),
-    EDF_Terms ~ px(320)
-  ) %>%
-  
-  tab_style(
-    style = list(
-      cell_fill(color = "#7298c2"),
-      cell_text(
-        color = "white",
-        weight = "bold"
-      )
-    ),
-    locations = cells_column_labels()
-  ) %>%
-  
-  tab_header(
-    title = md(
-      "**Best-supported combined GAMs by panel**"
-    ),
-    subtitle = md(
-      "*Top multivariate model selected by AIC*"
-    )
-  ) %>%
-  
+  cols_width(Model ~ px(90), Model_Label ~ px(220), SignificantTerms ~ px(220),
+             SignificantContrasts ~ px(240), EDF_Terms ~ px(300)) %>%
+  tab_style(style = list(cell_fill(color = "#7298c2"),
+                         cell_text(color = "white", weight = "bold")),
+            locations = cells_column_labels()) %>%
+  tab_header(title = md("**Best-supported combined GAMs by panel**"),
+             subtitle = md("*Top multivariate model selected by AIC*")) %>%
+  tab_footnote(
+    footnote = paste("Term-level p: joint Wald test of the whole term (all factor",
+                     "levels together; the spline for continuous predictors);",
+                     "s(age) excluded. Contrasts are relative to the reference",
+                     "levels warmer / wet / low. Rank-deficient candidates were",
+                     "excluded before model selection."),
+    locations = cells_column_labels(columns = SignificantTerms)) %>%
   opt_row_striping() %>%
-  
-  tab_options(
-    table.font.size = 12,
-    data_row.padding = px(5)
-  )
+  tab_options(table.font.size = 12, data_row.padding = px(5))
 
 gt_combined
-gt::gtsave(gt_combined, "Table_2.docx")
+gt::gtsave(gt_combined, "Table_2.docx")   
+
+list(`Punta Maroma` = results_pm$excluded, Florida = results_fl$excluded,
+     Belize = results_bz$excluded, `Saint Croix` = results_sc$excluded,
+     Regional = results_reg$excluded)
 ```
 
-The Akaike weights of the selected models are below 0.5 in Belize, Saint Croix and the regional composite, so in these panels the competitive set (Fig. S5), rather than the single top model, is the appropriate basis for inference. The Hydro "variable" contrast has opposite signs in Belize (+1.16) and Florida (−1.88).
+The selected model is supported in **Punta Maroma** (Akaike weight 0.81) and **Belize** (0.64): in both panels no other candidate lies within ΔAIC ≤ 2. In **Florida** (0.32), **Saint Croix** (0.31) and the **regional composite** (0.30), the competitive set (ΔAIC ≤ 2; Fig. S5) includes several models. In **Florida** it comprises three models of the average-hurricane branch (M4_av, M5_av and M6_av; ΔAIC ≤ 1.96; combined weight 0.59), which differ only in whether the hydroclimatic and thermal regimes are included. In **Saint Croix** it comprises two models of the hurricane-frequency branch (M4_fqcy and M5_fqcy; ΔAIC = 0.95; combined weight 0.51), which differ only in the hydroclimatic regime. In the **regional composite** it comprises five models (M6_av, M6_fqcy, M4_av, M7_av and M7_fqcy; ΔAIC ≤ 1.93; combined weight 0.83), spanning both hurricane metrics and models with and without categorical regimes. In these three panels the data do not discriminate between the selected model and simpler or more complex alternatives, so inference should rest on terms that recur across the competitive set rather than on the single top model. Across panels, the thermal regime is the only categorical predictor that is significant as a whole term in a selected model (Belize and the regional composite), always with lower abundance under LIA than under the "warmer" reference. The hydroclimatic regime is not significant as a term in any selected model.
 
 #### 3.3.4 Full summaries of the selected combined models
 
