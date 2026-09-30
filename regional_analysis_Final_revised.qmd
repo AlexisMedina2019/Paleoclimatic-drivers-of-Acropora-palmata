@@ -397,6 +397,7 @@ We assemble Fig. 3. Panel (a) is the count plot from Section 1. Below it, four p
 - **(e)** the nominal thermal, hydroclimatic and hurricane regimes, drawn as contiguous time segments.
 
 <!-- REVISED 2026-09-30: Fig. 3 caption now names the file actually saved by the code -->
+
 **Figure 3** (`Figure_3.pdf`). Reconstruction of regional coral abundance and paleoclimate trends. Because the climate panels are built from the record-level `merged_df`, bins without fossil records have no climate value and appear as gaps.
 
 ```{r fig3m,fig.width=12, fig.height=10,echo=TRUE}
@@ -1006,7 +1007,6 @@ tab_S3
 gt::gtsave(tab_S3, "Supplementary_Table_S3.docx")
 ```
 
-
 ##### Climate-combination summary
 
 ```{r,echo=TRUE}
@@ -1501,6 +1501,7 @@ print_best_models(best_reg,
 ```
 
 <!-- REVISED 2026-09-30: Table 1 now uses the term-level (joint Wald) test -->
+
 We then extract, for each of these models: AIC, deviance explained and adjusted R²; the climate term with the lowest term-level *p*-value (`s(age)` excluded) and that *p*-value; the factor contrasts with *p* \< 0.05; the EDF of each smooth; and a support label ("Supported" if the term-level climate *p* \< 0.05, otherwise "Weak support"). Term-level *p*-values come from a joint Wald test of the whole term (`anova()`): for a categorical regime, all levels are tested together; for a continuous predictor, the spline is tested. Contrasts are relative to the reference levels warmer / wet / low. *p*-values below 10⁻⁴ are reported as "\<1e-04", the precision limit of mgcv's approximation for smooth terms.
 
 <!-- REVISED 2026-09-30: removed the old underlined Table 1 caption, superseded by the caption below -->
@@ -1700,6 +1701,7 @@ gt::gtsave(gt_summary_m, "Table_1.docx")
 ```
 
 <!-- REVISED 2026-09-30: Table 1 results rewritten with term-level p-values from the new render -->
+
 Climate terms reach *p* \< 0.05 (term-level test) in the best marginal models of three panels:
 
 - **Punta Maroma:** s(Hur100_av) (EDF 5.21, *p* \< 10⁻⁴; deviance explained 83.4 %) and Thermal (*p* = 0.012), driven by the LIA contrast (−1.81, *p* = 0.003).
@@ -1711,11 +1713,13 @@ Climate terms reach *p* \< 0.05 (term-level test) in the best marginal models of
 No climate term reaches *p* \< 0.05 in Florida (Hydro, *p* = 0.12; s(Hur100_av), *p* = 0.25) or Saint Croix (s(dT_raw), *p* = 0.080; Hurricane, *p* = 0.21). Wherever the thermal regime is significant, abundance is lower under LIA (and, in Belize, also under CWP&MWA) than under the "warmer" reference.
 
 <!-- REVISED 2026-09-30: old underlined conclusion replaced -->
+
 In the best-supported marginal models, climate terms were significant in Punta Maroma, Belize and the regional composite, but not in Florida or Saint Croix. For Saint Croix, AIC did not discriminate among candidate predictors (*n* = 18).
 
 ### 3.3 Combined GAM effects analysis
 
 <!-- REVISED 2026-09-30: typos fixed -->
+
 To capture compounded climatic effects, we fit a nested sequence of additive GAMs, without interaction terms or random effects.
 
 #### 3.3.1 Candidate models
@@ -1772,6 +1776,7 @@ gt::gtsave(tab_S7, "Supplementary_Table_S7.docx")   # REVISED 2026-09-30
 #### 3.3.2 Fitting procedure (ΔAIC and Akaike weights)
 
 <!-- REVISED 2026-09-30: step 6 (exclusion of rank-deficient fits) added; list restructured -->
+
 `fit_combined_gams_safe()` fits the eleven candidates to each panel in six steps:
 
 1.  It removes rows with missing or infinite numeric values.
@@ -2008,6 +2013,7 @@ ggsave("Supplementary_Figure_S5.pdf", plot = sup_fig5, width = 8, height = 7, dp
 ```
 
 <!-- REVISED 2026-09-30: excluded candidates noted -->
+
 **Supplementary Figure S5. Information-theoretic comparison of combined GAMs by panel.** Upper row: ΔAIC of each retained candidate in Supplementary Table S7; the red dashed line marks ΔAIC = 2. Lower row: Akaike weights. Candidates excluded as rank-deficient (Section 3.3.2) are not shown.
 
 ```{r delta aic, echo=TRUE}
@@ -2023,6 +2029,7 @@ comparison_cb_full %>%
 ```
 
 <!-- REVISED 2026-09-30: label and typo fixes; Florida GMHT p added -->
+
 **Table 2. Best-supported combined GAM per panel** (lowest AIC): model, AIC, Akaike weight, deviance explained, adjusted R², climate terms with term-level *p* \< 0.05 (`s(age)` excluded), factor contrasts with *p*-value \< 0.05 versus reference level, and EDF of every smooth.
 
 - **Punta Maroma — M4_av** (Akaike weight 0.81; deviance explained 82.5 %; adjusted R² 0.72). s(Hur100_av) is significant (EDF 4.07, *p* \< 10⁻⁴), as is s(age) (EDF 0.83, *p* = 0.009). s(GMHT_CPS0_30N) (EDF 1.12) and s(dT_raw) (EDF 0.52) are not significant.
@@ -2398,6 +2405,7 @@ ggsave("Figure_4.pdf", plot = p_all, width = 12, height = 8, dpi = 300, device =
 ```
 
 <!-- REVISED 2026-09-30: Fig. 4 caption updated for the new Florida model and file name -->
+
 **Figure 4** (`Figure_4.pdf`). Partial effects of the selected combined GAMs on the logit scale, coloured by panel. The first five panels show the smooth terms with 95 % confidence bands; terms shrunk to EDF ≈ 0 plot as flat lines at zero (s(dT_raw) in Florida, Belize and the regional composite; s(age) in Florida; s(Hur100_av) in the regional composite). The sixth panel shows the thermal-regime effects in the two selected models that include this factor (Belize and the regional composite), with 95 % confidence intervals. All effects are centred to a weighted mean of zero over the fitted bins, so smooth and factor effects share the same baseline and can be compared directly: zero denotes the model's average contribution of that term, and a regime below zero is associated with lower abundance than average. Differences between regimes equal the contrasts in Table 2.
 
 ### 4.2 Concurvity analysis
@@ -2433,6 +2441,7 @@ gt::gtsave(tab_S8, "Supplementary_Table_S8.docx")
 ```
 
 <!-- REVISED 2026-09-30: renumbered S9 → S8; values updated with the new Florida model (M4_av) -->
+
 **Supplementary Table S8. Concurvity of the selected combined GAMs** (output above). Observed concurvity is high in every panel for s(age) (0.88–0.98) and high in most panels for s(GMHT_CPS0_30N) (0.88–0.95; 0.77 in Florida). The hurricane smooth reaches 0.76–0.87, except in Saint Croix (0.33), and s(dT_raw) ranges from 0.44 (Florida) to 0.78. In Belize and the regional composite, the only selected models with categorical regimes, the parametric block (the regime factors) is almost entirely reproducible by the smooths (≈ 1.00), as expected when each regime occupies contiguous blocks of time.
 
 The temporal trend, background temperature and categorical regimes are therefore largely interchangeable in these data. How variance is partitioned among them, and hence which term `select = TRUE` retains, is not uniquely determined, and the effects in Table 2 and Fig. 4 should be read as conditional on the other terms rather than as independent contributions. The least confounded terms are the hurricane smooth in Saint Croix and s(dT_raw) in Florida and Saint Croix.
@@ -2442,6 +2451,7 @@ The temporal trend, background temperature and categorical regimes are therefore
 For each panel we show the four `gam.check()` residual plots and all model terms (`plot(..., all.terms = TRUE)`, one page: smooths with 95 % bands and rug plots, plus factor effects).
 
 <!-- REVISED 2026-09-30: figure and table labels standardized to journal style throughout (Figure N / Table N; Supplementary Figure SN / Supplementary Table SN; Fig. and Supplementary Fig. in running text) -->
+
 **Supplementary Figure S6.** Residual diagnostics and fitted terms of the selected combined GAMs: (a) Punta Maroma, (b) Florida, (c) Belize, (d) regional composite and (e) Saint Croix.
 
 ##### 4.3.1 Punta Maroma
@@ -2652,6 +2662,7 @@ ggsave("Supplementary_Figure_S7.pdf", plot = plot_acf_pacf, width = 12, height =
 ```
 
 <!-- REVISED 2026-09-30: renumbered S10 → S9; Florida (M4_av) values updated -->
+
 **Supplementary Table S9. Residual independence of the selected combined GAMs** (output above).
 
 - **Ljung–Box:** no panel shows significant autocorrelation up to lag 10 (*p* = 0.08–0.31).
@@ -2663,4 +2674,5 @@ ggsave("Supplementary_Figure_S7.pdf", plot = plot_acf_pacf, width = 12, height =
 Two caveats apply. Bins without records are absent, so lag 1 does not always correspond to 100 years; this matters most for Saint Croix (18 of 60 bins) and Belize (27 of 60). With *n* = 18–58, both tests have limited power, especially Ljung–Box at lag 10 with *n* = 18.
 
 <!-- REVISED 2026-09-30: dashed lines are now the panel-specific 95 % limits -->
+
 **Supplementary Figure S7.** ACF and PACF of the residuals of the selected combined GAMs, by panel. Dashed lines mark the approximate 95 % limits for white noise (±1.96/√*n*), from ±0.26 in the regional composite (*n* = 58) to ±0.46 in Saint Croix (*n* = 18). Lags are counted in bins, which are not always consecutive centuries (see text).
