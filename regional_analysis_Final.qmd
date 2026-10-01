@@ -18,7 +18,9 @@ abstract: |
      first with one climate predictor at a time (marginal models) and then as a nested
      sequence of multi-predictor models, ranked by AIC and Akaike weights;
   5. diagnostics of the selected models (residual plots, concurvity, residual temporal
-     autocorrelation).
+     autocorrelation) and sensitivity analyses;
+  6. validation and robustness tests of the selected models (cross-validation against an
+     s(age)-only reference model, circular-shift test, drop-one influence).
 
   Code, outputs and a factual description of each result are shown together, so that
   every value reported in the main text can be traced to the code that produced it.
@@ -2778,6 +2780,257 @@ gt::gtsave(tab_S11, "Supplementary_Table_S11.docx")
 - **Florida source standardization.** With the pooled series, the same combined model is selected (M4_av), and s(Hur100_av) is stronger (*p* = 0.0003; deviance explained 43.7 % vs 28.7 %). The combined-model inference for Florida is therefore robust to how the sources are scaled. The marginal inference is not: on the pooled series the hurricane regime becomes the dominant marginal predictor (*p* = 0.007, lower abundance under "high" than under "low" hurricane activity), whereas on the source-standardized series it is not significant (*p* = 0.79).
 - **Saint Croix.** Neither s(dT_raw) (*p* = 0.056) nor s(Hur100_fqcy) (*p* = 0.059) remains significant in the binomial model, which confirms that the Saint Croix results are exploratory.
 - **Punta Maroma.** Added to the selected hurricane model, the thermal regime is not significant (*p* = 0.22), whereas s(Hur100_av) remains highly significant (*p* \< 10⁻⁴). The LIA effect found in the marginal thermal model (*p* = 0.012) is therefore not independent of hurricane activity in this panel.
+
+### 4.6 Predictive validation and robustness of the coral–climate associations
+
+Every model includes `s(age)`, which represents the temporal structure of each series: the long-term trend and low-frequency variation in abundance, including taphonomic and sampling effects that cannot be separated from ecological change. Climatic effects are therefore estimated conditional on `s(age)`. All analyses in this section compare the selected models with a reference model, `counts_norm_sv ~ s(age)`, and so ask whether climate adds information beyond the temporal structure of the coral record.
+
+For each panel we evaluate three models: the reference model, the best marginal model (lowest AIC, Section 3.2) and the selected combined model (Section 3.3). Four analyses are run:
+
+1.  **Cross-validation.** Each century is left out in turn, the model is refitted to the remaining centuries and the left-out century is predicted (leave-one-out, LOO). In a second version, the centuries within ±200 years of the left-out one are also removed from the fitting data (h-block), so that the prediction cannot borrow information from immediately adjacent centuries. Predictions are scored by their log-likelihood under the fitted beta distribution, and each model is compared with the reference model through the summed difference (ΔELPD; positive = better than the reference), its standard error and the percentage of centuries predicted better than by the reference.
+2.  **Circular-shift test.** The complete 60-bin climatic series (all predictors together) is rotated in time by 6–54 bins (600–5,400 years; 49 shifts) relative to the coral record, while the response and `s(age)` stay fixed. Rotation keeps the shape and autocorrelation of both series and the correlations among predictors, and destroys only their alignment. The statistic is the AIC improvement over the reference model; *p* = (1 + number of shifts with an improvement ≥ the observed one) / (1 + number of shifts). The smallest attainable *p* is 0.02. Shifts of ≤ 500 years are excluded because neighbouring centuries are autocorrelated.
+3.  **Drop-one influence.** Each century is removed in turn and the model refitted. For every climatic term we report its *p*-value with all data, the largest *p*-value across the drop-one fits, the century whose removal gives that largest value and the percentage of drop-one fits in which the term stays significant (*p* \< 0.05).
+4.  **Former cross-validation (withdrawn).** The five-fold cross-validation of the first revision is re-run to document why it was withdrawn (see below).
+
+During refitting the basis dimension of each smooth is capped with `safe_k_for()` from the number of fitting observations, and further reduced if the total number of coefficients would reach that number. A refit is skipped, and the left-out century counted as not predicted, when the fitting data do not contain every level of a categorical predictor or the categorical design is rank-deficient. For panels with at least 21 observations the full-data fits are identical to those of Sections 3.2–3.3. In Saint Croix (n = 18) the marginal smooths use k = 8 instead of the default 10, which changes the AIC of the marginal model by less than 0.01.
+
+```{r validation-robustness, warning=FALSE, message=FALSE}
+
+fac_vars <- c("Thermal", "Hydro", "Hurricane")
+
+# refit a model to a subset with the k cap and the rank / coefficient guards
+fit_val <- function(f, d, combined) {
+  ns <- count_smooth_terms(f)
+  for (v in intersect(fac_vars, all.vars(f))) d[[v]] <- droplevels(d[[v]])
+  fv <- intersect(fac_vars, all.vars(f)); n_par <- 1
+  if (length(fv)) {
+    X <- tryCatch(model.matrix(reformulate(fv), d), error = function(e) NULL)
+    if (is.null(X) || qr(X)$rank < ncol(X)) return(NULL)
+    n_par <- ncol(X)
+  }
+  if (ns > 0) {
+    k <- safe_k_for(nrow(d), ns)
+    while (k > 3 && n_par + ns * (k - 1) >= nrow(d)) k <- k - 1
+    if (n_par + ns * (k - 1) >= nrow(d)) return(NULL)
+    f <- cap_smooth_k(f, k)
+  }
+  tryCatch(suppressWarnings(gam(f, data = d, family = betar(link = "logit"),
+                                method = "REML", select = combined)),
+           error = function(e) NULL)
+}
+
+lpd_val <- function(m, test) {
+  if (is.null(m)) return(rep(NA_real_, nrow(test)))
+  for (v in intersect(fac_vars, all.vars(formula(m))))
+    if (any(!as.character(test[[v]]) %in% as.character(unique(m$model[[v]]))))
+      return(rep(NA_real_, nrow(test)))
+  mu  <- as.numeric(predict(m, newdata = test, type = "response"))
+  phi <- m$family$getTheta(TRUE)
+  dbeta(test$counts_norm_sv, mu * phi, (1 - mu) * phi, log = TRUE)
+}
+
+pointwise_cv <- function(f, d, combined, buffer = 0) {
+  sapply(seq_len(nrow(d)), function(i) {
+    drop <- if (buffer > 0) which(abs(d$age - d$age[i]) <= buffer + 1e-9) else i
+    lpd_val(fit_val(f, d[-drop, ], combined), d[i, , drop = FALSE])
+  })
+}
+
+val_data <- list("Punta Maroma" = datos_pm, "Florida" = datos_fl_std, "Belize" = datos_bz,
+                 "Saint Croix" = datos_sc, "Regional" = datos_reg)
+val_marg <- list("Punta Maroma" = best_pm, "Florida" = best_fl, "Belize" = best_bz,
+                 "Saint Croix" = best_sc, "Regional" = best_reg)
+val_comb <- list("Punta Maroma" = best_pm_cb, "Florida" = best_fl_cb, "Belize" = best_bz_cb,
+                 "Saint Croix" = best_sc_cb, "Regional" = best_reg_cb)
+
+val_models <- purrr::imap_dfr(val_data, function(d, site) tibble::tibble(
+  Panel = site,
+  Type  = c("Reference", "Marginal", "Combined"),
+  Model = c("s(age) only", val_marg[[site]]$ranking$Model[1], val_comb[[site]]$best_model)))
+
+val_formula <- function(type, model) switch(type,
+  Reference = counts_norm_sv ~ s(age),
+  Marginal  = formulas_mg[[model]],
+  Combined  = formulas_cb[[model]])
+
+cv_points <- purrr::pmap_dfr(val_models, function(Panel, Type, Model) {
+  d <- as.data.frame(val_data[[Panel]]) %>% arrange(age)
+  f <- val_formula(Type, Model); cb <- Type == "Combined"
+  tibble::tibble(Panel = Panel, Type = Type, Model = Model, age = d$age,
+                 LOO = pointwise_cv(f, d, cb, 0), hblock = pointwise_cv(f, d, cb, 0.2))
+})
+
+cv_summary <- cv_points %>%
+  group_by(Panel, age) %>%
+  mutate(dLOO = LOO - LOO[Type == "Reference"],
+         dHB  = hblock - hblock[Type == "Reference"]) %>%
+  ungroup() %>% filter(Type != "Reference") %>%
+  group_by(Panel, Type, Model) %>%
+  summarise(
+    n            = n(),
+    n_pred       = sum(!is.na(dLOO)),
+    dELPD_LOO    = sum(dLOO, na.rm = TRUE),
+    SE_LOO       = sqrt(sum(!is.na(dLOO))) * sd(dLOO, na.rm = TRUE),
+    dELPD_hblock = sum(dHB, na.rm = TRUE),
+    SE_hblock    = sqrt(sum(!is.na(dHB))) * sd(dHB, na.rm = TRUE),
+    pct_better   = 100 * mean(dLOO > 0, na.rm = TRUE),
+    worst_ka     = age[which.min(dLOO)],
+    .groups = "drop")
+
+clim_vars <- c("GMHT_CPS0_30N", "dT_raw", "Hur100_fqcy", "Hur100_av", fac_vars)
+cli_full  <- datos_cli %>% arrange(interval_max) %>%
+  mutate(age = round(interval_max, 1)) %>% select(age, all_of(clim_vars))
+for (v in fac_vars) cli_full[[v]] <- factor(cli_full[[v]], levels = levels(merged_df_g[[v]]))
+n_bins <- nrow(cli_full)
+shifts <- 6:(n_bins - 6)
+
+shift_null <- purrr::pmap_dfr(filter(val_models, Type != "Reference"), function(Panel, Type, Model) {
+  d   <- as.data.frame(val_data[[Panel]]) %>% mutate(age = round(age, 1))
+  f   <- val_formula(Type, Model); cb <- Type == "Combined"
+  ref <- AIC(fit_val(counts_norm_sv ~ s(age), d, FALSE))
+  obs <- ref - AIC(fit_val(f, d, cb))
+  null <- sapply(shifts, function(s) {
+    rot <- cli_full[((seq_len(n_bins) - 1 + s) %% n_bins) + 1, clim_vars]
+    rot$age <- cli_full$age
+    m <- fit_val(f, merge(d[, c("age", "counts_norm_sv")], rot, by = "age"), cb)
+    if (is.null(m) || m$rank < length(coef(m))) NA_real_ else ref - AIC(m)
+  })
+  tibble::tibble(Panel = Panel, Type = Type, Model = Model, shift = shifts,
+                 observed = obs, null = null)
+})
+
+shift_summary <- shift_null %>%
+  group_by(Panel, Type, Model) %>%
+  summarise(dAIC_vs_ref = first(observed),
+            n_shifts    = sum(!is.na(null)),
+            null_q95    = quantile(null, 0.95, na.rm = TRUE),
+            p_shift     = (1 + sum(null >= observed, na.rm = TRUE)) / (1 + sum(!is.na(null))),
+            .groups = "drop")
+```
+
+**Supplementary Table S12. Cross-validation and circular-shift test of the selected GAMs.** For each panel, the best marginal model and the selected combined model are compared with the reference model `counts_norm_sv ~ s(age)`. ΔAIC vs s(age): AIC improvement over the reference model with all data. ΔELPD: summed difference in out-of-sample log-likelihood relative to the reference model (positive = better), with its standard error, for leave-one-out (LOO) and leave-one-out with a ±200-year buffer (h-block). Centuries better: percentage of left-out centuries predicted better than by the reference model (LOO). Worst century: the century with the largest loss relative to the reference model (LOO). Shift-test *p*: circular-shift test with 49 shifts of 600–5,400 years (minimum attainable *p* = 0.02).
+
+```{r cv circ table}
+
+tab_S12_df <- cv_summary %>%
+  left_join(shift_summary, by = c("Panel", "Type", "Model")) %>%
+  mutate(Panel = factor(Panel, levels = site_order),
+         Type  = factor(Type, levels = c("Marginal", "Combined")),
+         `ΔAIC vs s(age)` = sprintf("%.1f", dAIC_vs_ref),
+         `LOO ΔELPD (SE)` = sprintf("%.1f (%.1f)", dELPD_LOO, SE_LOO),
+         `h-block ΔELPD (SE)` = sprintf("%.1f (%.1f)", dELPD_hblock, SE_hblock),
+         `Centuries better (%)` = sprintf("%.0f", pct_better),
+         `Worst century (ka)` = sprintf("%.1f", worst_ka),
+         `Shift-test p` = sprintf("%.3f", p_shift)) %>%
+  arrange(Panel, Type) %>%
+  select(Panel, Type, Model, n, `ΔAIC vs s(age)`, `LOO ΔELPD (SE)`, `h-block ΔELPD (SE)`,
+         `Centuries better (%)`, `Worst century (ka)`, `Shift-test p`)
+
+tab_S12 <- tab_S12_df %>%
+  gt(groupname_col = "Panel") %>%
+  tab_header(title = "Cross-validation and circular-shift test of the selected GAMs",
+             subtitle = "Reference model: counts_norm_sv ~ s(age)")
+tab_S12
+gt::gtsave(tab_S12, "Supplementary_Table_S12.docx")
+```
+
+```{r figs8}
+figS8 <- shift_null %>%
+  filter(!is.na(null)) %>%
+  mutate(Panel = factor(Panel, levels = site_order),
+         Label = paste0(Type, ": ", Model)) %>%
+  ggplot(aes(x = null)) +
+  geom_histogram(bins = 20, fill = "grey70", colour = "white") +
+  geom_vline(aes(xintercept = observed), colour = "red", linewidth = 0.8) +
+  facet_wrap(Panel ~ Label, scales = "free", ncol = 4) +
+  labs(x = "AIC improvement over s(age) (shifted climate series)", y = "Number of shifts") +
+  theme_minimal(base_size = 10)
+figS8
+ggsave("Supplementary_Figure_S8.pdf", plot = figS8, width = 12, height = 8, device = cairo_pdf)
+```
+
+**Supplementary Figure S8. Circular-shift null distributions.** Histograms of the AIC improvement over `s(age)` obtained when the climatic series is shifted by 600–5,400 years relative to the coral record; the red line marks the observed improvement.
+
+**Supplementary Table S13. Drop-one influence of individual centuries.** For each climatic term of the evaluated models: *p*-value with all data, largest *p*-value when one century is removed, the century whose removal gives that value, and the percentage of drop-one fits in which the term remains significant.
+
+```{r drop one infl}
+dropone <- purrr::pmap_dfr(filter(val_models, Type != "Reference"), function(Panel, Type, Model) {
+  d  <- as.data.frame(val_data[[Panel]]) %>% arrange(age)
+  f  <- val_formula(Type, Model); cb <- Type == "Combined"
+  p_full <- term_pvalues(fit_val(f, d, cb))
+  p_full <- p_full[names(p_full) != "s(age)"]
+  p_drop <- sapply(seq_len(nrow(d)), function(i) {
+    m <- fit_val(f, d[-i, ], cb)
+    if (is.null(m)) return(setNames(rep(NA_real_, length(p_full)), names(p_full)))
+    term_pvalues(m)[names(p_full)]
+  })
+  p_drop <- matrix(p_drop, nrow = length(p_full), dimnames = list(names(p_full), NULL))
+  tibble::tibble(Panel = Panel, Type = Type, Model = Model, Term = names(p_full),
+                 p_all = p_full,
+                 p_max = apply(p_drop, 1, max, na.rm = TRUE),
+                 century_max = d$age[apply(p_drop, 1, which.max)],
+                 pct_signif = 100 * rowMeans(p_drop < 0.05, na.rm = TRUE))
+})
+
+tab_S13 <- dropone %>%
+  mutate(Panel = factor(Panel, levels = site_order),
+         Type  = factor(Type, levels = c("Marginal", "Combined")),
+         `p (all data)` = fmt_p2(p_all),
+         `Largest p (drop-one)` = fmt_p2(p_max),
+         `Century removed (ka)` = sprintf("%.1f", century_max),
+         `Drop-one fits with p < 0.05 (%)` = sprintf("%.0f", pct_signif)) %>%
+  arrange(Panel, Type) %>%
+  select(Panel, Type, Model, Term, `p (all data)`, `Largest p (drop-one)`,
+         `Century removed (ka)`, `Drop-one fits with p < 0.05 (%)`) %>%
+  gt(groupname_col = "Panel") %>%
+  tab_header(title = "Drop-one influence of individual centuries on the climatic terms")
+tab_S13
+gt::gtsave(tab_S13, "Supplementary_Table_S13.docx")
+```
+
+- **Cross-validation.** In every panel the climate models predict most left-out centuries better than the reference model (60–77 % in LOO), but the summed scores are dominated by one to three centuries at the extremes of the climatic range, where the smooth terms must extrapolate beyond the values seen during fitting (for example, the most recent century at Punta Maroma carries the highest hurricane value of the series, Hur100_av = 45). The summed differences are of the same order as their standard errors, and their sign changes between LOO and h-block in Punta Maroma. With 18–58 centuries per panel, cross-validation therefore does not discriminate among the candidate models; the fitted models describe the sampled record and have limited predictive transferability beyond its climatic range.
+- **Circular-shift test.** The marginal associations in Punta Maroma (hurricane average), Belize (hurricane frequency) and the Regional panel (thermal regime) exceed all 49 shifted alignments (*p* = 0.02). For the combined models *p* = 0.06 (Punta Maroma), 0.044 (Belize) and 0.10 (Regional): a model with more smooth terms also fits the shifted series better, so its observed improvement is less exceptional. In Florida (*p* = 0.24–0.30) and Saint Croix (*p* = 0.26–0.30) the observed associations do not differ from the shifted alignments; they cannot be distinguished from a chance alignment of the two series and are treated as exploratory.
+- **Drop-one influence.** The thermal regime remains significant in every drop-one fit in Belize (largest *p* = 0.006) and in 93–98 % of the fits in the Regional panel (largest *p* = 0.06 and 0.08, on removing 0.2 and 0.8 ka). In Punta Maroma s(Hur100_av) remains significant in all drop-one fits of the combined model (largest *p* = 0.03) and in 97 % of those of the marginal model (largest *p* = 0.23, on removing 0.2 ka). The hurricane-frequency term is less stable in Belize: significant in 89 % of the marginal fits but in only 52 % of the combined fits. In Florida and Saint Croix several terms remain significant in most drop-one fits; their weakness lies in the circular-shift test, not in the influence of single centuries.
+- **Former cross-validation.** Because the Regional panel contains the site records, every observation entered the training data twice, and the score was computed against the mean of 4–6 test values per panel and fold. When those values are nearly identical, as is common with 2–6 distinct response values per site, the denominator approaches zero and the score becomes very negative or undefined (median of fold means −9.05 in Punta Maroma; undefined folds in 11 and 14 of the 20 fold assignments in Belize and Saint Croix). Its results therefore do not measure the predictive performance of the site models, and the analysis is replaced by the cross-validation above.
+
+```{r}
+## ---- (4) former five-fold cross-validation (withdrawn) -------------------------
+## One model fitted to all panels pooled (each record enters twice through the Regional
+## panel), stratified 5-fold split, score = 1 - SSE/SST with SST around the TEST-fold mean.
+old_cv <- function(seed) {
+  set.seed(seed)
+  dd <- as.data.frame(merged_df_g)
+  fo <- integer(nrow(dd))
+  for (p in unique(dd$panel)) {
+    i <- which(dd$panel == p); fo[i] <- sample(rep(1:5, length.out = length(i)))
+  }
+  purrr::map_dfr(1:5, function(k) {
+    m  <- bam(counts_norm_sv ~ s(age) + s(Hur100_av), data = dd[fo != k, ],
+              family = betar(link = "logit"), method = "fREML", discrete = TRUE)
+    te <- dd[fo == k, ] %>% mutate(pred = predict(m, ., type = "response"))
+    te %>% group_by(panel) %>%
+      summarise(score = 1 - sum((counts_norm_sv - pred)^2) /
+                  sum((counts_norm_sv - mean(counts_norm_sv))^2),
+                n_test = n(), .groups = "drop") %>%
+      mutate(seed = seed, fold = k)
+  })
+}
+old_cv_res <- purrr::map_dfr(1:20, old_cv)
+
+old_cv_res %>%
+  group_by(panel, seed) %>%
+  summarise(mean_score = mean(score), n_test = mean(n_test), .groups = "drop") %>%
+  group_by(Panel = panel) %>%
+  summarise(`Test points per fold` = round(mean(n_test), 1),
+            `Median of fold means` = signif(median(mean_score[is.finite(mean_score)]), 3),
+            `Range of fold means`  = paste(signif(range(mean_score[is.finite(mean_score)]), 3),
+                                           collapse = " to "),
+            `Assignments with an undefined fold` = sum(!is.finite(mean_score)),
+            .groups = "drop") %>%
+  mutate(Panel = factor(Panel, levels = site_order)) %>% arrange(Panel) %>%
+  gt() %>%
+  tab_header(title = "Former five-fold cross-validation, re-run over 20 random fold assignments")
+```
 
 ## Session information
 
