@@ -294,35 +294,66 @@ gt::gtsave(tab_S1, "Supplementary_Table_S1.docx")
 
 Each density integrates to one over the 0–6 ka window, so `mean_density` is close to 1/6 (0.153–0.169) in every panel. The informative quantities are the extremes. Maximum density occurs at 0.15 ka in **Punta Maroma** and **Belize**, at 1.05 ka in **Saint Croix**, and at 4.25 ka in **Florida** and in the **pooled** **regional** curve. Minima fall at 5.95 ka (**Punta Maroma**), 2.35 ka (**Belize**), 2.65 ka (**Saint Croix**), 1.55 ka (**Florida**) and 0.65 ka (**pooled regional**).
 
-**Figure 2** (raw version; `Figure_2.pdf`). Median kernel-density curves of *A. palmata* ages per site and for the pooled records. Shaded envelopes (95 % and interquartile) apply to the pooled curve only. Horizontal bars at the top mark the intervals defined above.
+**Figure 2** (raw version; `Figure_2.pdf`). Kernel-density curves of *A. palmata* ages. (a) Median curve of each site, with one colour and one line type per site. (b) Median curve of all records pooled, with the 2.5–97.5 % and interquartile envelopes across the resampled curves. Horizontal bars at the top of each panel mark the intervals defined above: local gaps at Punta Maroma and Belize in (a), and the intervals of the pooled curve in (b).
 
-```{r fig2m, fig.width=12, fig.height=6}
-custom_colors_plot <- custom_colors[names(custom_colors) %in% unique(signal_all$spot)]
+```{r fig2m, fig.width=8, fig.height=8}
+library(patchwork)
 
-p<-ggplot(signal_all, aes(x = x)) +
-  geom_rect(data = rects,
-    aes(xmin = xmin, xmax = xmax, ymin = 0.88, ymax = 0.98, fill = spot),
-      inherit.aes = FALSE,
-    alpha = 0.5) +
-  geom_ribbon(data = subset(signal_all, spot == "Regional (All spots)"),
-    aes(ymin = q025, ymax = q975, fill = spot), alpha = 0.15) +
-  geom_ribbon(data = subset(signal_all, spot == "Regional (All spots)"),
-    aes(ymin = q25, ymax = q75, fill = spot), alpha = 0.20) +
-  geom_line(aes(y = median, color = spot), linewidth = 1.5) +
-  scale_color_manual(values = custom_colors, guide = "legend") +
-  scale_fill_manual(values = custom_colors, guide = "none") +
-  guides(color = guide_legend("Region/Source",
-                              override.aes = list(fill = custom_colors_plot)),
-        shape = guide_legend("Region/Source")) +
+site_levels <- c("Punta Maroma", "Belize", "Saint Croix", "Florida")
+site_lty    <- c("Punta Maroma" = "solid", "Belize" = "longdash",
+                 "Saint Croix" = "dotdash", "Florida" = "dotted")
+
+sig_sites <- signal_all %>%
+  filter(spot %in% site_levels) %>%
+  mutate(spot = factor(spot, levels = site_levels))
+sig_reg <- signal_all %>% filter(spot == "Regional (All spots)")
+
+# gap bars drawn just above the highest curve of each panel
+top_a <- max(sig_sites$median, na.rm = TRUE)
+top_b <- max(sig_reg$q975, na.rm = TRUE)
+rects_a <- rects %>% filter(spot %in% site_levels) %>%
+  mutate(spot = factor(spot, levels = site_levels),
+         ymin = top_a * 1.04, ymax = top_a * 1.12)
+rects_b <- rects %>% filter(spot == "Regional (All spots)") %>%
+  mutate(ymin = top_b * 1.04, ymax = top_b * 1.12)
+
+x_scale <- list(
+  scale_x_continuous(breaks = seq(0, 6, 0.5), expand = c(0.01, 0)),
+  coord_cartesian(xlim = c(0, 6)),
+  theme_classic(base_size = 11),
+  theme(legend.position = "bottom", plot.tag = element_text(face = "bold"))
+)
+
+# (a) site-specific median signals: one colour and one line type per site
+p2a <- ggplot(sig_sites, aes(x = x)) +
+  geom_rect(data = rects_a,
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = spot),
+            inherit.aes = FALSE, alpha = 0.6, show.legend = FALSE) +
+  geom_line(aes(y = median, colour = spot, linetype = spot), linewidth = 1) +
+  scale_colour_manual(values = custom_colors[site_levels], name = "Site") +
+  scale_linetype_manual(values = site_lty, name = "Site") +
+  scale_fill_manual(values = custom_colors[site_levels], guide = "none") +
+  labs(x = NULL, y = "Density") +
+  x_scale + theme(axis.text.x = element_blank())
+
+# (b) pooled regional signal: median with 95 % and interquartile envelopes
+p2b <- ggplot(sig_reg, aes(x = x)) +
+  geom_rect(data = rects_b,
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+            inherit.aes = FALSE, fill = custom_colors["Regional (All spots)"], alpha = 0.6) +
+  geom_ribbon(aes(ymin = q025, ymax = q975, fill = "95 % interval"), alpha = 0.25) +
+  geom_ribbon(aes(ymin = q25, ymax = q75, fill = "Interquartile range"), alpha = 0.45) +
+  geom_line(aes(y = median, colour = "Median"), linewidth = 1.2) +
+  scale_fill_manual(values = c("95 % interval" = "grey60", "Interquartile range" = "grey40"),
+                    name = "Regional (all sites)") +
+  scale_colour_manual(values = c("Median" = unname(custom_colors["Regional (All spots)"])),
+                      name = NULL) +
   labs(x = "Time (ka BP)", y = "Density") +
-  theme(strip.background = element_blank(),
-        panel.background = element_blank(),
-        legend.position = "bottom") +
-  scale_x_continuous(breaks = seq(0, 6, 0.5),
-                     minor_breaks = seq(0, 6, 0.5)) +
-  coord_cartesian(xlim = c(0, 6))
+  x_scale
+
+p <- p2a / p2b + plot_annotation(tag_levels = "a")
 p
-ggsave("Figure_2.pdf", plot = p, width = 8, height = 5, dpi = 300, device = cairo_pdf)
+ggsave("Figure_2.pdf", plot = p, width = 8, height = 8, dpi = 300, device = cairo_pdf)
 ```
 
 ### 1.2 Summary of fossil records by site
