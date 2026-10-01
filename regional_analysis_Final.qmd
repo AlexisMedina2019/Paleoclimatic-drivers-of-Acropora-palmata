@@ -7,10 +7,11 @@ abstract: |
   (dated *Acropora palmata* fossils) and `df_GAM130326.xlsx` (centennial climate
   predictors). From these it reproduces:
 
-  1. kernel-density reconstructions of *A. palmata* age distributions for each reef
-     site and for all records pooled;
-  2. binning of fossil ages into 0.1-ka (centennial) intervals and their alignment
-     with climate predictors;
+  1. binning of fossil ages into 0.1-ka (centennial) intervals, their alignment with
+     climate predictors and the normalization of the response variable;
+  2. kernel-density reconstructions of *A. palmata* age distributions for each reef
+     site and for the regional composite, weighted so that they have the shape of the
+     modelled series;
   3. exploratory analyses of predictor correlation and of abundance across
      climate-regime combinations;
   4. beta-regression generalized additive models (GAMs) fitted separately to four reef
@@ -32,18 +33,7 @@ execute:
 
 # REGIONAL ACROPORA PALMATA ANALYSIS
 
-We import the fossil chronology (`ages_kernel_reg_updt.xlsx`) and retain *A. palmata* records (`group == "palmata"`) dated 0–6 ka.
-
-The function `calc_density_summary()` estimates the age distribution of a set of records by repeated subsampling. In each of 1,000 iterations it draws min(40, *n*) records without replacement and computes a Gaussian kernel density estimate over 0–6 ka (bandwidth 0.09 ka, 512 grid points). Across iterations it stores the pointwise median density and the 2.5–97.5 % and 25–75 % quantile envelopes (`signal_df`).
-
-The median curve is then summarized by 0.1-ka bins. `avg_median` is the mean of the median density over the grid points falling in each bin. `sd_median` and `se_median` describe how much the median curve varies within the bin; they are not measures of sampling uncertainty across iterations.
-
-The function is applied to each site and to all records pooled ("Regional (All spots)"), yielding `signal_all` (density curves) and `centennial_density_all` (centennial summaries).
-
-Two properties of this procedure affect interpretation:
-
-1.  **Envelopes are degenerate for small sites.** Because each iteration draws 40 records without replacement, every iteration uses all records for **Saint Croix** (*n* = 24), and all but one for **Belize** (*n* = 41). The envelopes therefore reflect subsampling variability only for **Punta Maroma** (*n* = 64), **Florida** (*n* = 128) and the **pooled** **regional** set (*n* = 257).
-2.  **The pooled curve is weighted toward Florida,** which contributes 128 of the 257 records. It differs from the regional composite used in the GAMs (Section 3.1.1), in which each site is weighted equally.
+We import the fossil chronology (`ages_kernel_reg_updt.xlsx`) and retain *A. palmata* records (`group == "palmata"`) dated 0–6 ka. The site colours defined here (`custom_colors`) are used in all figures.
 
 ```{r datos-reg}
 rm(list=ls(all=TRUE))
@@ -56,64 +46,20 @@ library(dplyr)
 library(ggplot2)
 library(stargazer)
 
-set.seed(20260930)   
+set.seed(20260930)
 datos_reg <- read_excel(here("ages_kernel_reg_updt.xlsx"))
 
 datos_reg_pal <- datos_reg %>%
   filter(group == "palmata", t_ka >= 0 & t_ka <= 6)
 
-calc_density_summary <- function(df, spot_name){
-  df$t_ka <- as.numeric(df$t_ka)
-  
-signalmx <- matrix(ncol = 512, nrow = 1000)
-  for(i in 1:nrow(signalmx)){
-    signalmx[i,] <- density(df$t_ka[sample(1:nrow(df), min(40, nrow(df)))],
-                            bw = 0.09, from = 0, to = 6)$y
-  }
-  
-  x <- seq(0, 5.999, length.out = 512)   
-  
-signal_df <- data.frame(
-    x      = x,
-    q025   = apply(signalmx, 2, quantile, 0.025),
-    q975   = apply(signalmx, 2, quantile, 0.975),
-    q25    = apply(signalmx, 2, quantile, 0.25),
-    q75    = apply(signalmx, 2, quantile, 0.75),
-    median = apply(signalmx, 2, median),
-    spot   = spot_name
-  )
-  
- breaks <- seq(0, 6, by = 0.1)
-  mids   <- breaks[-length(breaks)] + diff(breaks)/2
-  
-  centennial_summary <- signal_df %>%
-    mutate(interval = cut(x, breaks = breaks, include.lowest = TRUE, right = TRUE)) %>%
-    group_by(interval) %>%
-    summarise(
-      avg_median = mean(median, na.rm = TRUE),
-      sd_median  = sd(median, na.rm = TRUE),
-      n_obs      = n(),
-      .groups = "drop"
-    ) %>%
-    mutate(
-      se_median    = sd_median / sqrt(n_obs),
-      interval_mid = mids[as.numeric(interval)],
-      spot         = spot_name
-    )
-  
-  return(list(signal_df = signal_df, centennial_summary = centennial_summary))
-}
-
-spots <- unique(datos_reg_pal$spot)
-results_list <- lapply(spots, function(sp){
-  df_spot <- datos_reg_pal %>% filter(spot == sp)
-  calc_density_summary(df_spot, sp)
-})
-
-results_list <- c(results_list, list(calc_density_summary(datos_reg_pal, "Regional (All spots)")))
-
-signal_all <- bind_rows(lapply(results_list, function(x) x$signal_df))
-centennial_density_all <- bind_rows(lapply(results_list, function(x) x$centennial_summary))
+custom_colors <- c(
+  "Punta Maroma" = "#F2941A",
+  "Regional (All spots)" = "#4D4D4D",
+  "Regional"             = "#4D4D4D",
+  "Saint Croix" = "#CC79A7",
+  "Belize" = "#7D9E5F",
+  "Florida" = "#0072B2"
+)
 ```
 
 Each record is assigned to a 0.1-ka bin (right-closed intervals; the first interval includes 0), and the upper bound of the bin (`interval_max`) is stored as its centennial age. A second copy of all records is labelled "Regional", and the two sets are stacked into `centennial_counts_all`. This object is still record-level (one row per dated fossil); counts per bin are computed in later chunks.
@@ -153,212 +99,9 @@ centennial_counts_all <- bind_rows(centennial_counts_sites, centennial_counts_re
 
 ## *1. Data Overview*
 
-We count *A. palmata* records per site and 0.1-ka bin and plot them as stacked bars against the upper bin bound. The site colours defined here (`custom_colors`) are reused in all later figures. Bins without records are absent from the count table and appear as gaps.
+### 1.1 Summary of fossil records by site
 
-**Figure 3a** (`Figure_3a.pdf`). Number of *A. palmata* ages per 100-year interval, by reef site.
-
-```{r count-by-site}
-library(ggplot2)
-library(dplyr)
-
-custom_colors <- c(
-  "Punta Maroma" = "#F2941A",   #D3410F           
-  "Regional (All spots)" = "#4D4D4D",
-  "Regional"             = "#4D4D4D",
-  "Saint Croix" = "#CC79A7",         
-  "Belize" = "#7D9E5F",    
-  "Florida" = "#0072B2"
-)
-
-breaks <- seq(0, 6, by = 0.1)
-
-centennial_counts_sites <- datos_reg_pal %>%
-  mutate(interval_bin = cut(t_ka, breaks = breaks, include.lowest = TRUE, right = TRUE)) %>%
-  group_by(spot, interval_bin) %>%
-  summarise(counts = n(), .groups = "drop") %>%
-  mutate(interval_max = breaks[match(interval_bin, levels(interval_bin)) + 1],
-         spot = factor(spot, levels = c("Belize", "Saint Croix", "Florida", "Punta Maroma")))
-
-
-pr<-ggplot(centennial_counts_sites,
-       aes(x = interval_max, y = counts, fill = spot)) +
-  geom_bar(stat = "identity", position = "stack", alpha = 0.85) +
-  scale_fill_manual(values = custom_colors) +
-  labs(
-    x = "Time (ka BP)",
-    y = "Acropora palmata  \n fossils/100 years",
-    fill = "Site"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(
-    panel.grid.minor = element_blank(),
-    panel.grid.major.x = element_blank(),
-    legend.position = "bottom",
-    strip.text = element_text(face = "bold")
-  ) +
-  scale_x_continuous(
-    breaks = seq(0, 6, 0.5),
-    minor_breaks = seq(0, 6, 0.5)
-  ) +
-  coord_cartesian(xlim = c(0, 6))
-pr
-ggsave("Figure_3a.pdf", plot = pr, width = 8, height = 5, dpi = 300, device = cairo_pdf)
-```
-
-### *1.1 Acropora palmata* age densities (Site specific KDE)
-
-This section does three things:
-
-1.  It tabulates the centennial density summaries per site (Supplementary Table S1).
-
-2.  It plots the median density curve of every site, with 95 % and interquartile envelopes for the pooled regional curve only.
-
-3.  It defines the intervals highlighted in Fig. 2 (`rects`): **Punta Maroma** 0.71–1.44 ka; **Belize** 1.99–2.72, 3.68–4.20 and 5.54–6.00 ka; **pooled** **regional** curve 2.20–3.00 and 5.10–5.90 ka. The intervals correspond to local *Acropora palmata* presence gaps reported for **Punta Maroma** (Medina-Valmaseda et al., 2025) and **Belize** (Hubbard et al., 2005, Gischler et al., 2023).
-
-    Note: The panel labels assigned to `signal_all` in this chunk are not used by the plot.
-
-```{r dens}
-library(dplyr)
-library(knitr)
-library(scales) 
-library(colorspace)
-library(ggplot2)
-library(gt)
-
-rects<-data.frame(
-  xmin = c(0.71, 1.99, 2.2,3.68,5.1,5.54),
-  xmax = c(1.44, 2.72,3.0, 4.20,5.9,6.00),
-  ymin = -Inf,
-  ymax = Inf,
-  spot = c("Punta Maroma", "Belize","Regional (All spots)","Belize", "Regional (All spots)","Belize"))
-
-signal_all <- signal_all %>%
-  mutate(panel = case_when(
-    spot == "Punta Maroma" ~ "a) Local (Punta Maroma)",
-    spot == "Florida" ~ "b) Local (Florida)",
-    spot %in% c("Saint Croix","Belize") ~ "c) Regional (by zones)",
-    spot == "Regional (All spots)" ~ "d) Consolidated Regional"
-  ))
-
-centennial_density_all <- centennial_density_all %>%
-  mutate(panel = case_when(
-    spot == "Punta Maroma" ~ "Punta Maroma",
-    spot == "Florida" ~ "Florida",
-    spot == "Belize" ~ "Belize",
-    spot == "Saint Croix" ~ "Saint Croix",
-    spot == "Regional (All spots)" ~ "Regional"
-  ))
-
-signal_all <- signal_all %>%
-  filter(!is.na(panel)) %>%
-  mutate(panel = droplevels(factor(panel)))
-
-centennial_density_all <- centennial_density_all %>%
-  filter(!is.na(panel)) %>%
-  mutate(panel = droplevels(factor(panel)))
-centennial_density_all <- centennial_density_all %>%
-  filter(!is.na(interval_mid), interval_mid >= 0, interval_mid <= 6)
-
-
-tabla_resumen <- centennial_density_all %>%
-  group_by(panel) %>%
-  summarise(
-    mean_density = mean(avg_median, na.rm = TRUE),
-    sd_density   = mean(sd_median, na.rm = TRUE),
-    se_density   = mean(se_median, na.rm = TRUE),
-    min_density  = min(avg_median, na.rm = TRUE),
-    min_interval = interval_mid[which.min(avg_median)],
-    max_density  = max(avg_median, na.rm = TRUE),
-    max_interval = interval_mid[which.max(avg_median)],
-    n_intervals  = n(),
-    .groups = "drop"
-  ) %>%
-  arrange(panel)
-
-tab_S1 <- tabla_resumen %>%
-  gt() %>%
-  tab_header(
-    title = "Summary of centennial densities by site",
-    subtitle = "average, dispersion, and extremes"
-  ) %>%
-  fmt_number(columns = c(mean_density, sd_density, se_density,
-                         min_density, max_density,
-                         min_interval, max_interval),
-             decimals = 3)
-
-tab_S1
-gt::gtsave(tab_S1, "Supplementary_Table_S1.docx")   
-```
-
-**Supplementary Table S1. Centennial kernel-density summaries by site.** For each site: mean over the 60 bins of the centennial mean density (`mean_density`); mean within-bin SD and SE of the median curve; minimum and maximum centennial density, with the bin midpoint (ka) at which each occurs.
-
-Each density integrates to one over the 0–6 ka window, so `mean_density` is close to 1/6 (0.153–0.169) in every panel. The informative quantities are the extremes. Maximum density occurs at 0.15 ka in **Punta Maroma** and **Belize**, at 1.05 ka in **Saint Croix**, and at 4.25 ka in **Florida** and in the **pooled** **regional** curve. Minima fall at 5.95 ka (**Punta Maroma**), 2.35 ka (**Belize**), 2.65 ka (**Saint Croix**), 1.55 ka (**Florida**) and 0.65 ka (**pooled regional**).
-
-**Figure 2** (raw version; `Figure_2.pdf`). Kernel-density curves of *A. palmata* ages. (a) Median curve of each site, with one colour and one line type per site. (b) Median curve of all records pooled, with the 2.5–97.5 % and interquartile envelopes across the resampled curves. Horizontal bars at the top of each panel mark the intervals defined above: local gaps at Punta Maroma and Belize in (a), and the intervals of the pooled curve in (b).
-
-```{r fig2m, fig.width=8, fig.height=8}
-library(patchwork)
-
-site_levels <- c("Punta Maroma", "Belize", "Saint Croix", "Florida")
-site_lty    <- c("Punta Maroma" = "solid", "Belize" = "longdash",
-                 "Saint Croix" = "dotdash", "Florida" = "dotted")
-
-sig_sites <- signal_all %>%
-  filter(spot %in% site_levels) %>%
-  mutate(spot = factor(spot, levels = site_levels))
-sig_reg <- signal_all %>% filter(spot == "Regional (All spots)")
-
-# gap bars drawn just above the highest curve of each panel
-top_a <- max(sig_sites$median, na.rm = TRUE)
-top_b <- max(sig_reg$q975, na.rm = TRUE)
-rects_a <- rects %>% filter(spot %in% site_levels) %>%
-  mutate(spot = factor(spot, levels = site_levels),
-         ymin = top_a * 1.04, ymax = top_a * 1.12)
-rects_b <- rects %>% filter(spot == "Regional (All spots)") %>%
-  mutate(ymin = top_b * 1.04, ymax = top_b * 1.12)
-
-x_scale <- list(
-  scale_x_continuous(breaks = seq(0, 6, 0.5), expand = c(0.01, 0)),
-  coord_cartesian(xlim = c(0, 6)),
-  theme_classic(base_size = 11),
-  theme(legend.position = "bottom", plot.tag = element_text(face = "bold"))
-)
-
-# (a) site-specific median signals: one colour and one line type per site
-p2a <- ggplot(sig_sites, aes(x = x)) +
-  geom_rect(data = rects_a,
-            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = spot),
-            inherit.aes = FALSE, alpha = 0.6, show.legend = FALSE) +
-  geom_line(aes(y = median, colour = spot, linetype = spot), linewidth = 1) +
-  scale_colour_manual(values = custom_colors[site_levels], name = "Site") +
-  scale_linetype_manual(values = site_lty, name = "Site") +
-  scale_fill_manual(values = custom_colors[site_levels], guide = "none") +
-  labs(x = NULL, y = "Density") +
-  x_scale + theme(axis.text.x = element_blank())
-
-# (b) pooled regional signal: median with 95 % and interquartile envelopes
-p2b <- ggplot(sig_reg, aes(x = x)) +
-  geom_rect(data = rects_b,
-            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
-            inherit.aes = FALSE, fill = custom_colors["Regional (All spots)"], alpha = 0.6) +
-  geom_ribbon(aes(ymin = q025, ymax = q975, fill = "95 % interval"), alpha = 0.25) +
-  geom_ribbon(aes(ymin = q25, ymax = q75, fill = "Interquartile range"), alpha = 0.45) +
-  geom_line(aes(y = median, colour = "Median"), linewidth = 1.2) +
-  scale_fill_manual(values = c("95 % interval" = "grey60", "Interquartile range" = "grey40"),
-                    name = "Regional (all sites)") +
-  scale_colour_manual(values = c("Median" = unname(custom_colors["Regional (All spots)"])),
-                      name = NULL) +
-  labs(x = "Time (ka BP)", y = "Density") +
-  x_scale
-
-p <- p2a / p2b + plot_annotation(tag_levels = "a")
-p
-ggsave("Figure_2.pdf", plot = p, width = 8, height = 8, dpi = 300, device = cairo_pdf)
-```
-
-### 1.2 Summary of fossil records by site
-
-We summarize the raw record-level ages by site (**Supplementary Table S2**): number of records, mean, SD, minimum and maximum age. `min_interval` and `max_interval` give the upper bound of the bins containing the youngest and oldest record.
+We summarize the raw record-level ages by site (**Supplementary Table S1**): number of records, mean, SD, minimum and maximum age. `min_interval` and `max_interval` give the upper bound of the bins containing the youngest and oldest record.
 
 ```{r count-summ}
 library(dplyr)
@@ -380,7 +123,7 @@ tabla_resumen_counts <- centennial_counts_all %>%
   arrange(spot)
 
 
-tab_S2 <- tabla_resumen_counts %>%
+tab_S1 <- tabla_resumen_counts %>%
   gt() %>%
   tab_header(
     title = "Summary of fossil records by site (raw data)",
@@ -392,13 +135,13 @@ tab_S2 <- tabla_resumen_counts %>%
     decimals = 3
   )
 
-tab_S2
-gt::gtsave(tab_S2, "Supplementary_Table_S2.docx")   
+tab_S1
+gt::gtsave(tab_S1, "Supplementary_Table_S1.docx")   
 ```
 
 The dataset comprises 257 dated records: **Florida** 128, **Punta Maroma** 64, **Belize** 41 and **Saint Croix** 24. Mean ages range from 2.26 ka (**Punta Maroma**) to 3.64 ka (**Florida**). **Punta Maroma** records span 0.065–5.46 ka and **Saint Croix** records 0.265–5.93 ka; **Belize** and **Florida** records cover the full 0–6 ka window.
 
-### 1.3 Climatic predictor: import & alignment
+### 1.2 Climatic predictor: import & alignment
 
 We import the centennial climate table (`df_GAM130326.xlsx`) and assign each row the upper bound of its 0.1-ka bin. The mapping is positional: `interval_max` is taken from the order in which interval labels first appear, which is correct only if the file has exactly one row per bin, ordered from youngest to oldest.
 
@@ -421,178 +164,18 @@ merged_df <- centennial_counts_all %>%
   rename( age = interval_max)
 ```
 
-### 1.4 Holocene trends in climatic variables
+### 1.3 Response variable: centennial counts and normalization
 
-We assemble Fig. 3. Panel (a) is the count plot from Section 1. Below it, four panels show, for each of the 60 centennial bins:
+The response variable of all models is built here, before any figure, so that Figs. 2 and 3 show the same series that enter the GAMs. This chunk makes three lasting changes to `merged_df`:
 
-- **(b)** the `GMHT_CPS0_30N` temperature anomaly (^o^C);
-- **(c)** accumulated rate of change in thermal anomalies (ẟT,^o^C) calculated from the CPS model of GMST (`dT_raw`);
-- **(d)** 100 year average reconstruction of hurricane impacts (`Hur100_av` ) as bars (dark grey where \> 10) and the 100 year TC frequency ( `Hur100_fqcy` ) as a step line;
-- **(e)** the nominal thermal, hydroclimatic and hurricane regimes, drawn as contiguous time segments.
+1.  **Reference levels.** Thermal, Hydro and Hurricane are converted to factors with reference levels "warmer", "wet" and "low". These levels carry through the aggregation below and define every categorical contrast reported in Sections 3.2 and 3.3.
 
-**Figure 3** (`Figure_3.pdf`). Reconstruction of regional coral abundance and paleoclimate trends. The climate panels (b–e) are drawn from the 60-bin climate table, so they cover the full 0–6 ka interval, including bins without fossil records.
+2.  **Sites only.** Rows are restricted to the four reef sites, which drops the duplicated "Regional" records created in the binning step. The regional composite is rebuilt from the site series below.
 
-```{r fig3m, fig.width=12, fig.height=10}
-
-library(dplyr)
-library(tidyr)
-library(patchwork)
-
-clim_bins <- datos_cli %>% rename(age = interval_max)
-
-p1 <- clim_bins %>%
-  group_by(age) %>%
-  summarise(GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE)) %>%
-  ggplot(aes(x = age, y = GMHT_CPS0_30N, fill = GMHT_CPS0_30N > 0)) +
-  geom_col() +
-  scale_fill_manual(values = c("TRUE" = "#B8860B", "FALSE" = "#0072B2")) +
-  coord_cartesian(ylim = c(-1.2, 1.2), xlim = c(0, 6)) +
-  scale_x_continuous(position = "top", breaks = seq(0, 6)) +
-  geom_hline(yintercept = 1.2, color = "black", linewidth = 0.4) +
-  theme_minimal() +
-  theme(
-    strip.background = element_blank(),
-    panel.background = element_blank(),
-    legend.position = "none",
-    axis.title.x = element_blank()
-  ) +
-  labs(y = "GMST(°C)\nanomalies")
-
-p2 <- clim_bins %>%
-  group_by(age) %>%
-  summarise(dT_raw = mean(dT_raw, na.rm = TRUE)) %>%
-  ggplot(aes(x = age, y = dT_raw, fill = dT_raw > 0)) +
-  geom_col() +
-  scale_fill_manual(values = c("TRUE" = "#E69F00", "FALSE" = "#56B4E9")) +
-  coord_cartesian(ylim = c(-1.2, 0.7)) +
-  theme_minimal() +
-  theme(
-    legend.position = "none",
-    axis.title.x = element_blank(),
-    axis.text.x = element_blank(),
-    axis.ticks.x = element_blank()
-  ) +
-  labs(y = expression("Rate of Change\nẟT(°C) / 100 yr"))
-
-
-hur_plot_data <- clim_bins %>%
-  group_by(age) %>%
-  summarise(
-    Hur100_av = mean(Hur100_av, na.rm = TRUE),
-    Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
-    Hur100_fqcy_sd = sd(Hur100_fqcy, na.rm = TRUE)
-  ) %>%
-  arrange(age)
-
-p3 <- ggplot(hur_plot_data, aes(x = age)) +
-  geom_col(aes(y = Hur100_av, fill = Hur100_av > 10), alpha = 0.6) +
-  geom_step(aes(y = Hur100_fqcy), color = "darkblue", linewidth = 0.8) +
-  scale_fill_manual(values = c("TRUE" = "#4D4D4D", "FALSE" = "#999999")) +
-  coord_cartesian(ylim = c(0, 50)) +
-  theme_minimal() +
-  theme(
-    strip.background = element_blank(),
-    panel.background = element_blank(),
-    legend.position = "none",
-    axis.title.x = element_blank()
-  ) +
-  labs(y = "Hurricane Average\n(events/100 yr)")
-
-df_segments <- clim_bins %>%
-  pivot_longer(cols = c(Thermal, Hydro, Hurricane),
-               names_to = "variable",
-               values_to = "state") %>%
-  arrange(variable, age) %>%
-  group_by(variable) %>%
-  mutate(change = state != lag(state, default = first(state)),
-         segment_id = cumsum(change)) %>%
-  group_by(variable, state, segment_id) %>%
-  summarise(age_start = min(age),
-            age_end   = max(age),
-            .groups = "drop") %>%
-  mutate(label_x = (age_start + age_end)/2)
-
-df_segments <- df_segments %>%
-  group_by(variable) %>%
-  arrange(age_start) %>%
-  mutate(age_end = lead(age_start, default = max(age_end)))
-
-p4<-ggplot(df_segments) +
-  geom_rect(aes(xmin = age_start, xmax = age_end,
-                ymin = as.numeric(factor(variable)) - 0.4,
-                ymax = as.numeric(factor(variable)) + 0.4,
-                fill = state)) +
-  geom_text(aes(x = label_x,
-                y = as.numeric(factor(variable)),
-                label = state),
-            color = "black", size = 3) +
-  scale_y_continuous(breaks = 1:3,
-                     labels = levels(factor(df_segments$variable))) +
-scale_fill_manual(values = c(
-    "warmer"   = "#DAA520",
-    "cooler"   = "#56B4E9",
-    "LIA"      = "#56B4E9",
-    "CWP&MWA"  = "#DAA520",
-    "wet"      = "#999933",
-    "dry"      = "#CCBB44",
-    "variable" = "#DDCC77",
-    "low"      = "#FFFFFF",
-    "medium"   = "#CCCCCC",
-    "high"     = "#999999"))+
-  theme_minimal() +
-  theme(legend.position = "none")+
-  labs(x = "Age (ka)", y = "Nominal Terms")
-
-Figure_3 <- pr/ p1 / p2 / p3 / p4 + plot_layout(ncol = 1, heights = c(1,1, 1, 1, 1.2))
-Figure_3
-
-ggsave("Figure_3.pdf", plot = Figure_3, width = 8, height = 10, dpi = 300, device = cairo_pdf)
-```
-
-Before modelling, we inspect pairwise correlations among numeric variables (Section 2.1) and the distribution of abundance across combinations of climate regimes (Section 3.1.3). No predictor is removed on the basis of these analyses. Redundancy is handled instead by never entering the two hurricane metrics in the same model (Section 3.3) and by assessing overlap among smooth terms after fitting (concurvity, Section 4.2).
-
-## **2.** Exploratory Data Analysis
-
-#### 2.1 Variable correlation plot
-
-We compute Pearson correlations among the four continuous climate predictors over the 60 centennial bins of the climate table (`datos_cli`), so that each bin counts once regardless of how many fossil records it contains, and cross-tabulate the three categorical regimes.
-
-The only strong correlation is between the two hurricane metrics (Hur100_fqcy and Hur100_av, *r* = 0.79), which is why they are never entered in the same model (Section 3.3). The other correlations are weak to moderate (\|*r*\| ≤ 0.36, the largest between GMHT_CPS0_30N and dT_raw). The categorical regimes, by contrast, are strongly nested: the "cooler" thermal regime occurs only under dry or wet hydroclimate, LIA only under variable hydroclimate, and the "medium" hurricane regime occurs almost only within CWP&MWA (6 of 7 bins). This nesting is the origin of the rank-deficient candidates excluded in Section 3.3.2.
-
-**Supplementary Figure S1.** Pearson correlation matrix of the continuous climate predictors across the 60 centennial bins.
-
-```{r corr, fig.width=8, fig.height=7}
-library(corrplot)
-
-clim_vars  <- c("GMHT_CPS0_30N", "dT_raw", "Hur100_fqcy", "Hur100_av")
-cor_matrix <- cor(datos_cli[, clim_vars])
-
-corrplot(cor_matrix, method = "circle", type = "upper",
-         tl.col = "black", tl.srt = 45, addCoef.col = "black")
-
-pdf("Supplementary_Figure_S1.pdf", width = 8, height = 7)
-corrplot(cor_matrix, method = "circle", type = "upper",
-         tl.col = "black", tl.srt = 45, addCoef.col = "black")
-invisible(dev.off())
-
-table(Thermal = datos_cli$Thermal, Hydro = datos_cli$Hydro)
-table(Thermal = datos_cli$Thermal, Hurricane = datos_cli$Hurricane)
-```
-
-## 3. GAM analysis
-
-### 3.1 Modelling data preparation
-
-This chunk makes three lasting changes to `merged_df`:
-
-1.  **Reference levels.** Thermal, Hydro and Hurricane are converted to factors with reference levels "warmer", "wet" and "low". These levels carry through the aggregation in Section 3.1.1 and define every categorical contrast reported in Sections 3.2 and 3.3.
-
-2.  **Sites only.** Rows are restricted to the four reef sites, which drops the duplicated "Regional" records created in the binning step. The regional composite is rebuilt from the site series in Section 3.1.1.
-
-3.  **Record counter.** A column `counts = 1` is added (one per dated record); it is summed per bin in Section 3.1.1.
+3.  **Record counter.** A column `counts = 1` is added (one per dated record); it is summed per bin below.
 
 ```         
-The per-site objects (`datos_pm`, `datos_fl`, `datos_bz`, `datos_sc`, `datos_reg`) and `merged_df_g` created in this chunk are intermediate: all of them are redefined in Section 3.1.1 before any model is fitted.
+The per-site objects (`datos_pm`, `datos_fl`, `datos_bz`, `datos_sc`, `datos_reg`) and `merged_df_g` created in this chunk are intermediate: all of them are redefined below, before any model is fitted.
 ```
 
 ```{r data-prepa}
@@ -624,7 +207,7 @@ merged_df_g <- bind_rows(datos_pm, datos_fl, datos_bz, datos_sc, datos_reg)
 
 ```
 
-#### 3.1.1 Response variable normalization
+#### Normalization
 
 For each site, records are summed per bin (`counts`). Climate predictors are averaged within the bin, which leaves them unchanged because they are constant within a bin; regime labels are taken from the first record in the bin.
 
@@ -632,11 +215,11 @@ For each site, records are summed per bin (`counts`). Climate predictors are ave
 
 The response is therefore the relative abundance within bins in which a site is represented. Bins without records are not part of any model: 29 of 60 in **Punta Maroma**, 33 in **Belize**, 42 in **Saint Croix**, 15 in **Florida** and 2 in the **regional pool**.
 
-##### a. Florida source-standardization
+#### Florida source-standardization
 
 Florida combines records from several source datasets (column `source`). Therefore, we first sum counts per source and bin, and further divided by each source's maximum and boundary-corrected. Next we sum the standardized values across sources per bin and normalize as above (`datos_fl_std`). Consequently, each source has equal weight at its maximum, independent of its number of records.
 
-The regional composite used in every model is the per-bin sum of the four site-level `counts_norm_sv` series (**Florida** in its source-standardized form), normalized with the same function (`datos_reg`, *n* = 58 bins). Each site contributes equally; this differs from the **pooled "Regional"** series of Figs. 2 and 3a, in which **Florida** records dominate. The five series are stacked into `merged_df_g`.
+The regional composite used in every model is the per-bin sum of the four site-level `counts_norm_sv` series (**Florida** in its source-standardized form), normalized with the same function (`datos_reg`, *n* = 58 bins). Each site therefore enters the composite with its maximum bin equal to one, so its contribution depends on how its records are distributed among bins rather than on its number of records (Section 1.4). The five series are stacked into `merged_df_g`, which is used by every model and by Figs. 2 and 3a.
 
 ```{r norm-stand}
 
@@ -818,7 +401,406 @@ merged_df_g <- bind_rows(
 )
 ```
 
-##### b. Florida: pooled normalization (sensitivity series)
+### 1.4 *Acropora palmata* age densities (weighted KDE)
+
+Kernel density estimates (KDE) are computed from the individual ages, weighted so that the density has the shape of the modelled series of Section 1.3. Each record receives the weight it carries in `counts_norm_sv`: in Punta Maroma, Belize and Saint Croix, `counts_norm_sv / counts` of its bin; in Florida, the product of its source-standardization factor and the Florida normalization factor; in the regional composite, the site weight multiplied by the regional normalization factor. The weights of the records in each bin therefore add up to `counts_norm_sv` of that bin (checked in the code). For a site with a single source the weights are constant except in the maximum bin, so the weighted KDE has the same shape as the KDE of the raw ages; the weighting changes the shape only for Florida (source standardization) and for the regional composite.
+
+Each density is a Gaussian KDE over 0–6 ka (bandwidth 0.09 ka, 512 points). Its uncertainty is estimated with 1,000 bootstrap resamples of the records with replacement, keeping their weights and stratified by source in Florida and by site in the regional composite. For each resample we keep the density curve and its mean in each 0.1-ka bin. `signal_all` holds the estimate and the 2.5–97.5 % and 25–75 % bootstrap envelopes of each curve; `centennial_density_all` holds the bin means of the estimate and their bootstrap SD and 95 % interval.
+
+Because a KDE integrates to one, the regional density distributes a fixed total among the four sites in proportion to the sum of their weights, which depends on how their records are spread among bins, not on how many records they have. Saint Croix, whose 24 records occupy 18 bins with at most two records each, carries 27 % of the regional weight with 9 % of the records, and Punta Maroma 15 % with 25 % of the records (`site_share`). This is a property of the per-site normalization used in the models, not of the KDE, and it applies equally to the regional GAMs.
+
+```{r dens}
+library(dplyr)
+library(gt)
+
+## ---- record-level weights reproducing the modelled response -------------------
+## The weights of the records in a bin add up to counts_norm_sv of that bin, so the
+## weighted KDE has the shape of the series that enter the GAMs.
+bin_upper <- function(t) breaks[as.integer(cut(t, breaks, include.lowest = TRUE, right = TRUE)) + 1]
+
+recs <- datos_reg_pal %>%
+  mutate(t_ka = as.numeric(t_ka), age = round(bin_upper(t_ka), 1))
+
+# Punta Maroma, Belize, Saint Croix: weight = counts_norm_sv / counts of the bin
+w_single <- bind_rows(datos_pm, datos_bz, datos_sc) %>%
+  transmute(spot = panel, age = round(age, 1), w_site = counts_norm_sv / counts)
+
+# Florida: per-source standardization (as in datos_fl_std), then the Florida normalization
+w_fl_src <- recs %>%
+  filter(spot == "Florida") %>%
+  count(source, age, name = "n_src") %>%
+  group_by(source) %>%
+  mutate(std = n_src / max(n_src),
+         std = ifelse(std %in% c(0, 1), (std * (n() - 1) + 0.5) / n(), std),
+         w_src = std / n_src) %>%
+  ungroup() %>%
+  select(source, age, w_src)
+w_fl_bin <- datos_fl_std %>% transmute(age = round(age, 1), w_bin = counts_norm_sv / counts)
+
+# Regional composite: site weights rescaled by the regional normalization
+w_reg_bin <- datos_reg %>% transmute(age = round(age, 1), w_reg = counts_norm_sv / counts)
+
+recs <- recs %>%
+  left_join(w_single, by = c("spot", "age")) %>%
+  left_join(w_fl_src, by = c("source", "age")) %>%
+  left_join(w_fl_bin, by = "age") %>%
+  left_join(w_reg_bin, by = "age") %>%
+  mutate(w_site = ifelse(spot == "Florida", w_src * w_bin, w_site),
+         w_regional = w_site * w_reg) %>%
+  select(-w_src, -w_bin, -w_reg)
+
+# check: the weights of each bin reproduce the modelled series
+chk_site <- recs %>% group_by(spot, age) %>% summarise(w = sum(w_site), .groups = "drop") %>%
+  inner_join(bind_rows(datos_pm, datos_fl_std, datos_bz, datos_sc) %>%
+               transmute(spot = panel, age = round(age, 1), y = counts_norm_sv), by = c("spot", "age"))
+chk_reg <- recs %>% group_by(age) %>% summarise(w = sum(w_regional), .groups = "drop") %>%
+  inner_join(datos_reg %>% transmute(age = round(age, 1), y = counts_norm_sv), by = "age")
+stopifnot(nrow(chk_site) == 121, nrow(chk_reg) == 58,
+          max(abs(chk_site$w - chk_site$y)) < 1e-3, max(abs(chk_reg$w - chk_reg$y)) < 1e-3)
+
+# share of each site in the regional density (weights sum to one)
+site_share <- recs %>% group_by(spot) %>%
+  summarise(records = n(), pct_records = 100 * n() / nrow(recs),
+            pct_weight = 100 * sum(w_regional) / sum(recs$w_regional), .groups = "drop")
+site_share
+
+## ---- weighted KDE with stratified bootstrap -------------------------------------
+## Records are resampled with replacement within strata (sources in Florida, sites in the
+## regional composite), keeping their weights. bw = 0.09 ka, 512 points over 0-6 ka.
+calc_density_summary <- function(t, w, spot_name, strata = rep(1, length(t)),
+                                 B = 1000, bw = 0.09) {
+  kde <- function(i) density(t[i], weights = w[i] / sum(w[i]), bw = bw,
+                             from = 0, to = 6, n = 512)
+  full <- kde(seq_along(t))
+  idx  <- split(seq_along(t), strata)
+  boot <- t(vapply(seq_len(B), function(b) {
+    i <- unlist(lapply(idx, function(ix) ix[sample.int(length(ix), length(ix), replace = TRUE)]))
+    kde(i)$y
+  }, numeric(512)))
+
+  signal_df <- data.frame(
+    x = full$x, estimate = full$y,
+    q025 = apply(boot, 2, quantile, 0.025), q975 = apply(boot, 2, quantile, 0.975),
+    q25  = apply(boot, 2, quantile, 0.25),  q75  = apply(boot, 2, quantile, 0.75),
+    spot = spot_name)
+
+  # centennial summary: estimate and bootstrap SD of the bin-mean density
+  bin <- cut(full$x, breaks = breaks, include.lowest = TRUE, right = TRUE)
+  bin_mean <- function(y) tapply(y, bin, mean)
+  boot_bins <- apply(boot, 1, bin_mean)                 # 60 bins x B
+  centennial_summary <- data.frame(
+    interval_mid = breaks[-length(breaks)] + 0.05,
+    density      = as.numeric(bin_mean(full$y)),
+    boot_sd      = apply(boot_bins, 1, sd),
+    boot_q025    = apply(boot_bins, 1, quantile, 0.025),
+    boot_q975    = apply(boot_bins, 1, quantile, 0.975),
+    spot         = spot_name)
+
+  list(signal_df = signal_df, centennial_summary = centennial_summary)
+}
+
+site_levels <- c("Punta Maroma", "Belize", "Saint Croix", "Florida")
+results_list <- lapply(site_levels, function(sp) {
+  r <- recs %>% filter(spot == sp)
+  calc_density_summary(r$t_ka, r$w_site, sp,
+                       strata = if (sp == "Florida") r$source else rep(1, nrow(r)))
+})
+results_list <- c(results_list, list(
+  calc_density_summary(recs$t_ka, recs$w_regional, "Regional composite", strata = recs$spot)))
+
+signal_all <- bind_rows(lapply(results_list, `[[`, "signal_df"))
+centennial_density_all <- bind_rows(lapply(results_list, `[[`, "centennial_summary"))
+
+## ---- Supplementary Table S2 ---------------------------------------------------
+tabla_resumen <- centennial_density_all %>%
+  mutate(spot = factor(spot, levels = c(site_levels, "Regional composite"))) %>%
+  group_by(Site = spot) %>%
+  summarise(
+    mean_boot_sd  = mean(boot_sd),
+    max_density   = max(density),
+    max_interval  = interval_mid[which.max(density)],
+    min_density   = min(density),
+    min_interval  = interval_mid[which.min(density)],
+    .groups = "drop")
+
+tab_S2 <- tabla_resumen %>%
+  gt() %>%
+  tab_header(title = "Centennial weighted kernel-density summaries by site",
+             subtitle = "Density of the modelled series and its bootstrap uncertainty") %>%
+  fmt_number(columns = c(mean_boot_sd, max_density, min_density), decimals = 3) %>%
+  fmt_number(columns = c(max_interval, min_interval), decimals = 2)
+tab_S2
+gt::gtsave(tab_S2, "Supplementary_Table_S2.docx")
+```
+
+**Supplementary Table S2. Centennial weighted kernel-density summaries.** For each site and the regional composite: mean bootstrap SD of the bin-mean density over the 60 bins (`mean_boot_sd`), and the maximum and minimum bin-mean density with the bin midpoint (ka) at which each occurs.
+
+Maximum density occurs at 0.15 ka in **Punta Maroma**, **Belize** and the **regional composite**, at 1.05 ka in **Saint Croix** and at 4.25 ka in **Florida**. Minima fall at 5.95 ka (**Punta Maroma**), 2.35 ka (**Belize**), 2.65 ka (**Saint Croix**), 1.45 ka (**Florida**) and 0.55 ka (**regional composite**). Weighting moves the maximum of the regional curve from 4.25 ka, where the unweighted pool of all records peaked because of the Florida records, to 0.15 ka.
+
+The intervals highlighted in Fig. 2 (`rects`) are: **Punta Maroma** 0.71–1.44 ka; **Belize** 1.99–2.72, 3.68–4.20 and 5.54–6.00 ka; **regional** 2.20–3.00 and 5.10–5.90 ka. They correspond to local *A. palmata* presence gaps reported for **Punta Maroma** (Medina-Valmaseda et al., 2025) and **Belize** (Hubbard et al., 2005, Gischler et al., 2023).
+
+**Figure 2** (raw version; `Figure_2.pdf`). Weighted kernel-density curves of *A. palmata* ages. (a) Each site, with one colour and one line type per site. (b) Regional composite, with the 2.5–97.5 % and interquartile bootstrap envelopes. Horizontal bars at the top of each panel mark the intervals listed above.
+
+```{r fig2m, fig.width=8, fig.height=8}
+rects <- data.frame(
+  xmin = c(0.71, 1.99, 2.2, 3.68, 5.1, 5.54),
+  xmax = c(1.44, 2.72, 3.0, 4.20, 5.9, 6.00),
+  spot = c("Punta Maroma", "Belize", "Regional (All spots)", "Belize",
+           "Regional (All spots)", "Belize"))
+
+library(patchwork)
+
+site_lty <- c("Punta Maroma" = "solid", "Belize" = "longdash",
+              "Saint Croix" = "dotdash", "Florida" = "dotted")
+
+sig_sites <- signal_all %>%
+  filter(spot %in% site_levels) %>%
+  mutate(spot = factor(spot, levels = site_levels))
+sig_reg <- signal_all %>% filter(spot == "Regional composite")
+
+# gap bars drawn just above the highest curve of each panel
+top_a <- max(sig_sites$estimate, na.rm = TRUE)
+top_b <- max(sig_reg$q975, na.rm = TRUE)
+rects_a <- rects %>% filter(spot %in% site_levels) %>%
+  mutate(spot = factor(spot, levels = site_levels),
+         ymin = top_a * 1.04, ymax = top_a * 1.12)
+rects_b <- rects %>% filter(spot == "Regional (All spots)") %>%
+  mutate(ymin = top_b * 1.04, ymax = top_b * 1.12)
+
+x_scale <- list(
+  scale_x_continuous(breaks = seq(0, 6, 0.5), expand = c(0.01, 0)),
+  coord_cartesian(xlim = c(0, 6)),
+  theme_classic(base_size = 11),
+  theme(legend.position = "bottom", plot.tag = element_text(face = "bold"))
+)
+
+# (a) weighted KDE of each site: one colour and one line type per site
+p2a <- ggplot(sig_sites, aes(x = x)) +
+  geom_rect(data = rects_a,
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = spot),
+            inherit.aes = FALSE, alpha = 0.6, show.legend = FALSE) +
+  geom_line(aes(y = estimate, colour = spot, linetype = spot), linewidth = 1) +
+  scale_colour_manual(values = custom_colors[site_levels], name = "Site") +
+  scale_linetype_manual(values = site_lty, name = "Site") +
+  scale_fill_manual(values = custom_colors[site_levels], guide = "none") +
+  labs(x = NULL, y = "Density") +
+  x_scale + theme(axis.text.x = element_blank())
+
+# (b) regional composite: weighted KDE with bootstrap 95 % and interquartile envelopes
+p2b <- ggplot(sig_reg, aes(x = x)) +
+  geom_rect(data = rects_b,
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+            inherit.aes = FALSE, fill = custom_colors["Regional"], alpha = 0.6) +
+  geom_ribbon(aes(ymin = q025, ymax = q975, fill = "95 % bootstrap interval"), alpha = 0.25) +
+  geom_ribbon(aes(ymin = q25, ymax = q75, fill = "Interquartile range"), alpha = 0.45) +
+  geom_line(aes(y = estimate, colour = "Estimate"), linewidth = 1.2) +
+  scale_fill_manual(values = c("95 % bootstrap interval" = "grey60", "Interquartile range" = "grey40"),
+                    name = "Regional composite") +
+  scale_colour_manual(values = c("Estimate" = unname(custom_colors["Regional"])), name = NULL) +
+  labs(x = "Time (ka BP)", y = "Density") +
+  x_scale
+
+p <- p2a / p2b + plot_annotation(tag_levels = "a")
+p
+ggsave("Figure_2.pdf", plot = p, width = 8, height = 8, dpi = 300, device = cairo_pdf)
+```
+
+### 1.5 Abundance and Holocene trends in climatic variables
+
+Panel (a) shows the modelled series of Section 1.3: the relative abundance `counts_norm_sv` of each site per 0.1-ka bin (Florida source-standardized), stacked by site. The height of each stack is the per-bin sum from which the regional composite is normalized. Bins without records have no bar. The legend gives the number of records per site.
+
+**Figure 3a** (`Figure_3a.pdf`). Relative abundance of *A. palmata* per 100-year interval, stacked by reef site.
+
+```{r count-by-site}
+library(ggplot2)
+library(dplyr)
+
+n_records <- table(datos_reg_pal$spot)
+site_labels <- setNames(paste0(site_levels, " (n = ", n_records[site_levels], ")"), site_levels)
+
+norm_stack <- bind_rows(datos_pm, datos_fl_std, datos_bz, datos_sc) %>%
+  transmute(age, spot = factor(panel, levels = rev(site_levels)), counts_norm_sv)
+
+pr <- ggplot(norm_stack, aes(x = age, y = counts_norm_sv, fill = spot)) +
+  geom_col(position = "stack", width = 0.09, alpha = 0.85) +
+  scale_fill_manual(values = custom_colors[site_levels], labels = site_labels,
+                    breaks = site_levels) +
+  labs(x = "Time (ka BP)",
+       y = "Relative abundance\n(stacked by site)",
+       fill = "Site") +
+  theme_minimal(base_size = 12) +
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank(),
+        legend.position = "bottom") +
+  scale_x_continuous(breaks = seq(0, 6, 0.5), minor_breaks = seq(0, 6, 0.5)) +
+  coord_cartesian(xlim = c(0, 6))
+pr
+ggsave("Figure_3a.pdf", plot = pr, width = 8, height = 5, dpi = 300, device = cairo_pdf)
+```
+
+We assemble Fig. 3. Panel (a) is Fig. 3a. Below it, four panels show, for each of the 60 centennial bins:
+
+- **(b)** the `GMHT_CPS0_30N` temperature anomaly (^o^C);
+- **(c)** accumulated rate of change in thermal anomalies (ẟT,^o^C) calculated from the CPS model of GMST (`dT_raw`);
+- **(d)** 100 year average reconstruction of hurricane impacts (`Hur100_av` ) as bars (dark grey where \> 10) and the 100 year TC frequency ( `Hur100_fqcy` ) as a step line;
+- **(e)** the nominal thermal, hydroclimatic and hurricane regimes, drawn as contiguous time segments.
+
+**Figure 3** (`Figure_3.pdf`). Reconstruction of regional coral abundance and paleoclimate trends. The climate panels (b–e) are drawn from the 60-bin climate table, so they cover the full 0–6 ka interval, including bins without fossil records.
+
+```{r fig3m, fig.width=12, fig.height=10}
+
+library(dplyr)
+library(tidyr)
+library(patchwork)
+
+clim_bins <- datos_cli %>% rename(age = interval_max)
+
+p1 <- clim_bins %>%
+  group_by(age) %>%
+  summarise(GMHT_CPS0_30N = mean(GMHT_CPS0_30N, na.rm = TRUE)) %>%
+  ggplot(aes(x = age, y = GMHT_CPS0_30N, fill = GMHT_CPS0_30N > 0)) +
+  geom_col() +
+  scale_fill_manual(values = c("TRUE" = "#B8860B", "FALSE" = "#0072B2")) +
+  coord_cartesian(ylim = c(-1.2, 1.2), xlim = c(0, 6)) +
+  scale_x_continuous(position = "top", breaks = seq(0, 6)) +
+  geom_hline(yintercept = 1.2, color = "black", linewidth = 0.4) +
+  theme_minimal() +
+  theme(
+    strip.background = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "none",
+    axis.title.x = element_blank()
+  ) +
+  labs(y = "GMST(°C)\nanomalies")
+
+p2 <- clim_bins %>%
+  group_by(age) %>%
+  summarise(dT_raw = mean(dT_raw, na.rm = TRUE)) %>%
+  ggplot(aes(x = age, y = dT_raw, fill = dT_raw > 0)) +
+  geom_col() +
+  scale_fill_manual(values = c("TRUE" = "#E69F00", "FALSE" = "#56B4E9")) +
+  coord_cartesian(ylim = c(-1.2, 0.7)) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  ) +
+  labs(y = expression("Rate of Change\nẟT(°C) / 100 yr"))
+
+
+hur_plot_data <- clim_bins %>%
+  group_by(age) %>%
+  summarise(
+    Hur100_av = mean(Hur100_av, na.rm = TRUE),
+    Hur100_fqcy = mean(Hur100_fqcy, na.rm = TRUE),
+    Hur100_fqcy_sd = sd(Hur100_fqcy, na.rm = TRUE)
+  ) %>%
+  arrange(age)
+
+p3 <- ggplot(hur_plot_data, aes(x = age)) +
+  geom_col(aes(y = Hur100_av, fill = Hur100_av > 10), alpha = 0.6) +
+  geom_step(aes(y = Hur100_fqcy), color = "darkblue", linewidth = 0.8) +
+  scale_fill_manual(values = c("TRUE" = "#4D4D4D", "FALSE" = "#999999")) +
+  coord_cartesian(ylim = c(0, 50)) +
+  theme_minimal() +
+  theme(
+    strip.background = element_blank(),
+    panel.background = element_blank(),
+    legend.position = "none",
+    axis.title.x = element_blank()
+  ) +
+  labs(y = "Hurricane Average\n(events/100 yr)")
+
+df_segments <- clim_bins %>%
+  pivot_longer(cols = c(Thermal, Hydro, Hurricane),
+               names_to = "variable",
+               values_to = "state") %>%
+  arrange(variable, age) %>%
+  group_by(variable) %>%
+  mutate(change = state != lag(state, default = first(state)),
+         segment_id = cumsum(change)) %>%
+  group_by(variable, state, segment_id) %>%
+  summarise(age_start = min(age),
+            age_end   = max(age),
+            .groups = "drop") %>%
+  mutate(label_x = (age_start + age_end)/2)
+
+df_segments <- df_segments %>%
+  group_by(variable) %>%
+  arrange(age_start) %>%
+  mutate(age_end = lead(age_start, default = max(age_end)))
+
+p4<-ggplot(df_segments) +
+  geom_rect(aes(xmin = age_start, xmax = age_end,
+                ymin = as.numeric(factor(variable)) - 0.4,
+                ymax = as.numeric(factor(variable)) + 0.4,
+                fill = state)) +
+  geom_text(aes(x = label_x,
+                y = as.numeric(factor(variable)),
+                label = state),
+            color = "black", size = 3) +
+  scale_y_continuous(breaks = 1:3,
+                     labels = levels(factor(df_segments$variable))) +
+scale_fill_manual(values = c(
+    "warmer"   = "#DAA520",
+    "cooler"   = "#56B4E9",
+    "LIA"      = "#56B4E9",
+    "CWP&MWA"  = "#DAA520",
+    "wet"      = "#999933",
+    "dry"      = "#CCBB44",
+    "variable" = "#DDCC77",
+    "low"      = "#FFFFFF",
+    "medium"   = "#CCCCCC",
+    "high"     = "#999999"))+
+  theme_minimal() +
+  theme(legend.position = "none")+
+  labs(x = "Age (ka)", y = "Nominal Terms")
+
+Figure_3 <- pr/ p1 / p2 / p3 / p4 + plot_layout(ncol = 1, heights = c(1,1, 1, 1, 1.2))
+Figure_3
+
+ggsave("Figure_3.pdf", plot = Figure_3, width = 8, height = 10, dpi = 300, device = cairo_pdf)
+```
+
+Before modelling, we inspect pairwise correlations among numeric variables (Section 2.1) and the distribution of abundance across combinations of climate regimes (Section 3.1.3). No predictor is removed on the basis of these analyses. Redundancy is handled instead by never entering the two hurricane metrics in the same model (Section 3.3) and by assessing overlap among smooth terms after fitting (concurvity, Section 4.2).
+
+## **2.** Exploratory Data Analysis
+
+#### 2.1 Variable correlation plot
+
+We compute Pearson correlations among the four continuous climate predictors over the 60 centennial bins of the climate table (`datos_cli`), so that each bin counts once regardless of how many fossil records it contains, and cross-tabulate the three categorical regimes.
+
+The only strong correlation is between the two hurricane metrics (Hur100_fqcy and Hur100_av, *r* = 0.79), which is why they are never entered in the same model (Section 3.3). The other correlations are weak to moderate (\|*r*\| ≤ 0.36, the largest between GMHT_CPS0_30N and dT_raw). The categorical regimes, by contrast, are strongly nested: the "cooler" thermal regime occurs only under dry or wet hydroclimate, LIA only under variable hydroclimate, and the "medium" hurricane regime occurs almost only within CWP&MWA (6 of 7 bins). This nesting is the origin of the rank-deficient candidates excluded in Section 3.3.2.
+
+**Supplementary Figure S1.** Pearson correlation matrix of the continuous climate predictors across the 60 centennial bins.
+
+```{r corr, fig.width=8, fig.height=7}
+library(corrplot)
+
+clim_vars  <- c("GMHT_CPS0_30N", "dT_raw", "Hur100_fqcy", "Hur100_av")
+cor_matrix <- cor(datos_cli[, clim_vars])
+
+corrplot(cor_matrix, method = "circle", type = "upper",
+         tl.col = "black", tl.srt = 45, addCoef.col = "black")
+
+pdf("Supplementary_Figure_S1.pdf", width = 8, height = 7)
+corrplot(cor_matrix, method = "circle", type = "upper",
+         tl.col = "black", tl.srt = 45, addCoef.col = "black")
+invisible(dev.off())
+
+table(Thermal = datos_cli$Thermal, Hydro = datos_cli$Hydro)
+table(Thermal = datos_cli$Thermal, Hurricane = datos_cli$Hurricane)
+```
+
+## 3. GAM analysis
+
+### 3.1 Modelling data
+
+All models use `merged_df_g`, built in Section 1.3: the source-standardized Florida series, the three single-source site series and the regional composite. The two subsections below assess the Florida source standardization, and Section 3.1.3 describes abundance across climate-regime combinations.
+
+#### 3.1.1 Florida: pooled normalization (sensitivity series)
 
 `datos_fl_norm` applies the same procedure to **Florida** without source standardization, pooling records across sources before normalization. This series is used only in the comparison of Section 3.1.2; no model is fitted to it.
 
