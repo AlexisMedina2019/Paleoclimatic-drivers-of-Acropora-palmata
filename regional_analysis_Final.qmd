@@ -3,8 +3,8 @@ title: "6000-yr APAL-Climate Regional Analysis"
 author: "Alexis E Medina Valmaseda"
 abstract: |
   This document is the executable record (Quarto/R) of all analyses reported in the
-  main text. It uses two input files deposited in the repository: `ages_kernel_reg_updt.xlsx`
-  (dated *Acropora palmata* fossils) and `df_GAM130326_regimes_v3.xlsx` (centennial climate
+  main text. It uses two input files deposited in the repository: `ages_kernel_reg_updt2.xlsx`
+  (dated *Acropora palmata* fossils, audited against the original age publications) and `df_GAM130326_regimes_v3.xlsx` (centennial climate
   predictors). From these it reproduces:
 
   1. binning of fossil ages into 0.1-ka (centennial) intervals, their alignment with
@@ -33,7 +33,17 @@ execute:
 
 # REGIONAL ACROPORA PALMATA ANALYSIS
 
-We import the fossil chronology (`ages_kernel_reg_updt.xlsx`) and retain *A. palmata* records (`group == "palmata"`) dated 0–6 ka. The site colours defined here (`custom_colors`) are used in all figures.
+We import the fossil chronology (`ages_kernel_reg_updt2.xlsx`, sheet `Registros`) and retain *A. palmata* records (`group == "palmata"`) dated 0–6 ka. The site colours defined here (`custom_colors`) are used in all figures.
+
+**Age reference, calibration and data corrections.** The chronology was audited record by record against the original publications of each age (workbook `coral_ages_audit_M3.xlsx`; sheet `Trazabilidad` of `ages_kernel_reg_updt2.xlsx` lists, for every record, its source, method, published age, analytical uncertainty, calibration and the change with respect to the previous version, `ages_kernel_reg_updt.xlsx`). All ages are expressed in ka BP (before 1950 CE), the reference of the climate series, and all radiocarbon ages are calibrated with Marine20 using a local reservoir correction (ΔR), propagated in quadrature.
+
+- **Punta Maroma.** U-Th ages (Medina-Valmaseda et al. 2025) are published relative to the year of chemical separation (2021) and are converted to BP (0.071 ka younger). Ages from Blanchon et al. (2017) are already in years BP. One sample (SURF7(a), ~1956 CE) post-dates 1950; it keeps its age (−0.006 ka) and is assigned to the youngest bin. Two samples dated on separate subsamples (M1(a), M5(b)) retain both ages.
+- **Saint Croix.** Radiocarbon ages (Hubbard et al. 2005, 2013), originally calibrated with Marine98 and no local correction, are recalibrated with Marine20 and ΔR = 64 ± 32 ¹⁴C yr (DiNapoli et al. 2020). For samples without a published conventional age (Hubbard et al. 2013), the conventional age and its uncertainty are recovered as the values that reproduce the published calibrated age and 2σ range under the original calibration. One sample dated at two laboratories (BI2-05) enters once, with the error-weighted mean of its conventional ages; one published calibrated age inconsistent with its conventional age (BI1-13) is replaced by the recalibrated value; samples listed in both source publications are counted once. Four U-Th ages are not modified.
+- **Belize.** U-Th ages (Gischler et al. 2023) are in years BP and are not modified. Radiocarbon ages are recalibrated with Marine20 and ΔR = −248 ± 35 ¹⁴C yr (Greer et al. 2020), from the conventional ages in Gischler & Hudson (2004) or, for the atoll cores, from conventional ages recovered by inverting the original Marine98 calibration. Because this ΔR is a single, strongly negative estimate, the analysis was repeated with a regional ΔR of −114 ± 70 ¹⁴C yr (inverse-variance weighted mean of the ten nearest entries of the Marine Reservoir Database, with their standard deviation as uncertainty). Seven *A. cervicornis* samples previously coded as *A. palmata* are reclassified, and one typographical error in the compiled table is corrected from the original publication.
+- **Florida.** Radiocarbon ages recalibrated with Marine20 by L. T. Toth (pers. comm.) are used; three samples absent from that compilation are recalibrated with the same local correction. U-Th ages are in years BP. Seventeen rows that repeated a sample already present under another source database are removed. Records are standardized by collection (main reef tract, nearshore ridge, Dry Tortugas) as before.
+- **Effect.** *A. palmata* records in 0–6 ka: 257 → 236 (Punta Maroma 64, Florida 111, Belize 39, Saint Croix 22). Radiocarbon ages carry 95 % calibrated ranges of 0.3–0.5 kyr (3–5 centennial bins), so for the radiocarbon-dated sites the 0.1-kyr bin is an aggregation unit, not the resolving power of the records.
+
+<!-- Verificar antes de citar: Heaton et al. 2020 (Marine20), DiNapoli et al. 2020, Greer et al. 2020. -->
 
 ```{r datos-reg}
 rm(list=ls(all=TRUE))
@@ -47,10 +57,11 @@ library(ggplot2)
 library(stargazer)
 
 set.seed(20260930)
-datos_reg <- read_excel(here("ages_kernel_reg_updt.xlsx"))
+datos_reg <- read_excel(here("ages_kernel_reg_updt2.xlsx"), sheet = "Registros")
 
 datos_reg_pal <- datos_reg %>%
-  filter(group == "palmata", t_ka >= 0 & t_ka <= 6)
+  # post-1950 ages (t_ka < 0) enter the youngest bin
+  filter(group == "palmata", t_ka > -0.1 & t_ka <= 6)
 
 custom_colors <- c(
   "Punta Maroma" = "#F2941A",
@@ -70,11 +81,12 @@ library(dplyr)
 breaks <- seq(0, 6, by = 0.1)
 
 datos_reg_pal <- datos_reg %>%
-  filter(group == "palmata", t_ka >= 0 & t_ka <= 6)
+  # post-1950 ages (t_ka < 0) enter the youngest bin
+  filter(group == "palmata", t_ka > -0.1 & t_ka <= 6)
 
 centennial_counts_sites <- datos_reg_pal %>%
   mutate(interval_bin = cut(
-    t_ka,
+    pmax(t_ka, 0),
     breaks = breaks,
     include.lowest = TRUE,
     right = TRUE
@@ -82,9 +94,10 @@ centennial_counts_sites <- datos_reg_pal %>%
   mutate(interval_max = breaks[match(interval_bin, levels(interval_bin)) + 1])
 
 centennial_counts_regional <- datos_reg %>%
-  filter(group == "palmata", t_ka >= 0 & t_ka <= 6) %>%
+  # post-1950 ages (t_ka < 0) enter the youngest bin
+  filter(group == "palmata", t_ka > -0.1 & t_ka <= 6) %>%
   mutate(interval_bin = cut(
-    t_ka,
+    pmax(t_ka, 0),
     breaks = breaks,
     include.lowest = TRUE,
     right = TRUE
@@ -147,8 +160,8 @@ We import the centennial climate table (`df_GAM130326_regimes_v3.xlsx`) and assi
 
 The three categorical regimes were coded from the published chronologies compiled in Supplementary Material 2, converted to ka BP, assigning each bin to the period that contains its midpoint (a midpoint on a boundary goes to the younger period):
 
-- **Thermal** (published chronology, not the GMST series): warmer 0–0.1 ka (post-1850 CE); LIA 0.1–0.7 ka (~1300–1850 CE); CWP&MWA 0.7–1.3 ka (700–1250 CE); cooler 1.3–4.8 ka; warmer 4.8–6.0 ka (mid-Holocene warmth).
-- **Hurricane** (Schmitt et al. 2025 only, the source of `Hur100_av` and `Hur100_fqcy`): high 0–0.2 ka (rise after 1800 CE); calm 0.2–0.6 ka (1400–1800 CE); enhanced 0.6–1.1 and 1.2–1.4 ka (900–1400 and 600–800 CE); moderate 1.1–1.2 and 1.4–4.0 ka (mean 9–14 events per century); low 4.0–6.0 ka (~7 events per century; the record begins at 5.7 ka).
+- **Thermal** (published chronology, not the GMST series): warmer 0–0.1 ka (post-1850 CE); LIA 0.1–0.7 ka (\~1300–1850 CE); CWP&MWA 0.7–1.3 ka (700–1250 CE); cooler 1.3–4.8 ka; warmer 4.8–6.0 ka (mid-Holocene warmth).
+- **Hurricane** (Schmitt et al. 2025 only, the source of `Hur100_av` and `Hur100_fqcy`): high 0–0.2 ka (rise after 1800 CE); calm 0.2–0.6 ka (1400–1800 CE); enhanced 0.6–1.1 and 1.2–1.4 ka (900–1400 and 600–800 CE); moderate 1.1–1.2 and 1.4–4.0 ka (mean 9–14 events per century); low 4.0–6.0 ka (\~7 events per century; the record begins at 5.7 ka).
 - **Hydro**, by region. Yucatán (`Hydro`): wet 0–0.8 ka, dry 0.8–1.7 ka and wet 1.7–3.5 ka (Curtis et al. 1996, boundaries calibrated with IntCal20), wet 5.2–5.7 ka (Serrato Marks et al. 2021), no data elsewhere. Florida (`Hydro_FL`): dry 4.6–6.0 ka (Pollock et al. 2017; Donders 2014), wet 2.8–4.6 ka and dry 0–2.8 ka (Glaser et al. 2013), with multi-century droughts near 1.0 and 0.4 ka (Willard & Bernhardt 2011).
 - **Hurricane, Florida** (`Hur_FL`, `FL_pact`, `FL_nrec`). Schmitt et al. (2025) record storms reaching the Yucatán coast, and Florida-proximal records do not follow it (agreement in 34 % of the bins younger than 3.5 ka). The Florida panel therefore uses a local series built from six records on the Atlantic side of Florida: the western Great Bahama Bank / Florida Straits (Toomey et al. 2013; 0–6 ka), the Everglades (Yao et al. 2020; 0–3.5 ka), southwest Florida (Ercolani et al., via Oliva et al. 2017), Andros and Abaco (van Hengstum et al., via Oliva et al. 2017) and Abaco (Winkler et al. 2020). All ages are cal BP (1950). For each bin, `FL_pact` is the proportion of the records covering the bin that report an active interval at its midpoint, `FL_nrec` the number of those records, and `Hur_FL` is "active" when `FL_pact` ≥ 0.5 and "quiet" otherwise. Older than 3.5 ka the series rests on a single record (Toomey et al. 2013). Records from the Gulf coast of Florida were not used, because they sample Gulf landfalls. For Hydro and the hurricane regime, the Florida panel uses the Florida series; Punta Maroma, Belize, Saint Croix and the regional composite use the Yucatán series (Hurricane = Schmitt et al. 2025). The continuous hurricane metrics (`Hur100_av`, `Hur100_fqcy`) are those of Schmitt et al. (2025) in every panel. In the Yucatán Hydro series, undocumented bins are coded as a separate level, "no data", so that no bins are lost. The mapping is positional: `interval_max` is taken from the order in which interval labels first appear, which is correct only if the file has exactly one row per bin, ordered from youngest to oldest.
 
@@ -440,7 +453,7 @@ library(gt)
 ## ---- record-level weights reproducing the modelled response -------------------
 ## The weights of the records in a bin add up to counts_norm_sv of that bin, so the
 ## weighted KDE has the shape of the series that enter the GAMs.
-bin_upper <- function(t) breaks[as.integer(cut(t, breaks, include.lowest = TRUE, right = TRUE)) + 1]
+bin_upper <- function(t) breaks[as.integer(cut(pmax(t, 0), breaks, include.lowest = TRUE, right = TRUE)) + 1]
 
 recs <- datos_reg_pal %>%
   mutate(t_ka = as.numeric(t_ka), age = round(bin_upper(t_ka), 1))
@@ -479,7 +492,8 @@ chk_site <- recs %>% group_by(spot, age) %>% summarise(w = sum(w_site), .groups 
                transmute(spot = panel, age = round(age, 1), y = counts_norm_sv), by = c("spot", "age"))
 chk_reg <- recs %>% group_by(age) %>% summarise(w = sum(w_regional), .groups = "drop") %>%
   inner_join(datos_reg %>% transmute(age = round(age, 1), y = counts_norm_sv), by = "age")
-stopifnot(nrow(chk_site) == 121, nrow(chk_reg) == 58,
+stopifnot(nrow(chk_site) == sum(merged_df_g$panel != "Regional"),
+          nrow(chk_reg) == sum(merged_df_g$panel == "Regional"),
           max(abs(chk_site$w - chk_site$y)) < 1e-3, max(abs(chk_reg$w - chk_reg$y)) < 1e-3)
 
 # share of each site in the regional density (weights sum to one)
@@ -2490,10 +2504,19 @@ library(reshape2)
 library(dplyr)
 library(gt)
 
-concurvity_results <- lapply(best_models, function(m) concurvity(m, full = TRUE))
+## concurvity() is undefined when a model has at least as many coefficients as observations
+## (its matrix decomposition fails); such models are listed as "not computable".
+concurvity_results <- lapply(best_models, function(m)
+  tryCatch(concurvity(m, full = TRUE), error = function(e) NULL))
+not_comp <- names(concurvity_results)[vapply(concurvity_results, is.null, logical(1))]
+if (length(not_comp))
+  message("Concurvity not computable (coefficients >= observations): ", paste(not_comp, collapse = ", "))
 
 # Supplementary Table S9 = concurvity as a formatted table
 conc_tbl <- purrr::imap_dfr(concurvity_results, function(cm, site) {
+  if (is.null(cm))
+    return(data.frame(Term = "not computable (coefficients >= observations)", worst = NA_real_,
+                      observed = NA_real_, estimate = NA_real_, Panel = site))
   as.data.frame(t(cm)) %>%
     tibble::rownames_to_column("Term") %>%
     mutate(Term = ifelse(Term == "para", "parametric terms", Term),
@@ -2764,7 +2787,13 @@ We test the main results of the selected combined models against four alternativ
 library(nlme)
 
 fmt_p2 <- function(p) ifelse(p < 1e-4, "<1e-04", sprintf("%.2g", p))
-sm_p   <- function(m, term) summary(m)$s.table[term, "p-value"]
+sm_p   <- function(m, term) { st <- summary(m)$s.table
+  if (term %in% rownames(st)) st[term, "p-value"] else NA_real_ }
+## terms taken from the selected models, so the checks follow the model selection
+hur_term  <- function(m) grep("^s\\(Hur100", rownames(summary(m)$s.table), value = TRUE)[1]
+clim_smooths <- function(m) setdiff(rownames(summary(m)$s.table), "s(age)")
+fl_hur <- hur_term(best_models[["Florida"]]); pm_hur <- hur_term(best_models[["Punta Maroma"]])
+sc_terms <- clim_smooths(best_models[["Saint Croix"]])
 
 ## (1) Residual autocorrelation: Gaussian GAMM on the logit of the response,
 ##     without and with a continuous-time AR(1) (corCAR1), because bins are not always consecutive
@@ -2795,8 +2824,8 @@ marg_std_m   <- gam(formulas_mg[[marg_pool$Model[1]]], data = datos_fl_std,
 marg_term    <- names(term_pvalues(marg_pool_m))[!grepl("s\\(age\\)", names(term_pvalues(marg_pool_m)))][1]
 
 sc_bin  <- datos_sc %>% mutate(two = as.integer(counts >= 2))
-m_sc_bn <- gam(update(formula(best_models[["Saint Croix"]]), two ~ .), data = sc_bin,
-               family = binomial, method = "REML", select = TRUE)
+m_sc_bn <- tryCatch(gam(update(formula(best_models[["Saint Croix"]]), two ~ .), data = sc_bin,
+               family = binomial, method = "REML", select = TRUE), error = function(e) NULL)
 
 m_pm_th <- gam(update(formula(best_models[["Punta Maroma"]]), . ~ . + Thermal), data = datos_pm,
                family = betar(link = "logit"), method = "REML", select = TRUE)
@@ -2804,12 +2833,12 @@ p_pm_marg_th <- anova(gam(formulas_mg$M_the, data = datos_pm, family = betar(lin
                           method = "REML"))$pTerms.table["Thermal", "p-value"]
 
 sens_tbl <- bind_rows(
-  ar1_check("Florida", datos_fl_std, "s(Hur100_av)"),
-  ar1_check("Punta Maroma", datos_pm, "s(Hur100_av)"),
+  ar1_check("Florida", datos_fl_std, fl_hur),
+  ar1_check("Punta Maroma", datos_pm, pm_hur),
   tibble::tibble(
     Check = "Florida series pooled across sources (combined models)", Panel = "Florida",
-    Term = "s(Hur100_av)", Reference = fmt_p2(sm_p(best_models[["Florida"]], "s(Hur100_av)")),
-    Sensitivity = fmt_p2(sm_p(best_fl_pool$fit, "s(Hur100_av)")),
+    Term = fl_hur, Reference = fmt_p2(sm_p(best_models[["Florida"]], fl_hur)),
+    Sensitivity = fmt_p2(sm_p(best_fl_pool$fit, fl_hur)),
     Note = sprintf("selected model %s (weight %.2f) vs %s; deviance explained %.1f %% vs %.1f %%",
                    best_fl_pool$best_model, best_fl_pool$ranking$weight[1], best_fl_cb$best_model,
                    100 * summary(best_fl_pool$fit)$dev.expl, 100 * summary(best_models[["Florida"]])$dev.expl)),
@@ -2821,17 +2850,16 @@ sens_tbl <- bind_rows(
                    marg_pool$Model[1], marg_pool$weight[1])),
   tibble::tibble(
     Check = "Binomial GAM, one vs two records per bin", Panel = "Saint Croix",
-    Term = c("s(dT_raw)", "s(Hur100_fqcy)"),
-    Reference = fmt_p2(c(sm_p(best_models[["Saint Croix"]], "s(dT_raw)"),
-                         sm_p(best_models[["Saint Croix"]], "s(Hur100_fqcy)"))),
-    Sensitivity = fmt_p2(c(sm_p(m_sc_bn, "s(dT_raw)"), sm_p(m_sc_bn, "s(Hur100_fqcy)"))),
+    Term = sc_terms,
+    Reference = fmt_p2(sapply(sc_terms, function(tm) sm_p(best_models[["Saint Croix"]], tm))),
+    Sensitivity = if (is.null(m_sc_bn)) "not estimable" else fmt_p2(sapply(sc_terms, function(tm) sm_p(m_sc_bn, tm))),
     Note = "same terms as the selected model"),
   tibble::tibble(
     Check = "Thermal regime added to the selected hurricane model", Panel = "Punta Maroma",
     Term = "Thermal", Reference = fmt_p2(p_pm_marg_th),
     Sensitivity = fmt_p2(anova(m_pm_th)$pTerms.table["Thermal", "p-value"]),
-    Note = sprintf("reference = marginal thermal-regime model; s(Hur100_av) in the extended model: p = %s",
-                   fmt_p2(sm_p(m_pm_th, "s(Hur100_av)"))))
+    Note = sprintf("reference = marginal thermal-regime model; %s in the extended model: p = %s", pm_hur,
+                   fmt_p2(sm_p(m_pm_th, pm_hur))))
 )
 
 tab_S11 <- sens_tbl %>%
