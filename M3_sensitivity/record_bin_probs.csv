@@ -1,0 +1,237 @@
+site,sample_id,stratum,method,t_used_ka,err_2s_ka,t_sens_dR_regional_ka,p_same_0.1,p_same_0.2,ci95_yr
+Punta Maroma,SURF7(a),Medina-Valmaseda et al. 2025,U-Th,-0.0056799999999999,0.00011,,1.0,1.0,0.2199999999999997
+Punta Maroma,SURF2(c),Medina-Valmaseda et al. 2025,U-Th,0.00349,0.00045,,1.0,1.0,0.9000000000000002
+Punta Maroma,SURF2(d),Medina-Valmaseda et al. 2025,U-Th,0.01333,0.00955,,1.0,1.0,18.41225
+Punta Maroma,SURF X,Medina-Valmaseda et al. 2025,U-Th,0.02125,0.00955,,1.0,1.0,18.103499999999997
+Punta Maroma,SURF2(a),Medina-Valmaseda et al. 2025,U-Th,0.02934,0.00952,,1.0,1.0,18.192000000000004
+Punta Maroma,SURF10(a),Medina-Valmaseda et al. 2025,U-Th,0.03959,0.0095,,1.0,1.0,18.847999999999995
+Punta Maroma,MR8(a),Medina-Valmaseda et al. 2025,U-Th,0.0585,0.0103,,1.0,1.0,20.224249999999998
+Punta Maroma,SURF24(b),Medina-Valmaseda et al. 2025,U-Th,0.0657,0.0048,,1.0,1.0,9.353250000000001
+Punta Maroma,MR9(b),Medina-Valmaseda et al. 2025,U-Th,0.0704,0.0097,,1.0,1.0,18.982250000000008
+Punta Maroma,SURF3(b),Medina-Valmaseda et al. 2025,U-Th,0.07621,0.00953,,1.0,1.0,18.58525
+Punta Maroma,SURF2(e),Medina-Valmaseda et al. 2025,U-Th,0.07952,0.00958,,1.0,1.0,19.2745
+Punta Maroma,MR9(a),Medina-Valmaseda et al. 2025,U-Th,0.0953,0.0187,,0.712,1.0,36.84875
+Punta Maroma,MR11(c),Medina-Valmaseda et al. 2025,U-Th,0.0983,0.0021,,0.932,1.0,4.260999999999987
+Punta Maroma,SURF2(b),Medina-Valmaseda et al. 2025,U-Th,0.11293,0.00955,,0.998,1.0,17.812500000000007
+Punta Maroma,M1(a),Medina-Valmaseda et al. 2025,U-Th,0.1462,0.0157,,1.0,1.0,31.53175
+Punta Maroma,SURF18(c),Medina-Valmaseda et al. 2025,U-Th,0.14668,0.00972,,1.0,1.0,19.430499999999988
+Punta Maroma,M1(a),Medina-Valmaseda et al. 2025,U-Th,0.1743,0.0315,,0.947,0.947,65.08500000000001
+Punta Maroma,SURF18(b),Medina-Valmaseda et al. 2025,U-Th,0.204,0.00953,,0.829,0.829,18.386000000000013
+Punta Maroma,SURF7(b),Medina-Valmaseda et al. 2025,U-Th,0.25683,0.00958,,1.0,1.0,17.860999999999986
+Punta Maroma,SURF4,Medina-Valmaseda et al. 2025,U-Th,0.3235,0.0048,,1.0,1.0,9.231249999999969
+Punta Maroma,SURF23(b),Medina-Valmaseda et al. 2025,U-Th,0.41,0.0052,,1.0,1.0,10.28074999999995
+Punta Maroma,SURF14(c),Medina-Valmaseda et al. 2025,U-Th,0.41075,0.0192,,0.851,0.851,39.195499999999996
+Punta Maroma,MR1(b),Medina-Valmaseda et al. 2025,U-Th,0.6378,0.0199,,1.0,1.0,40.40274999999993
+Punta Maroma,SURF1(b),Medina-Valmaseda et al. 2025,U-Th,1.38208,0.02078,,0.966,0.966,37.764750000000014
+Punta Maroma,F3-1,Medina-Valmaseda et al. 2025,U-Th,1.81,0.02,,0.83,0.83,38.0575000000003
+Punta Maroma,SURF1(e),Medina-Valmaseda et al. 2025,U-Th,1.90881,0.02928,,0.731,1.0,56.647500000000186
+Punta Maroma,SURF1(d),Medina-Valmaseda et al. 2025,U-Th,1.96062,0.02421,,1.0,1.0,46.256749999999734
+Punta Maroma,SURF17(a),Medina-Valmaseda et al. 2025,U-Th,1.99047,0.03105,,0.747,0.747,61.1927499999998
+Punta Maroma,M2(a),Medina-Valmaseda et al. 2025,U-Th,2.0612,0.0368,,0.986,0.999,69.93925000000002
+Punta Maroma,SURF1(a),Medina-Valmaseda et al. 2025,U-Th,2.11123,0.04186,,0.693,1.0,84.44824999999989
+Punta Maroma,F12-1,Medina-Valmaseda et al. 2025,U-Th,2.43,0.02,,0.999,0.999,39.33624999999985
+Punta Maroma,M9(b),Medina-Valmaseda et al. 2025,U-Th,2.3743,0.044,,0.883,0.884,85.49300000000004
+Punta Maroma,SURF12(c),Medina-Valmaseda et al. 2025,U-Th,2.40061,0.04041,,0.496,0.496,79.52150000000024
+Punta Maroma,MA3,Medina-Valmaseda et al. 2025,U-Th,2.813,0.0223,,0.882,0.882,44.02324999999996
+Punta Maroma,F10-1,Medina-Valmaseda et al. 2025,U-Th,2.93,0.03,,0.975,1.0,61.16825000000014
+Punta Maroma,MR5,Medina-Valmaseda et al. 2025,U-Th,2.9723,0.0307,,0.963,0.963,58.07124999999979
+Punta Maroma,MR3(a),Medina-Valmaseda et al. 2025,U-Th,3.0899,0.02,,0.815,1.0,39.346999999999795
+Punta Maroma,MR1(c),Medina-Valmaseda et al. 2025,U-Th,3.1231,0.0373,,0.908,1.0,74.12549999999962
+Punta Maroma,SURF22(e),Medina-Valmaseda et al. 2025,U-Th,3.16283,0.07142,,0.785,0.83,142.1397500000001
+Punta Maroma,MR7(a),Medina-Valmaseda et al. 2025,U-Th,3.2003,0.0268,,0.516,0.516,56.673749999999856
+Punta Maroma,SURF9(b),Medina-Valmaseda et al. 2025,U-Th,3.21079,0.04077,,0.706,0.706,82.84374999999989
+Punta Maroma,MR13.4,Medina-Valmaseda et al. 2025,U-Th,3.2764,0.0384,,0.883,1.0,77.51475000000019
+Punta Maroma,M5(b),Medina-Valmaseda et al. 2025,U-Th,3.358,0.0299,,0.998,0.998,56.37074999999969
+Punta Maroma,MR10,Medina-Valmaseda et al. 2025,U-Th,3.4723,0.0213,,0.995,1.0,42.66175000000017
+Punta Maroma,SURF8(a),Medina-Valmaseda et al. 2025,U-Th,3.54132,0.03011,,0.995,0.999,56.88249999999995
+Punta Maroma,MA4(a),Medina-Valmaseda et al. 2025,U-Th,3.5526,0.0226,,1.0,1.0,46.6335
+Punta Maroma,MR11(a),Medina-Valmaseda et al. 2025,U-Th,3.5962,0.0332,,0.601,0.601,62.60150000000042
+Punta Maroma,SURF15(a),Medina-Valmaseda et al. 2025,U-Th,3.62398,0.07769,,0.718,0.733,151.23474999999996
+Punta Maroma,F4-1,Medina-Valmaseda et al. 2025,U-Th,3.7,0.07,,0.517,0.991,147.29924999999966
+Punta Maroma,SURF11(b),Medina-Valmaseda et al. 2025,U-Th,3.63803,0.02793,,0.998,0.998,52.13475000000001
+Punta Maroma,M5(b),Medina-Valmaseda et al. 2025,U-Th,3.6908,0.0216,,0.806,1.0,41.02424999999998
+Punta Maroma,MR6(a),Medina-Valmaseda et al. 2025,U-Th,3.7328,0.0209,,1.0,1.0,40.052250000000015
+Punta Maroma,SURF22(d),Medina-Valmaseda et al. 2025,U-Th,3.76656,0.05795,,0.854,0.866,113.06599999999989
+Punta Maroma,SURF20(b),Medina-Valmaseda et al. 2025,U-Th,3.89045,0.05368,,0.64,1.0,101.28974999999984
+Punta Maroma,SURF12(b),Medina-Valmaseda et al. 2025,U-Th,4.00192,0.07965,,0.517,0.519,154.64749999999984
+Punta Maroma,F6-B,Medina-Valmaseda et al. 2025,U-Th,4.1,0.02,,0.487,1.0,37.347249999998944
+Punta Maroma,F8-1,Medina-Valmaseda et al. 2025,U-Th,4.24,0.03,,0.997,0.997,61.19524999999992
+Punta Maroma,F6-T,Medina-Valmaseda et al. 2025,U-Th,4.3,0.04,,0.496,1.0,79.64449999999968
+Punta Maroma,F11-1,Medina-Valmaseda et al. 2025,U-Th,4.5,0.03,,0.466,1.0,61.10924999999945
+Punta Maroma,F5-1,Medina-Valmaseda et al. 2025,U-Th,4.54,0.11,,0.629,0.859,210.78699999999984
+Punta Maroma,F9-B,Medina-Valmaseda et al. 2025,U-Th,4.68,0.04,,0.834,1.0,77.8850000000011
+Punta Maroma,F7-B,Medina-Valmaseda et al. 2025,U-Th,4.95,0.04,,0.987,0.995,76.76950000000016
+Punta Maroma,F7-T,Medina-Valmaseda et al. 2025,U-Th,4.97,0.04,,0.935,0.935,77.58275000000037
+Punta Maroma,F9-T,Medina-Valmaseda et al. 2025,U-Th,5.46,0.03,,0.993,1.0,56.6892499999998
+Saint Croix,BI?-2,Hubbard et al. 2005; 2013,14C,0.073,0.12,,0.637,0.928,240.45374999999996
+Saint Croix,HSX 2,Hubbard et al. 2005; 2013,14C,0.089,0.1275,,0.535,0.875,256.70174999999995
+Saint Croix,HSX-1,Hubbard et al. 2005; 2013,14C,0.644,0.1595,,0.44,0.642,330.83325
+Saint Croix,BI5-12,Hubbard et al. 2005; 2013,14C,0.775,0.1805,,0.407,0.579,357.935
+Saint Croix,BI5-24,Hubbard et al. 2005; 2013,14C,0.829,0.187,,0.37,0.557,370.62724999999983
+Saint Croix,BI5-22,Hubbard et al. 2005; 2013,14C,0.856,0.1805,,0.411,0.666,348.2295000000001
+Saint Croix,BB1-02,Hubbard et al. 2005; 2013,14C,0.955,0.206,,0.355,0.584,404.4399999999998
+Saint Croix,BI2-16,Hubbard et al. 2005; 2013,14C,1.16,0.1775,,0.373,0.613,359.5892500000001
+Saint Croix,BB2-013,Hubbard et al. 2005; 2013,14C,1.438,0.1495,,0.448,0.668,300.0654999999999
+Saint Croix,BI2-01**,Hubbard et al. 2005; 2013,14C,1.516,0.2055,,0.331,0.614,393.7527500000002
+Saint Croix,BI2-05,Hubbard et al. 2005; 2013,14C,1.641,0.1975,,0.385,0.601,393.89024999999987
+Saint Croix,BB1-11,Hubbard et al. 2005; 2013,14C,1.781,0.227,,0.349,0.52,465.1427499999996
+Saint Croix,BI1-02**,Hubbard et al. 2005; 2013,14C,3.056,0.2395,,0.307,0.533,478.74675
+Saint Croix,BI1-13,Hubbard et al. 2005; 2013,14C,3.757,0.2675,,0.301,0.507,537.8927499999993
+Saint Croix,BI1-24,Hubbard et al. 2005; 2013,14C,4.326,0.322,,0.269,0.489,632.25
+Saint Croix,BB2-043,Hubbard et al. 2005; 2013,14C,4.513,0.216,,0.35,0.673,419.91074999999967
+Saint Croix,LBE7-02,Hubbard et al. 2005; 2013,14C,4.746,0.268,,0.267,0.509,560.8432499999996
+Saint Croix,BI4-14,Hubbard et al. 2005; 2013,14C,4.87,0.2705,,0.326,0.57,519.6504999999992
+Saint Croix,BI2-50,Hubbard et al. 2005; 2013,14C,4.961,0.271,,0.265,0.498,545.717999999999
+Saint Croix,LBS4-04,Hubbard et al. 2005; 2013,14C,5.631,0.218,,0.355,0.558,450.08474999999936
+Saint Croix,LBE7-18,Hubbard et al. 2005; 2013,14C,5.669,0.2145,,0.347,0.591,432.46350000000075
+Saint Croix,LBE6-30,Hubbard et al. 2005; 2013,14C,5.811,0.2665,,0.298,0.455,566.7835000000006
+Belize,BBR 1 (0.000),Gischler et al. 2023,U-Th,0.0,0.0,0.0,1.0,1.0,0.0
+Belize,GR 1 (0.087),Gischler et al. 2023,U-Th,0.087,0.008,0.087,0.998,1.0,15.55949999999999
+Belize,BBR 10 (0.099),Gischler et al. 2023,U-Th,0.099,0.002,0.099,0.845,1.0,3.9512499999999893
+Belize,BBR 7 (0.119),Gischler et al. 2023,U-Th,0.119,0.005,0.119,1.0,1.0,9.452749999999996
+Belize,GR 3 (0.120),Gischler et al. 2023,U-Th,0.12,0.007,0.12,1.0,1.0,13.831250000000017
+Belize,BBR 2 (0.122),Gischler et al. 2023,U-Th,0.122,0.002,0.122,1.0,1.0,3.9707499999999953
+Belize,LR 10 (0.137),Gischler et al. 2023,U-Th,0.137,0.001,0.137,1.0,1.0,1.950499999999994
+Belize,BBR 9 (0.336),Gischler et al. 2023,U-Th,0.336,0.004,0.336,1.0,1.0,7.332000000000005
+Belize,BBR 9 (0.660),Gischler et al. 2023,14C,0.739,0.1695,0.62,0.442,0.696,336.7245
+Belize,BBR 5 (0.990),Gischler et al. 2023,14C,1.061,0.1845,0.92,0.396,0.656,368.1492499999999
+Belize,BBR 7 (1.035),Gischler et al. 2023,U-Th,1.035,0.008,1.035,1.0,1.0,15.092000000000105
+Belize,BBR 6 (1.105),Gischler et al. 2023,U-Th,1.105,0.02,1.105,0.678,1.0,40.06325
+Belize,BBR 2 (1.452),Gischler et al. 2023,U-Th,1.452,0.041,1.452,0.984,0.994,81.06900000000006
+Belize,LR 7 (1.464),Gischler et al. 2023,U-Th,1.464,0.014,1.464,1.0,1.0,26.982250000000096
+Belize,TR 5 (1.470),Gischler et al. 2023,14C,1.576,0.2145,1.432,0.332,0.526,413.51249999999993
+Belize,BBR 8 (1.670),Gischler et al. 2023,U-Th,1.67,0.013,1.67,1.0,1.0,26.155750000000033
+Belize,LR 12 (1.990),Gischler et al. 2023,U-Th,1.99,0.018,1.99,0.865,0.865,35.63549999999993
+Belize,GR 3 (2.720),Gischler et al. 2023,14C,2.879,0.2515,2.716,0.313,0.565,469.43750000000017
+Belize,GR 1 (2.835),Gischler et al. 2023,14C,2.94,0.2185,2.789,0.348,0.61,436.65425000000016
+Belize,BBR 8 (2.975),Gischler et al. 2023,14C,3.109,0.2355,2.947,0.291,0.58,464.41224999999963
+Belize,LR 13 (2.980),Gischler et al. 2023,U-Th,2.98,0.042,2.98,0.819,0.819,80.78025000000011
+Belize,BBR 4 (3.235),Gischler et al. 2023,14C,3.365,0.232,3.201,0.34,0.574,455.155
+Belize,GR 3 (3.485),Gischler et al. 2023,14C,3.619,0.263,3.458,0.263,0.459,525.4880000000006
+Belize,BBR 3 (3.684),Gischler et al. 2023,U-Th,3.684,0.026,3.684,0.898,1.0,50.00450000000001
+Belize,BBR 6 (4.202),Gischler et al. 2023,U-Th,4.202,0.03,4.202,0.557,0.557,58.775499999999425
+Belize,LR 7 (4.397),Gischler et al. 2023,U-Th,4.397,0.035,4.397,0.55,0.55,68.99150000000098
+Belize,BBR 6 (4.435),Gischler et al. 2023,14C,4.57,0.242,4.391,0.288,0.501,482.7882499999996
+Belize,LR 7 (4.565),Gischler et al. 2023,14C,4.707,0.3155,4.545,0.259,0.494,612.6904999999994
+Belize,BBR 7 (4.695),Gischler et al. 2023,14C,4.845,0.2695,4.67,0.322,0.545,545.5612500000004
+Belize,BBR 1 (4.875),Gischler et al. 2023,14C,4.987,0.2475,4.812,0.287,0.487,514.9992499999998
+Belize,BBR 2 (5.005),Gischler et al. 2023,14C,5.142,0.2515,4.984,0.288,0.545,498.25674999999944
+Belize,TR 4 (5.035),Gischler et al. 2023,14C,5.131,0.3015,4.976,0.23,0.432,602.0217499999995
+Belize,GR 1 (5.055),Gischler et al. 2023,14C,5.145,0.2985,4.991,0.25,0.445,597.2494999999993
+Belize,BBR 6 (5.146),Gischler et al. 2023,U-Th,5.146,0.04,5.146,0.984,0.998,80.71475000000028
+Belize,BBR 11 (5.340),Gischler et al. 2023,14C,5.406,0.238,5.246,0.282,0.448,488.34399999999965
+Belize,BBR 9 (5.340),Gischler et al. 2023,14C,5.406,0.238,5.246,0.327,0.494,508.7502499999994
+Belize,BBR 10 (5.390),Gischler et al. 2023,14C,5.427,0.2335,5.272,0.328,0.532,431.3564999999997
+Belize,BBR 4 (5.538),Gischler et al. 2023,U-Th,5.538,0.048,5.538,0.942,0.996,93.33399999999958
+Belize,GR 1 (5.541),Gischler et al. 2023,U-Th,5.541,0.041,5.541,0.981,0.997,78.32075000000049
+Florida,DT-PL-4-6,"Toth et al., 2019;Modys et al., 2024",14C,5.953,0.1645,,0.507,0.713,338.10875
+Florida,LK-RK-N3-0,"Toth et al., 2019;Modys et al., 2024",14C,5.637,0.15,,0.482,0.682,329.9617499999998
+Florida,LK-WS-1-0,"Toth et al., 2019;Modys et al., 2024",14C,4.76,0.169,,0.405,0.596,383.8040000000005
+Florida,LK-WS-3-1,"Toth et al., 2019;Modys et al., 2024",14C,4.879,0.164,,0.434,0.75,343.9650000000007
+Florida,LK-WS-3-5,"Toth et al., 2019;Modys et al., 2024",14C,5.469,0.135,,0.392,0.725,293.6584999999994
+Florida,LK-LK-2-0N,"Toth et al., 2019;Modys et al., 2024",14C,0.949,0.1395,,0.494,0.703,295.50049999999993
+Florida,LK-LK-2-0,"Toth et al., 2019;Modys et al., 2024",14C,0.663,0.1745,,0.428,0.677,348.49500000000006
+Florida,LK-LK-2-10,"Toth et al., 2019;Modys et al., 2024",14C,5.294,0.137,,0.405,0.767,287.62225000000007
+Florida,LK-LK-2-13,"Toth et al., 2019;Modys et al., 2024",14C,4.198,0.326,,0.203,0.371,670.8205000000005
+Florida,MK-SR-3-0,"Toth et al., 2019;Modys et al., 2024",14C,0.992,0.14,,0.454,0.535,304.93424999999996
+Florida,MK-SR-3-3,"Toth et al., 2019;Modys et al., 2024",14C,5.69,0.1575,,0.438,0.798,319.9117499999993
+Florida,MK-TN-1-1,"Toth et al., 2019;Modys et al., 2024",14C,5.888,0.1615,,0.413,0.758,347.22650000000056
+Florida,MK-AR-2-1,"Toth et al., 2019;Modys et al., 2024",14C,5.841,0.152,,0.445,0.673,321.53474999999963
+Florida,MK-AR-4-1.5,"Toth et al., 2019;Modys et al., 2024",14C,5.998,0.172,,0.41,0.501,376.32249999999965
+Florida,MK-AR-7-0,"Toth et al., 2019;Modys et al., 2024",14C,5.924,0.166,,0.424,0.729,346.0029999999996
+Florida,UK-KL-5-0,"Toth et al., 2019;Modys et al., 2024",14C,5.581,0.1525,,0.459,0.593,323.42125
+Florida,UK-GR-5-5,"Toth et al., 2019;Modys et al., 2024",14C,0.146,0.1345,,0.444,0.723,274.37825
+Florida,UK-GR-5-10,"Toth et al., 2019;Modys et al., 2024",14C,1.102,0.142,,0.388,0.775,293.7755000000001
+Florida,UK-CF-7-1,"Toth et al., 2019;Modys et al., 2024",14C,2.978,0.1585,,0.412,0.579,341.37799999999976
+Florida,BP-LR-1-2.5,"Toth et al., 2019;Modys et al., 2024",14C,2.192,0.142,,0.377,0.526,306.23975
+Florida,BP-LR-2-0,"Toth et al., 2019;Modys et al., 2024",14C,5.505,0.145,,0.458,0.819,298.02274999999946
+Florida,UK-CF-HM-7-b / WL,"Toth et al., 2019;Modys et al., 2024",14C,1.943,0.1635,,0.426,0.711,347.21950000000004
+Florida,UK-GR-5-0-b,"Toth et al., 2019;Modys et al., 2024",14C,0.069,0.114,,0.664,0.931,234.1735
+Florida,LK2-3 / LK-LK-2-26,"Toth et al., 2019;Modys et al., 2024",14C,5.306,0.322,,0.243,0.441,654.8387499999997
+Florida,BR-IR-CR-9-0.1,"Toth et al., 2019;Modys et al., 2024",U-Th,5.828,0.025,,0.99,0.99,47.36349999999945
+Florida,BR-IR-CR-9-0.4,"Toth et al., 2019;Modys et al., 2024",14C,5.796,0.15,,0.361,0.492,321.09074999999973
+Florida,BR-IR-CR-14-0.1,"Toth et al., 2019;Modys et al., 2024",14C,5.858,0.1565,,0.415,0.697,330.1860000000003
+Florida,BR-IR-CR-14-0.6,"Toth et al., 2019;Modys et al., 2024",14C,5.976,0.1835,,0.413,0.564,380.5120000000004
+Florida,BR-NR-DF-2.0,"Toth et al., 2019;Modys et al., 2024",14C,2.468,0.161,,0.391,0.67,329.93050000000056
+Florida,BR-NR-DF-2.3a,"Toth et al., 2019;Modys et al., 2024",14C,2.618,0.1415,,0.453,0.579,304.72374999999994
+Florida,BR-NR-DF-2.3b,"Toth et al., 2019;Modys et al., 2024",14C,2.431,0.1565,,0.355,0.554,364.4635000000003
+Florida,MD-IR-PM-7.0,"Toth et al., 2019;Modys et al., 2024",14C,3.251,0.196,,0.352,0.596,426.53100000000023
+Florida,MD-IR-PM-7.3a,"Toth et al., 2019;Modys et al., 2024",14C,3.233,0.1895,,0.342,0.57,421.15149999999966
+Florida,MD-IR-PM-7.9,"Toth et al., 2019;Modys et al., 2024",14C,3.3,0.1945,,0.311,0.673,414.04400000000055
+Florida,MD-IR-PM-6.4,"Toth et al., 2019;Modys et al., 2024",14C,3.091,0.211,,0.302,0.604,423.4437499999997
+Florida,MD-IR-PM-5.8,"Toth et al., 2019;Modys et al., 2024",14C,2.949,0.2,,0.312,0.565,401.4957500000005
+Florida,MD-IR-PM-7.0,"Toth et al., 2019;Modys et al., 2024",14C,4.334,0.2365,,0.311,0.564,492.3674999999994
+Florida,MD-IR-PM-6.4,"Toth et al., 2019;Modys et al., 2024",14C,3.218,0.1455,,0.398,0.576,328.0664999999998
+Florida,MD-IR-PM-8.5,"Toth et al., 2019;Modys et al., 2024",14C,5.241,0.181,,0.406,0.6,397.2932500000006
+Florida,MD-OR-PM-10.1,"Toth et al., 2019;Modys et al., 2024",14C,5.12,0.2305,,0.287,0.543,470.31974999999983
+Florida,MD-OR-PM-11.0a,"Toth et al., 2019;Modys et al., 2024",14C,5.786,0.2305,,0.287,0.502,479.3367499999999
+Florida,MD-OR-PM-10.7a,"Toth et al., 2019;Modys et al., 2024",14C,5.619,0.2325,,0.314,0.489,486.3212499999996
+Florida,MD-IR/OR-PM-6.7,"Toth et al., 2019;Modys et al., 2024",14C,3.378,0.145,,0.428,0.613,329.1484999999996
+Florida,PMP-51,"Modys et al., 2022",U-Th,0.975,0.006,,1.0,1.0,11.570999999999998
+Florida,PMP-02C,"Modys et al., 2022",U-Th,1.891,0.008,,0.989,1.0,15.684999999999949
+Florida,PMP-05C,"Modys et al., 2022",U-Th,2.272,0.008,,1.0,1.0,14.986500000000014
+Florida,PMP-76,"Modys et al., 2022",U-Th,2.388,0.009,,0.998,0.998,18.14524999999989
+Florida,PMP-64,"Modys et al., 2022",U-Th,2.389,0.005,,1.0,1.0,9.851249999999645
+Florida,PMP-75,"Modys et al., 2022",U-Th,2.436,0.008,,1.0,1.0,15.212000000000447
+Florida,PMP-63,"Modys et al., 2022",U-Th,2.441,0.006,,1.0,1.0,11.95225000000022
+Florida,PMP-61,"Modys et al., 2022",U-Th,2.465,0.006,,1.0,1.0,11.210749999999603
+Florida,PMP-98,"Modys et al., 2022",U-Th,2.642,0.011,,1.0,1.0,21.495749999999703
+Florida,PMP-99,"Modys et al., 2022",U-Th,2.705,0.009,,0.872,1.0,17.184499999999936
+Florida,PMP-42,"Modys et al., 2022",U-Th,2.811,0.004,,1.0,1.0,7.611500000000326
+Florida,PMP-04C,"Modys et al., 2022",U-Th,3.017,0.008,,1.0,1.0,15.244749999999918
+Florida,PMP-01C,"Modys et al., 2022",U-Th,3.089,0.011,,0.981,1.0,20.154500000000297
+Florida,PMP-97,"Modys et al., 2022",U-Th,3.13,0.01,,1.0,1.0,18.743000000000176
+Florida,PMP-96,"Modys et al., 2022",U-Th,3.141,0.033,,0.994,0.999,64.40549999999989
+Florida,PMP-53,"Modys et al., 2022",U-Th,3.151,0.009,,1.0,1.0,18.003750000000096
+Florida,PMP-40,"Modys et al., 2022",U-Th,3.153,0.007,,1.0,1.0,13.902250000000116
+Florida,PMP-74,"Modys et al., 2022",U-Th,3.372,0.012,,1.0,1.0,22.850500000000107
+Florida,PT-100,"Modys et al., 2022",U-Th,2.342,0.004,,1.0,1.0,7.451249999999909
+Florida,PT-101,"Modys et al., 2022",U-Th,2.319,0.007,,1.0,1.0,13.642749999999815
+Florida,PT-102,"Modys et al., 2022",U-Th,1.96,0.004,,1.0,1.0,8.321000000000023
+Florida,Ap23-LK-T2,"Stathakopoulos et al., 2025",U-Th,2.617,0.007,,1.0,1.0,13.001999999999736
+Florida,Ap23-BK-2,"Stathakopoulos et al., 2025",U-Th,3.676,0.007,,1.0,1.0,13.292749999999742
+Florida,Ap23-BK-3,"Stathakopoulos et al., 2025",U-Th,3.745,0.006,,1.0,1.0,11.873000000000022
+Florida,Ap23-BK-4,"Stathakopoulos et al., 2025",U-Th,4.042,0.018,,1.0,1.0,36.160499999999374
+Florida,Ap23-BK-6,"Stathakopoulos et al., 2025",U-Th,4.141,0.007,,1.0,1.0,13.832500000000358
+Florida,Ap23-BK-7,"Stathakopoulos et al., 2025",U-Th,4.255,0.023,,1.0,1.0,44.72400000000043
+Florida,Ap23-BK-9W,"Stathakopoulos et al., 2025",U-Th,4.175,0.007,,1.0,1.0,13.570249999999895
+Florida,Ap23-BK-11W,"Stathakopoulos et al., 2025",U-Th,4.147,0.007,,1.0,1.0,13.13175000000033
+Florida,Ap23-PW-2,"Stathakopoulos et al., 2025",U-Th,1.017,0.004,,1.0,1.0,8.032750000000366
+Florida,Ap23-PLS-1,"Stathakopoulos et al., 2025",U-Th,4.162,0.012,,1.0,1.0,23.586249999999254
+Florida,DT-PL-Ap-2B,"Stathakopoulos et al., 2025",14C,4.289,0.18,,0.375,0.723,358.994
+Florida,DT-PL-Ap-3,"Stathakopoulos et al., 2025",14C,4.216,0.1705,,0.392,0.566,366.10649999999987
+Florida,DT-PL-Ap-7,"Stathakopoulos et al., 2025",14C,4.396,0.1765,,0.386,0.524,344.3057500000002
+Florida,Ap18-PLS-1,"Stathakopoulos et al., 2025",14C,4.232,0.1665,,0.422,0.627,326.6087500000001
+Florida,Ap18-PLS-2,"Stathakopoulos et al., 2025",14C,4.317,0.1705,,0.431,0.74,339.2692499999992
+Florida,Ap18-PLS-3,"Stathakopoulos et al., 2025",14C,4.317,0.1705,,0.436,0.774,325.1715000000006
+Florida,Ap18-PLN-1,"Stathakopoulos et al., 2025",14C,4.002,0.166,,0.386,0.486,337.3377499999997
+Florida,Ap18-PLN-2,"Stathakopoulos et al., 2025",14C,4.345,0.1705,,0.455,0.694,343.04800000000046
+Florida,DT-PL-2-0,"Stathakopoulos et al., 2025",14C,4.247,0.1645,,0.417,0.69,315.22375000000034
+Florida,DT-PL-3-2.5,"Stathakopoulos et al., 2025",14C,3.762,0.163,,0.456,0.668,314.8807499999999
+Florida,DT-PL-3-10,"Stathakopoulos et al., 2025",14C,4.503,0.193,,0.361,0.749,369.0807500000002
+Florida,Ap18-South-1,"Stathakopoulos et al., 2025",14C,4.374,0.1725,,0.454,0.618,347.53900000000027
+Florida,Ap18-South-2,"Stathakopoulos et al., 2025",14C,4.345,0.1705,,0.423,0.687,352.49249999999944
+Florida,DT-PW-Ap-1,"Stathakopoulos et al., 2025",14C,2.859,0.146,,0.504,0.759,283.8837499999998
+Florida,Ap18-PW-1,"Stathakopoulos et al., 2025",14C,2.767,0.145,,0.561,0.665,294.16600000000017
+Florida,Ap18-PW-2,"Stathakopoulos et al., 2025",14C,2.724,0.153,,0.516,0.803,302.55975000000035
+Florida,Ap18-MB-1,"Stathakopoulos et al., 2025",14C,2.797,0.1355,,0.463,0.514,258.5052499999998
+Florida,Ap18-EK-1,"Stathakopoulos et al., 2025",14C,4.289,0.1745,,0.368,0.727,357.23000000000036
+Florida,Ap18-EK-2,"Stathakopoulos et al., 2025",14C,4.093,0.1755,,0.353,0.716,335.7144999999995
+Florida,Ap18-EK-3,"Stathakopoulos et al., 2025",14C,3.483,0.1515,,0.444,0.773,299.7620000000003
+Florida,Ap18-EK-4,"Stathakopoulos et al., 2025",14C,4.186,0.183,,0.405,0.561,354.7664999999993
+Florida,Ap18-EK-5,"Stathakopoulos et al., 2025",14C,4.061,0.176,,0.437,0.692,359.8369999999993
+Florida,Ap-SE-N1,"Stathakopoulos et al., 2025",14C,3.69,0.162,,0.418,0.75,316.9862499999998
+Florida,Ap-SE-N2,"Stathakopoulos et al., 2025",14C,3.852,0.1695,,0.438,0.682,348.5174999999998
+Florida,Ap-SE-N3,"Stathakopoulos et al., 2025",14C,3.469,0.143,,0.509,0.793,276.54425000000015
+Florida,Ap-SE-S1,"Stathakopoulos et al., 2025",14C,2.858,0.143,,0.476,0.742,284.2720000000001
+Florida,Ap-SE-S2,"Stathakopoulos et al., 2025",14C,2.894,0.1515,,0.428,0.789,309.11050000000006
+Florida,Ap-SE-S3,"Stathakopoulos et al., 2025",14C,4.29,0.1695,,0.375,0.743,326.50950000000023
+Florida,Ap-SE-S4,"Stathakopoulos et al., 2025",14C,4.261,0.1645,,0.413,0.712,309.1849999999994
+Florida,Ap23-LK-S1,"Stathakopoulos et al., 2025",14C,1.242,0.1285,,0.599,0.731,246.80199999999996
+Florida,Ap23-LK-S2,"Stathakopoulos et al., 2025",14C,1.645,0.146,,0.518,0.712,281.5675
+Florida,Ap23-LK-S4,"Stathakopoulos et al., 2025",14C,0.374,0.122,,0.487,0.625,244.85324999999995
+Florida,Ap23-LK-T3,"Stathakopoulos et al., 2025",14C,2.984,0.169,,0.415,0.585,328.34875
+Florida,Ap23-BK-1,"Stathakopoulos et al., 2025",14C,3.762,0.163,,0.463,0.657,316.01800000000014
+Florida,Ap23-BK-5,"Stathakopoulos et al., 2025",14C,4.276,0.166,,0.419,0.753,331.2477499999993
+Florida,Ap23-BK-10W,"Stathakopoulos et al., 2025",14C,4.232,0.1665,,0.409,0.634,336.59324999999905
+Florida,Ap23-PW-3,"Stathakopoulos et al., 2025",14C,2.505,0.1635,,0.37,0.722,311.2537499999997

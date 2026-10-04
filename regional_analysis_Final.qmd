@@ -3,9 +3,10 @@ title: "6000-yr APAL-Climate Regional Analysis"
 author: "Alexis E Medina Valmaseda"
 abstract: |
   This document is the executable record (Quarto/R) of all analyses reported in the
-  main text. It uses two input files deposited in the repository: `ages_kernel_reg_updt2.xlsx`
-  (dated *Acropora palmata* fossils, audited against the original age publications) and `df_GAM130326_regimes_v3.xlsx` (centennial climate
-  predictors). From these it reproduces:
+  main text. It uses three input files deposited in the repository: `ages_kernel_reg_updt2.xlsx`
+  (dated *Acropora palmata* fossils, audited against the original age publications),
+  `df_GAM130326_regimes_v3.xlsx` (centennial climate predictors) and `Marine20_0-15ka.csv`
+  (the Marine20 radiocarbon calibration curve, used to propagate age uncertainty). From these it reproduces:
 
   1. binning of fossil ages into 0.1-ka (centennial) intervals, their alignment with
      climate predictors and the normalization of the response variable;
@@ -37,13 +38,15 @@ We import the fossil chronology (`ages_kernel_reg_updt2.xlsx`, sheet `Registros`
 
 **Age reference, calibration and data corrections.** The chronology was audited record by record against the original publications of each age (workbook `coral_ages_audit_M3.xlsx`; sheet `Trazabilidad` of `ages_kernel_reg_updt2.xlsx` lists, for every record, its source, method, published age, analytical uncertainty, calibration and the change with respect to the previous version, `ages_kernel_reg_updt.xlsx`). All ages are expressed in ka BP (before 1950 CE), the reference of the climate series, and all radiocarbon ages are calibrated with Marine20 using a local reservoir correction (ΔR), propagated in quadrature.
 
-- **Punta Maroma.** U-Th ages (Medina-Valmaseda et al. 2025) are published relative to the year of chemical separation (2021) and are converted to BP (0.071 ka younger). Ages from Blanchon et al. (2017) are already in years BP. One sample (SURF7(a), ~1956 CE) post-dates 1950; it keeps its age (−0.006 ka) and is assigned to the youngest bin. Two samples dated on separate subsamples (M1(a), M5(b)) retain both ages.
+- **Punta Maroma.** U-Th ages (Medina-Valmaseda et al. 2025) are published relative to the year of chemical separation (2021) and are converted to BP (0.071 ka younger). Ages from Blanchon et al. (2017) were already in years BP. One sample (SURF7(a), \~1956 CE) post-dates 1950; it keeps its age (−0.006 ka) and is assigned to the youngest bin. Two samples dated on separate subsamples (M1(a), M5(b)) retain both ages.
 - **Saint Croix.** Radiocarbon ages (Hubbard et al. 2005, 2013), originally calibrated with Marine98 and no local correction, are recalibrated with Marine20 and ΔR = 64 ± 32 ¹⁴C yr (DiNapoli et al. 2020). For samples without a published conventional age (Hubbard et al. 2013), the conventional age and its uncertainty are recovered as the values that reproduce the published calibrated age and 2σ range under the original calibration. One sample dated at two laboratories (BI2-05) enters once, with the error-weighted mean of its conventional ages; one published calibrated age inconsistent with its conventional age (BI1-13) is replaced by the recalibrated value; samples listed in both source publications are counted once. Four U-Th ages are not modified.
-- **Belize.** U-Th ages (Gischler et al. 2023) are in years BP and are not modified. Radiocarbon ages are recalibrated with Marine20 and ΔR = −248 ± 35 ¹⁴C yr (Greer et al. 2020), from the conventional ages in Gischler & Hudson (2004) or, for the atoll cores, from conventional ages recovered by inverting the original Marine98 calibration. Because this ΔR is a single, strongly negative estimate, the analysis was repeated with a regional ΔR of −114 ± 70 ¹⁴C yr (inverse-variance weighted mean of the ten nearest entries of the Marine Reservoir Database, with their standard deviation as uncertainty). Seven *A. cervicornis* samples previously coded as *A. palmata* are reclassified, and one typographical error in the compiled table is corrected from the original publication.
-- **Florida.** Radiocarbon ages recalibrated with Marine20 by L. T. Toth (pers. comm.) are used; three samples absent from that compilation are recalibrated with the same local correction. U-Th ages are in years BP. Seventeen rows that repeated a sample already present under another source database are removed. Records are standardized by collection (main reef tract, nearshore ridge, Dry Tortugas) as before.
+- **Belize.** U-Th ages (Gischler et al. 2023) are in years BP and are not modified. Radiocarbon ages are recalibrated with Marine20 and ΔR = −248 ± 35 ¹⁴C yr (Greer et al. 2020), from the conventional ages in Gischler & Hudson (2004) or, for the atoll cores, from conventional ages recovered by inverting the original Marine98 calibration. Because this ΔR is a single, strongly negative estimate, we repeated the analysis using a regional ΔR of −114 ± 70 ¹⁴C yr (inverse-variance weighted mean of the ten nearest entries of the Marine Reservoir Database, with their standard deviation as uncertainty). Seven *A. cervicornis* samples previously coded as *A. palmata* were reclassified and excluded from the *A. palmata* series, and one typographical error in the compiled table was corrected from the original publication.
+- **Florida.** We used in the analysis radiocarbon ages recalibrated with Marine20 by L. T. Toth (pers. comm.); three samples absent from that compilation were recalibrated with the same local correction. U-Th ages were already in years BP. Seventeen rows that repeated a sample already present under another source database were removed. Records were standardized by collection (main reef tract, nearshore ridge, Dry Tortugas) as before.
 - **Effect.** *A. palmata* records in 0–6 ka: 257 → 236 (Punta Maroma 64, Florida 111, Belize 39, Saint Croix 22). Radiocarbon ages carry 95 % calibrated ranges of 0.3–0.5 kyr (3–5 centennial bins), so for the radiocarbon-dated sites the 0.1-kyr bin is an aggregation unit, not the resolving power of the records.
 
-<!-- Verificar antes de citar: Heaton et al. 2020 (Marine20), DiNapoli et al. 2020, Greer et al. 2020. -->
+- **Calibration curve and age uncertainty.** The age uncertainty shown in Fig. 2 is computed within this document, not taken from the source publications: the Marine20 curve (Heaton et al. 2020; https://doi.org/10.1017/RDC.2020.68), deposited in the repository as `Marine20_0-15ka.csv` (0–15,000 cal BP, columns cal BP, ¹⁴C age and its 1σ error), is combined with the conventional age, its error and the local ΔR with its error of each radiocarbon age (sheet `Trazabilidad`) to obtain its calibrated probability distribution, from which the ages are drawn (Section 1.4). No external calibration software is needed to reproduce it.
+
+<!-- Verificar antes de citar: DiNapoli et al. 2020, Greer et al. 2020. Heaton et al. 2020 = Marine20, Radiocarbon 62: 779–820. -->
 
 ```{r datos-reg}
 rm(list=ls(all=TRUE))
@@ -442,9 +445,12 @@ merged_df_g <- bind_rows(
 
 Kernel density estimates (KDE) are computed from the individual ages, weighted so that the density has the shape of the modelled series of Section 1.3. Each record receives the weight it carries in `counts_norm_sv`: in Punta Maroma, Belize and Saint Croix, `counts_norm_sv / counts` of its bin; in Florida, the product of its source-standardization factor and the Florida normalization factor; in the regional composite, the site weight multiplied by the regional normalization factor. The weights of the records in each bin therefore add up to `counts_norm_sv` of that bin (checked in the code). For a site with a single source the weights are constant except in the maximum bin, so the weighted KDE has the same shape as the KDE of the raw ages; the weighting changes the shape only for Florida (source standardization) and for the regional composite.
 
-Each density is a Gaussian KDE over 0–6 ka (bandwidth 0.09 ka, 512 points). Its uncertainty is estimated with 1,000 bootstrap resamples of the records with replacement, keeping their weights and stratified by source in Florida and by site in the regional composite. For each resample we keep the density curve and its mean in each 0.1-ka bin. `signal_all` holds the estimate and the 2.5–97.5 % and 25–75 % bootstrap envelopes of each curve; `centennial_density_all` holds the bin means of the estimate and their bootstrap SD and 95 % interval.
+Each density is a Gaussian KDE over 0–6 ka (bandwidth 0.09 ka, 512 points). The bandwidth is a smoothing choice, not the resolving power of the record: the 95 % range of a radiocarbon age spans 0.3–0.5 ka (3–5 centennial bins), that of a U-Th age 0.02–0.05 ka. Two sources of uncertainty are estimated separately:
 
-Because a KDE integrates to one, the regional density distributes a fixed total among the four sites in proportion to the sum of their weights, which depends on how their records are spread among bins, not on how many records they have. Saint Croix, whose 24 records occupy 18 bins with at most two records each, carries 27 % of the regional weight with 9 % of the records, and Punta Maroma 15 % with 25 % of the records (`site_share`). This is a property of the per-site normalization used in the models, not of the KDE, and it applies equally to the regional GAMs.
+- **Sampling** (which fossils were recovered and dated): 1,000 bootstrap resamples of the records with replacement, keeping their weights and stratified by source in Florida and by site in the regional composite. For each resample we keep the density curve and its mean in each 0.1-ka bin. `signal_all` holds the estimate and the 2.5–97.5 % and 25–75 % bootstrap envelopes of each curve; `centennial_density_all` holds the bin means of the estimate and their bootstrap SD and 95 % interval.
+- **Age** (where each dated fossil falls in time): 1,000 Monte Carlo draws of every age, with the record weights held at their central values. U-Th ages are drawn from a normal distribution with SD equal to half the reported 2σ error. Radiocarbon ages are drawn from their calibrated probability distribution, computed here from the conventional age, its error and the local ΔR with its error (combined in quadrature) under Marine20 (Heaton et al. 2020; https://doi.org/10.1017/RDC.2020.68; curve deposited as `Marine20_0-15ka.csv`), and shifted so that its median equals the audited age (the shift is ≤ 1 yr except for a few Florida ages calibrated with other software by their authors). The inputs are read from the sheet `Trazabilidad` of `ages_kernel_reg_updt2.xlsx`. Three Florida radiocarbon ages without a ΔR error take the median ΔR error of Florida. The 2.5–97.5 % range of the draws is the age envelope (`age_q025`, `age_q975` in `signal_all`) and the 95 % range of each age is shown in Fig. 2.
+
+Because a KDE integrates to one, the regional density distributes a fixed total among the four sites in proportion to the sum of their weights, which depends on how their records are spread among bins, not on how many records they have. Saint Croix, whose 22 records occupy 19 bins with at most two records each, carries 26 % of the regional weight with 9 % of the records, and Punta Maroma 12 % with 27 % of the records (`site_share`). This is a property of the per-site normalization used in the models, not of the KDE, and it applies equally to the regional GAMs.
 
 ```{r dens}
 library(dplyr)
@@ -573,74 +579,224 @@ gt::gtsave(tab_S2, "Supplementary_Table_S2.docx")
 
 **Supplementary Table S2. Centennial weighted kernel-density summaries.** For each site and the regional composite: mean bootstrap SD of the bin-mean density over the 60 bins (`mean_boot_sd`), and the maximum and minimum bin-mean density with the bin midpoint (ka) at which each occurs.
 
-Maximum density occurs at 0.15 ka in **Punta Maroma**, **Belize** and the **regional composite**, at 1.05 ka in **Saint Croix** and at 4.25 ka in **Florida**. Minima fall at 5.95 ka (**Punta Maroma**), 2.35 ka (**Belize**), 2.65 ka (**Saint Croix**), 1.45 ka (**Florida**) and 0.55 ka (**regional composite**). Weighting moves the maximum of the regional curve from 4.25 ka, where the unweighted pool of all records peaked because of the Florida records, to 0.15 ka.
+Maximum density occurs at 0.05 ka in **Punta Maroma** and the **regional composite**, at 0.15 ka in **Belize**, at 0.85 ka in **Saint Croix** and at 3.15 ka in **Florida**. Minima fall at 5.95 ka (**Punta Maroma**), 2.45 ka (**Belize** and **Saint Croix**), 1.45 ka (**Florida**) and 0.45 ka (**regional composite**). With the audited ages the youngest bin holds the maximum of the regional curve with or without the weights.
 
-The intervals highlighted in Fig. 2 (`rects`) are: **Punta Maroma** 0.71–1.44 ka; **Belize** 1.99–2.72, 3.68–4.20 and 5.54–6.00 ka; **regional** 2.20–3.00 and 5.10–5.90 ka. They correspond to local *A. palmata* presence gaps reported for **Punta Maroma** (Medina-Valmaseda et al., 2025) and **Belize** (Hubbard et al., 2005, Gischler et al., 2023).
+**Intervals without records and low-density intervals.** Two kinds of interval are marked in Fig. 2, both computed from the audited ages:
 
-**Figure 2** (raw version; `Figure_2.pdf`). Weighted kernel-density curves of *A. palmata* ages. (a) Each site, with one colour and one line type per site. (b) Regional composite, with the 2.5–97.5 % and interquartile bootstrap envelopes. Horizontal bars at the top of each panel mark the intervals listed above.
+- **Published presence gaps** (coloured bars) for **Punta Maroma** (Medina-Valmaseda et al., 2025) and **Belize** (Hubbard et al., 2005; Gischler et al., 2023). Each is drawn as the record-free interval of the audited ages that overlaps the published gap (`site_gaps`), so its limits follow the corrected chronology.
+- **Low-density intervals** (grey shading), in every panel, including the regional composite, for which no gaps have been published: intervals of at least 0.2 ka in which the upper 95 % limits of both the sampling and the age envelopes stay below the density of a uniform distribution over 0–6 ka (1/6 per ka; dashed line). These are centuries with fewer records than expected under a uniform distribution of the dated fossils, irrespective of which fossils were dated and of their age uncertainty (`low_density`). The rule recovers independently the published gaps of Punta Maroma and Belize. In the regional composite it identifies a single interval, during the Little Ice Age; the regional intervals marked in the previous version (2.20–3.00 and 5.10–5.90 ka) do not meet it with the audited ages.
 
-```{r fig2m, fig.width=8, fig.height=8}
-rects <- data.frame(
-  xmin = c(0.71, 1.99, 2.2, 3.68, 5.1, 5.54),
-  xmax = c(1.44, 2.72, 3.0, 4.20, 5.9, 6.00),
-  spot = c("Punta Maroma", "Belize", "Regional (All spots)", "Belize",
-           "Regional (All spots)", "Belize"))
+```{r fig2-uncert}
+library(readxl)
+## ---- record metadata (method, analytical uncertainty, calibration inputs) -------
+## from the traceability sheet of the chronology, linked by record ID
+trace <- read_excel(here("ages_kernel_reg_updt2.xlsx"), sheet = "Trazabilidad") %>%
+  select(ID, method, err_2s_ka, conv14C, conv14C_err, dR, dR_err) %>%
+  mutate(across(c(err_2s_ka, conv14C, conv14C_err, dR, dR_err), as.numeric))
+recs <- recs %>% left_join(trace, by = "ID")
+stopifnot(!any(is.na(recs$method)), !any(is.na(recs$err_2s_ka)))
 
+## ---- age uncertainty: Monte Carlo draws of every age ------------------------------
+## U-Th: normal, sd = 2-sigma error / 2. Radiocarbon: draws from the calibrated
+## probability distribution (Marine20; conventional age, its error and the local dR,
+## errors combined in quadrature), shifted so that its median equals the audited age
+## (the shift is <= 1 yr except where the published calibration used other software).
+## Three Florida 14C ages without a dR error take the median dR error of Florida.
+m20  <- read.csv(here("Marine20_0-15ka.csv"), comment.char = "#")
+g    <- 0:15000
+m20_mu <- approx(m20$cal_BP, m20$c14_age, g)$y
+m20_sd <- approx(m20$cal_BP, m20$sigma, g)$y
+dre_fl <- median(recs$dR_err[recs$spot == "Florida" & recs$method == "14C"], na.rm = TRUE)
+
+N_age <- 1000
+draw_age <- function(i) {
+  r <- recs[i, ]
+  if (r$method != "14C") return(rnorm(N_age, r$t_ka, r$err_2s_ka / 2))
+  dre <- ifelse(is.na(r$dR_err), dre_fl, r$dR_err)
+  s2  <- r$conv14C_err^2 + dre^2 + m20_sd^2
+  p   <- exp(-(r$conv14C - r$dR - m20_mu)^2 / (2 * s2)) / sqrt(s2)
+  p   <- p / sum(p)
+  med <- g[which(cumsum(p) >= 0.5)[1]]
+  x   <- sample(g, N_age, replace = TRUE, prob = p) + runif(N_age, -0.5, 0.5)
+  (x - med) / 1000 + r$t_ka
+}
+set.seed(20261003)
+age_draws <- t(vapply(seq_len(nrow(recs)), draw_age, numeric(N_age)))   # records x draws
+
+## 95 % range of each age (for the record panels)
+recs <- recs %>%
+  mutate(lo95 = apply(age_draws, 1, quantile, 0.025),
+         hi95 = apply(age_draws, 1, quantile, 0.975))
+
+## ---- weighted KDE under age uncertainty (weights held at their central values) ------
+kde_age_env <- function(idx, w, bw = 0.09) {
+  dens <- vapply(seq_len(N_age), function(j)
+    density(age_draws[idx, j], weights = w / sum(w), bw = bw, from = 0, to = 6, n = 512)$y,
+    numeric(512))
+  data.frame(age_q025 = apply(dens, 1, quantile, 0.025),
+             age_q975 = apply(dens, 1, quantile, 0.975))
+}
+age_env <- bind_rows(
+  lapply(site_levels, function(sp) {
+    i <- which(recs$spot == sp)
+    cbind(spot = sp, x = signal_all$x[signal_all$spot == sp], kde_age_env(i, recs$w_site[i]))
+  }),
+  cbind(spot = "Regional composite", x = signal_all$x[signal_all$spot == "Regional composite"],
+        kde_age_env(seq_len(nrow(recs)), recs$w_regional)))
+signal_all <- signal_all %>% left_join(age_env, by = c("spot", "x"))
+
+## ---- intervals without records -----------------------------------------------------
+## Sites: the record-free interval of the audited ages that overlaps each published gap
+## (Punta Maroma: Medina-Valmaseda et al. 2025; Belize: Hubbard et al. 2005, Gischler et al. 2023).
+pub_gaps <- data.frame(spot = c("Punta Maroma", "Belize", "Belize", "Belize"),
+                       pub_min = c(0.71, 1.99, 3.68, 5.54), pub_max = c(1.44, 2.72, 4.20, 6.00))
+gap_from_records <- function(t, a, b) {
+  e <- sort(unique(c(t, 6)))
+  k <- which(head(e, -1) < b & tail(e, -1) > a)
+  k <- k[which.max(diff(e)[k])]
+  c(e[k], e[k + 1])
+}
+site_gaps <- pub_gaps %>% rowwise() %>%
+  mutate(g = list(gap_from_records(recs$t_ka[recs$spot == spot], pub_min, pub_max)),
+         xmin = g[1], xmax = g[2]) %>% ungroup() %>% select(-g)
+
+## Regional composite: no published gaps. Low-density intervals are recalculated as the
+## intervals (>= 0.2 ka) in which the upper 95 % limit of BOTH envelopes (sampling and age)
+## stays below the density of a uniform distribution over 0-6 ka (1/6 per ka).
+low_runs <- function(x, flag, min_len = 0.2) {
+  r <- rle(flag); end <- cumsum(r$lengths); start <- end - r$lengths + 1
+  out <- data.frame(xmin = x[start], xmax = x[end])[r$values, , drop = FALSE]
+  out[out$xmax - out$xmin >= min_len, , drop = FALSE]
+}
+low_density <- bind_rows(lapply(c(site_levels, "Regional composite"), function(sp) {
+  d <- signal_all %>% filter(spot == sp)
+  cbind(spot = sp, low_runs(d$x, pmax(d$q975, d$age_q975) < 1 / 6))
+}))
+reg_gaps <- low_density %>% filter(spot == "Regional composite")
+
+site_gaps
+low_density
+```
+
+**Figure 2** (`Figure_2.pdf`). *Acropora palmata* age distributions and their uncertainty. (a–d) Each site: weighted kernel density (bandwidth 0.09 ka; line) with its 95 % sampling envelope (bootstrap of the records; light) and 95 % age envelope (Monte Carlo of the ages; dark); below, every dated fossil with its 95 % age range, by dating method (circles U-Th, triangles ¹⁴C). (e) Regional composite. Dashed line: density of a uniform distribution over 0–6 ka. Grey shading: low-density intervals (both upper 95 % limits below the uniform density). Coloured bars: published presence gaps, bounded by the audited ages. Where the age envelope is as wide as the sampling envelope (Saint Croix, dated only by radiocarbon), the timing of density peaks and troughs is not resolved at the centennial scale.
+
+```{r fig2m, fig.width=8.5, fig.height=10}
 library(patchwork)
+## ---- Figure 2 ---------------------------------------------------------------------
+## Per site: weighted KDE (bw 0.09 ka) with its 95 % sampling (bootstrap) and age (Monte Carlo)
+## envelopes, and below it every age with its 95 % range, by dating method.
+## Grey shading: low-density intervals (both upper 95 % limits below the uniform density);
+## coloured bars: published presence gaps, bounded by the audited ages.
+meth_shape <- c("U-Th" = 16, "14C" = 17)
+env_alpha  <- c("Sampling (bootstrap)" = 0.22, "Age (Monte Carlo)" = 0.5)
+panel_lab  <- c(site_levels, "Regional composite")
+panel_col  <- c(custom_colors[site_levels], "Regional composite" = unname(custom_colors["Regional"]))
+n_lab <- recs %>% count(spot, method) %>% group_by(spot) %>%
+  summarise(lab = paste0("n = ", sum(n), " (", paste(paste(n, sub("14C", "\u00b9\u2074C", method)), collapse = ", "), ")"), .groups = "drop")
+n_lab <- bind_rows(n_lab, data.frame(spot = "Regional composite", lab = paste0("n = ", nrow(recs), " records, 4 sites")))
 
-site_lty <- c("Punta Maroma" = "solid", "Belize" = "longdash",
-              "Saint Croix" = "dotdash", "Florida" = "dotted")
+x_common <- list(scale_x_continuous(breaks = 0:6, minor_breaks = seq(0, 6, 0.5), expand = c(0.005, 0)),
+                 coord_cartesian(xlim = c(0, 6)),
+                 theme_classic(base_size = 9),
+                 theme(plot.tag = element_text(face = "bold"), legend.position = "bottom",
+                       panel.grid.major.x = element_line(colour = "grey92", linewidth = 0.3)))
 
-sig_sites <- signal_all %>%
-  filter(spot %in% site_levels) %>%
-  mutate(spot = factor(spot, levels = site_levels))
-sig_reg <- signal_all %>% filter(spot == "Regional composite")
+kde_panel <- function(sp, show_x = FALSE) {
+  d   <- signal_all %>% filter(spot == sp)
+  col <- unname(panel_col[sp])
+  top <- max(d$q975, d$age_q975) * 1.05
+  env <- bind_rows(
+    data.frame(x = d$x, lo = d$q025, hi = d$q975, env = "Sampling (bootstrap)"),
+    data.frame(x = d$x, lo = d$age_q025, hi = d$age_q975, env = "Age (Monte Carlo)"))
+  env$env <- factor(env$env, names(env_alpha))
+  ld  <- low_density %>% filter(spot == sp)
+  sg  <- site_gaps %>% filter(spot == sp)
+  p <- ggplot() +
+    geom_rect(data = ld, aes(xmin = xmin, xmax = xmax, ymin = -Inf, ymax = Inf), fill = "grey88") +
+    geom_ribbon(data = env, aes(x, ymin = lo, ymax = hi, alpha = env), fill = col) +
+    geom_hline(yintercept = 1 / 6, linetype = "dashed", linewidth = 0.3, colour = "grey40") +
+    geom_line(data = d, aes(x, estimate), colour = col, linewidth = 0.7) +
+    scale_alpha_manual(values = env_alpha, name = "95 % envelope", drop = FALSE) +
+    labs(x = NULL, y = expression("Density (ka"^-1*")"), title = sp, subtitle = n_lab$lab[n_lab$spot == sp]) +
+    x_common + theme(axis.text.x = if (show_x) element_text() else element_blank(),
+                     plot.title = element_text(colour = col, face = "bold", size = 10, margin = margin(b = 1)),
+                     plot.subtitle = element_text(colour = "grey30", size = 7.5, margin = margin(b = 2)))
+  if (nrow(sg)) p <- p + geom_rect(data = sg, aes(xmin = xmin, xmax = xmax),
+                                    ymin = top * 1.13, ymax = top * 1.2, fill = col, alpha = 0.8)
+  p + scale_y_continuous(limits = c(0, top * 1.22), expand = c(0, 0))
+}
 
-# gap bars drawn just above the highest curve of each panel
-top_a <- max(sig_sites$estimate, na.rm = TRUE)
-top_b <- max(sig_reg$q975, na.rm = TRUE)
-rects_a <- rects %>% filter(spot %in% site_levels) %>%
-  mutate(spot = factor(spot, levels = site_levels),
-         ymin = top_a * 1.04, ymax = top_a * 1.12)
-rects_b <- rects %>% filter(spot == "Regional (All spots)") %>%
-  mutate(ymin = top_b * 1.04, ymax = top_b * 1.12)
+rec_panel <- function(sp, show_x = TRUE) {
+  d <- recs %>% filter(spot == sp) %>%
+    mutate(method = factor(method, c("U-Th", "14C")),
+           y = as.numeric(method) + (rank(t_ka, ties.method = "first") %% 4 - 1.5) * 0.12)
+  ggplot(d, aes(y = y)) +
+    geom_errorbarh(aes(xmin = pmax(lo95, 0), xmax = pmin(hi95, 6)), height = 0, colour = panel_col[sp],
+                   alpha = 0.55, linewidth = 0.35) +
+    geom_point(aes(x = pmax(t_ka, 0), shape = method), colour = panel_col[sp], size = 0.9) +
+    scale_shape_manual(values = meth_shape, labels = c("U-Th", "\u00b9\u2074C"), name = "Dating method", drop = FALSE) +
+    scale_y_continuous(breaks = 1:2, labels = c("U-Th", "\u00b9\u2074C"), limits = c(0.55, 2.45)) +
+    labs(x = NULL, y = NULL) +
+    x_common + theme(axis.text.x = if (show_x) element_text() else element_blank(),
+                     axis.line.y = element_blank(), axis.ticks.y = element_blank())
+}
 
-x_scale <- list(
-  scale_x_continuous(breaks = seq(0, 6, 0.5), expand = c(0.01, 0)),
-  coord_cartesian(xlim = c(0, 6)),
-  theme_classic(base_size = 11),
-  theme(legend.position = "bottom", plot.tag = element_text(face = "bold"))
-)
+tags <- setNames(letters[1:5], panel_lab)
+## sites in the order used by every figure of this document (site_levels)
+pl <- list(kde_panel(site_levels[1]) + labs(tag = "a"), kde_panel(site_levels[2]) + labs(tag = "b"),
+           rec_panel(site_levels[1]), rec_panel(site_levels[2]),
+           kde_panel(site_levels[3]) + labs(tag = "c"), kde_panel(site_levels[4]) + labs(tag = "d"),
+           rec_panel(site_levels[3]), rec_panel(site_levels[4]),
+           kde_panel("Regional composite", show_x = TRUE) + labs(tag = "e", x = "Age (ka BP)"))
+design <- "
+AB
+CD
+EF
+GH
+II"
+fig2 <- wrap_plots(pl, design = design, heights = c(3, 1.1, 3, 1.1, 3), guides = "collect") &
+  theme(legend.position = "bottom") &
+  guides(alpha = guide_legend(override.aes = list(fill = "grey30")),
+         shape = guide_legend(override.aes = list(colour = "grey30", size = 2)))
 
-# (a) weighted KDE of each site: one colour and one line type per site
-p2a <- ggplot(sig_sites, aes(x = x)) +
-  geom_rect(data = rects_a,
-            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = spot),
-            inherit.aes = FALSE, alpha = 0.6, show.legend = FALSE) +
-  geom_line(aes(y = estimate, colour = spot, linetype = spot), linewidth = 1) +
-  scale_colour_manual(values = custom_colors[site_levels], name = "Site") +
-  scale_linetype_manual(values = site_lty, name = "Site") +
-  scale_fill_manual(values = custom_colors[site_levels], guide = "none") +
-  labs(x = NULL, y = "Density") +
-  x_scale + theme(axis.text.x = element_blank())
+fig2
+ggsave("Figure_2.pdf", plot = fig2, width = 8.5, height = 10, dpi = 300, device = cairo_pdf)
+```
 
-# (b) regional composite: weighted KDE with bootstrap 95 % and interquartile envelopes
-p2b <- ggplot(sig_reg, aes(x = x)) +
-  geom_rect(data = rects_b,
-            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
-            inherit.aes = FALSE, fill = custom_colors["Regional"], alpha = 0.6) +
-  geom_ribbon(aes(ymin = q025, ymax = q975, fill = "95 % bootstrap interval"), alpha = 0.25) +
-  geom_ribbon(aes(ymin = q25, ymax = q75, fill = "Interquartile range"), alpha = 0.45) +
-  geom_line(aes(y = estimate, colour = "Estimate"), linewidth = 1.2) +
-  scale_fill_manual(values = c("95 % bootstrap interval" = "grey60", "Interquartile range" = "grey40"),
-                    name = "Regional composite") +
-  scale_colour_manual(values = c("Estimate" = unname(custom_colors["Regional"])), name = NULL) +
-  labs(x = "Time (ka BP)", y = "Density") +
-  x_scale
+**Supplementary Figure S2b** (`Supplementary_Figure_S2b.pdf`). Sensitivity of the weighted kernel densities to the bandwidth (0.05, 0.09 and 0.15 ka), with the 95 % sampling (light) and age (dark) envelopes of each. Narrower bandwidths resolve more peaks, but the age envelope widens relative to the sampling envelope, most in the radiocarbon-dated sites. Peaks and troughs that persist at 0.15 ka are not artefacts of the smoothing choice.
 
-p <- p2a / p2b + plot_annotation(tag_levels = "a")
-p
-ggsave("Figure_2.pdf", plot = p, width = 8, height = 8, dpi = 300, device = cairo_pdf)
+```{r figS2b-bandwidth, fig.width=10, fig.height=10}
+bw_set <- c(0.05, 0.09, 0.15)
+bw_env <- bind_rows(lapply(bw_set, function(bw) {
+  set.seed(20261003)
+  bind_rows(lapply(c(site_levels, "Regional composite"), function(sp) {
+    reg <- sp == "Regional composite"
+    i   <- if (reg) seq_len(nrow(recs)) else which(recs$spot == sp)
+    w   <- if (reg) recs$w_regional else recs$w_site[i]
+    st  <- if (reg) recs$spot else if (sp == "Florida") recs$source[i] else rep(1, length(i))
+    smp <- calc_density_summary(recs$t_ka[i], w, sp, strata = st, B = 1000, bw = bw)$signal_df
+    cbind(smp[, c("x", "estimate", "q025", "q975", "spot")], kde_age_env(i, w, bw = bw), bw = bw)
+  }))
+}))
+bw_env$spot <- factor(bw_env$spot, panel_lab)  # site_levels, as in every figure
+figS2b <- ggplot(bw_env, aes(x)) +
+  geom_ribbon(aes(ymin = q025, ymax = q975, fill = spot), alpha = 0.22) +
+  geom_ribbon(aes(ymin = age_q025, ymax = age_q975, fill = spot), alpha = 0.5) +
+  geom_line(aes(y = estimate, colour = spot), linewidth = 0.5) +
+  scale_fill_manual(values = panel_col, guide = "none") +
+  scale_colour_manual(values = panel_col, guide = "none") +
+  facet_grid(spot ~ paste("bandwidth", bw, "ka"), scales = "free_y") +
+  scale_x_continuous(breaks = 0:6, expand = c(0.005, 0)) +
+  labs(x = "Age (ka BP)", y = expression("Density (ka"^-1*")")) +
+  theme_classic(base_size = 9) + theme(strip.background = element_blank(), strip.text = element_text(face = "bold"))
+figS2b
+ggsave("Supplementary_Figure_S2b.pdf", plot = figS2b, width = 10, height = 10, dpi = 300, device = cairo_pdf)
+
+## relative width of the envelopes (sum of 95 % ranges / sum of the estimate), by bandwidth
+bw_env %>% group_by(Panel = spot, bw) %>%
+  summarise(sampling = sum(q975 - q025) / sum(estimate), age = sum(age_q975 - age_q025) / sum(estimate),
+            .groups = "drop") %>%
+  mutate(age_over_sampling = age / sampling) %>% mutate(across(where(is.numeric), ~ round(.x, 2)))
 ```
 
 ### 1.5 Abundance and Holocene trends in climatic variables
