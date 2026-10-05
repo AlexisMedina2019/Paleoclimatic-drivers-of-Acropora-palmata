@@ -3395,14 +3395,19 @@ val_models <- purrr::imap_dfr(val_data, function(d, site) tibble::tibble(
   Type  = c("Reference", "Marginal", "Combined"),
   Model = c("s(age) only", val_marg[[site]]$ranking$Model[1], val_comb[[site]]$best_model)))
 
-val_formula <- function(type, model) switch(type,
-  Reference = counts_norm_sv ~ s(age),
-  Marginal  = formulas_mg[[model]],
-  Combined  = formulas_cb[[model]])
+val_formula <- function(type, model, data) {
+  f <- switch(type,
+    Reference = counts_norm_sv ~ s(age),
+    Marginal  = formulas_mg[[model]],
+    Combined  = formulas_cb[[model]])
+  # as in the fitted models (drop_hydro), Hydro is removed where its series has gaps
+  if (hydro_has_gaps(data) && "Hydro" %in% all.vars(f)) f <- update(f, . ~ . - Hydro)
+  f
+}
 
 cv_points <- purrr::pmap_dfr(val_models, function(Panel, Type, Model) {
   d <- as.data.frame(val_data[[Panel]]) %>% arrange(age)
-  f <- val_formula(Type, Model); cb <- Type == "Combined"
+  f <- val_formula(Type, Model, d); cb <- Type == "Combined"
   tibble::tibble(Panel = Panel, Type = Type, Model = Model, age = d$age,
                  LOO = pointwise_cv(f, d, cb, 0), hblock = pointwise_cv(f, d, cb, 0.2))
 })
@@ -3437,7 +3442,7 @@ shifts <- 6:(n_bins - 6)
 
 shift_null <- purrr::pmap_dfr(filter(val_models, Type != "Reference"), function(Panel, Type, Model) {
   d   <- as.data.frame(val_data[[Panel]]) %>% mutate(age = round(age, 1))
-  f   <- val_formula(Type, Model); cb <- Type == "Combined"
+  f   <- val_formula(Type, Model, d); cb <- Type == "Combined"
   ref <- AIC(fit_val(counts_norm_sv ~ s(age), d, FALSE))
   obs <- ref - AIC(fit_val(f, d, cb))
   cli_p <- if (Panel == "Florida") cli_full_fl else cli_full
@@ -3508,7 +3513,7 @@ ggsave("Supplementary_Figure_S9.pdf", plot = figS9, width = 12, height = 8, devi
 ```{r drop one infl}
 dropone <- purrr::pmap_dfr(filter(val_models, Type != "Reference"), function(Panel, Type, Model) {
   d  <- as.data.frame(val_data[[Panel]]) %>% arrange(age)
-  f  <- val_formula(Type, Model); cb <- Type == "Combined"
+  f  <- val_formula(Type, Model, d); cb <- Type == "Combined"
   p_full <- term_pvalues(fit_val(f, d, cb))
   p_full <- p_full[names(p_full) != "s(age)"]
   p_drop <- sapply(seq_len(nrow(d)), function(i) {
