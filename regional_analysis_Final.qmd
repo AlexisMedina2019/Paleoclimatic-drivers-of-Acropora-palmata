@@ -175,7 +175,7 @@ The three categorical regimes were coded from the published chronologies compile
 Climate values are joined to every fossil record by `interval_max`, and the column is renamed `age` (ka). The resulting `merged_df` is record-level and therefore holds climate values only for bins that contain at least one fossil record.
 
 ```{r data-integ}
-datos_cli <- read_excel(here("df_GAM130326_regimes_v3.xlsx"))
+datos_cli <- read_excel(here("df_GAM130326_regimes_v4.xlsx"))
 datos_cli<-as.data.frame(datos_cli)
 
 library(dplyr)
@@ -1851,8 +1851,8 @@ model_labels <- c(
   M_hur = "Hurricane regime",
   M_temp = "GMHT anomalies",
   M_dt = "thermal rate of change δT",
-  M_hf = "Hurricane frequency",
-  M_hav = "Hurricane average"
+  M_hf = "TC frequency",
+  M_hav = "Smoothed TC frequency"
 )
 
 build_panel_summary <- function(best_obj,
@@ -2410,16 +2410,16 @@ combined_labels <- c(
     "Full climate-regime model (frequency)",
   
   M4_av =
-    "Thermal–disturbance model (intensity)",
+    "Thermal–disturbance model (smoothed frequency)",
   
   M5_av =
     "Thermal–disturbance–hydroclimate model",
   
   M6_av =
-    "Integrated climate model (intensity)",
+    "Integrated climate model (smoothed frequency)",
   
   M7_av =
-    "Full climate-regime model (intensity)"
+    "Full climate-regime model (smoothed frequency)"
 )
 
 tbl_combined <- tbl_combined %>%
@@ -2681,7 +2681,7 @@ centred_effects <- function(fac) {
     V    <- vcov(m)[idx, idx, drop = FALSE]
     lev  <- levels(droplevels(m$model[[fac]]))
     w    <- as.numeric(table(factor(m$model[[fac]], levels = lev))) / nrow(m$model)
-    A    <- t(sapply(lev, function(l) as.numeric(names(b) == paste0(fac, l))))  # level -> coef
+    A    <- do.call(rbind, lapply(lev, function(l) as.numeric(names(b) == paste0(fac, l))))  # level -> coef (matrix also with a single coefficient)
     Cm   <- A - matrix(colSums(w * A), nrow(A), ncol(A), byrow = TRUE)
     est  <- as.numeric(Cm %*% b)
     se   <- sqrt(pmax(diag(Cm %*% V %*% t(Cm)), 0))
