@@ -3,3 +3,9 @@
 .RData
 .Ruserdata
 .posit/assistant
+*_PBstyle*
+*_preview.png
+Manuscript*.md
+Response*.md
+*.odg
+M3_sensitivity/Florida_local_SST/
