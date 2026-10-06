@@ -53,6 +53,7 @@ We import the fossil chronology (`ages_kernel_reg_updt2.xlsx`, sheet `Registros`
 <!-- Verificar antes de citar: DiNapoli et al. 2020, Greer et al. 2020. Heaton et al. 2020 = Marine20, Radiocarbon 62: 779–820. -->
 
 ```{r datos-reg}
+knitr::opts_chunk$set(dev.args = list(pointsize = 15))   # base-graphics text +3 pt; ggplot text sizes are set in each theme
 rm(list=ls(all=TRUE))
 gc()
 #install.packages("here")
@@ -699,7 +700,7 @@ low_density
 
 **Figure 2** (`Figure_2.pdf`). *Acropora palmata* age distributions and their uncertainty. (a–d) Each site: weighted kernel density (bandwidth 0.09 ka, reflection-corrected at 0 and 6 ka; line) with its 95 % sampling envelope (bootstrap of the records; light) and 95 % age envelope (Monte Carlo of the ages; dark); below, every dated fossil with its 95 % age range, by dating method (circles U-Th, triangles ¹⁴C). (e) Regional composite. Dashed horizontal line (every panel): density expected if the dated fossils were spread evenly over 0–6 ka (uniform distribution, 1/6 ≈ 0.17 ka⁻¹), the reference used to define the low-density intervals. Grey shading: low-density intervals (both upper 95 % limits below the uniform density). Coloured bars: published presence gaps, bounded by the audited ages. In Punta Maroma (U-Th only) the age envelope is narrower than the line at this scale: its chronology is effectively fixed and its uncertainty is almost entirely sampling. Where the age envelope is as wide as the sampling envelope (Saint Croix, dated only by radiocarbon), the timing of density peaks and troughs is not resolved at the centennial scale.
 
-```{r fig2m, fig.width=8.5, fig.height=10}
+```{r fig2m, fig.width=9.5, fig.height=11}
 library(patchwork)
 ## ---- Figure 2 ---------------------------------------------------------------------
 ## Per site: weighted KDE (bw 0.09 ka) with its 95 % sampling (bootstrap) and age (Monte Carlo)
@@ -716,7 +717,7 @@ n_lab <- bind_rows(n_lab, data.frame(spot = "Regional composite", lab = paste0("
 
 x_common <- list(scale_x_continuous(breaks = 0:6, minor_breaks = seq(0, 6, 0.5), expand = c(0.005, 0)),
                  coord_cartesian(xlim = c(0, 6)),
-                 theme_classic(base_size = 9),
+                 theme_classic(base_size = 12),
                  theme(plot.tag = element_text(face = "bold"), legend.position = "bottom",
                        panel.grid.major.x = element_line(colour = "grey92", linewidth = 0.3)))
 
@@ -738,8 +739,8 @@ kde_panel <- function(sp, show_x = FALSE) {
     scale_alpha_manual(values = env_alpha, name = "95 % envelope", drop = FALSE) +
     labs(x = NULL, y = expression("Density (ka"^-1*")"), title = sp, subtitle = n_lab$lab[n_lab$spot == sp]) +
     x_common + theme(axis.text.x = if (show_x) element_text() else element_blank(),
-                     plot.title = element_text(colour = col, face = "bold", size = 10, margin = margin(b = 1)),
-                     plot.subtitle = element_text(colour = "grey30", size = 7.5, margin = margin(b = 2)))
+                     plot.title = element_text(colour = col, face = "bold", size = 13, margin = margin(b = 1)),
+                     plot.subtitle = element_text(colour = "grey30", size = 10.5, margin = margin(b = 2)))
   if (nrow(sg)) p <- p + geom_rect(data = sg, aes(xmin = xmin, xmax = xmax),
                                     ymin = top * 1.13, ymax = top * 1.2, fill = col, alpha = 0.8)
   p + scale_y_continuous(limits = c(0, top * 1.22), expand = c(0, 0))
@@ -779,12 +780,12 @@ fig2 <- wrap_plots(pl, design = design, heights = c(3, 1.1, 3, 1.1, 3), guides =
          shape = guide_legend(override.aes = list(colour = "grey30", size = 2)))
 
 fig2
-ggsave("Figure_2.pdf", plot = fig2, width = 8.5, height = 10, dpi = 300, device = cairo_pdf)
+ggsave("Figure_2.pdf", plot = fig2, width = 9.5, height = 11, dpi = 300, device = cairo_pdf)
 ```
 
 **Supplementary Figure S1** (`Supplementary_Figure_S1.pdf`). Sensitivity of the weighted kernel densities to the bandwidth (0.05, 0.09 and 0.15 ka), with the 95 % sampling (light) and age (dark) envelopes of each. Narrower bandwidths resolve more peaks, but the age envelope widens relative to the sampling envelope, most in the radiocarbon-dated sites. Peaks and troughs that persist at 0.15 ka are not artefacts of the smoothing choice.
 
-```{r figS1-bandwidth, fig.width=10, fig.height=10}
+```{r figS1-bandwidth, fig.width=11, fig.height=11}
 bw_set <- c(0.05, 0.09, 0.15)
 bw_env <- bind_rows(lapply(bw_set, function(bw) {
   set.seed(20261003)
@@ -807,9 +808,9 @@ figS1 <- ggplot(bw_env, aes(x)) +
   facet_grid(spot ~ paste("bandwidth", bw, "ka"), scales = "free_y") +
   scale_x_continuous(breaks = 0:6, expand = c(0.005, 0)) +
   labs(x = "Age (ka BP)", y = expression("Density (ka"^-1*")")) +
-  theme_classic(base_size = 9) + theme(strip.background = element_blank(), strip.text = element_text(face = "bold"))
+  theme_classic(base_size = 12) + theme(strip.background = element_blank(), strip.text = element_text(face = "bold"))
 figS1
-ggsave("Supplementary_Figure_S1.pdf", plot = figS1, width = 10, height = 10, dpi = 300, device = cairo_pdf)
+ggsave("Supplementary_Figure_S1.pdf", plot = figS1, width = 11, height = 11, dpi = 300, device = cairo_pdf)
 
 ## relative width of the envelopes (sum of 95 % ranges / sum of the estimate), by bandwidth
 bw_env %>% group_by(Panel = spot, bw) %>%
@@ -841,14 +842,14 @@ pr <- ggplot(norm_stack, aes(x = age, y = counts_norm_sv, fill = spot)) +
   labs(x = "Time (ka BP)",
        y = "Relative abundance\n(stacked by site)",
        fill = "Site") +
-  theme_minimal(base_size = 12) +
+  theme_minimal(base_size = 15) +
   theme(panel.grid.minor = element_blank(),
         panel.grid.major.x = element_blank(),
         legend.position = "bottom") +
   scale_x_continuous(breaks = seq(0, 6, 0.5), minor_breaks = seq(0, 6, 0.5)) +
   coord_cartesian(xlim = c(0, 6))
 pr
-ggsave("Figure_3a.pdf", plot = pr, width = 8, height = 5, dpi = 300, device = cairo_pdf)
+ggsave("Figure_3a.pdf", plot = pr, width = 9, height = 5.5, dpi = 300, device = cairo_pdf)
 ```
 
 We assemble Fig. 3. Panel (a) is Fig. 3a. Below it, four panels show, for each of the 60 centennial bins:
@@ -861,7 +862,7 @@ We assemble Fig. 3. Panel (a) is Fig. 3a. Below it, four panels show, for each o
 
 **Figure 3** (`Figure_3.pdf`). Reconstruction of regional coral abundance and paleoclimate trends. The climate panels (b–f) are drawn from the 60-bin climate table, so they cover the full 0–6 ka interval, including bins without fossil records.
 
-```{r fig3m, fig.width=12, fig.height=11.5}
+```{r fig3m, fig.width=12, fig.height=15}
 
 library(dplyr)
 library(tidyr)
@@ -878,14 +879,14 @@ p1 <- clim_bins %>%
   coord_cartesian(ylim = c(-1.2, 1.2), xlim = c(0, 6)) +
   scale_x_continuous(position = "top", breaks = seq(0, 6)) +
   geom_hline(yintercept = 1.2, color = "black", linewidth = 0.4) +
-  theme_minimal() +
+  theme_minimal(base_size = 14) +
   theme(
     strip.background = element_blank(),
     panel.background = element_blank(),
     legend.position = "none",
     axis.title.x = element_blank()
   ) +
-  labs(y = "GMST(°C)\nanomalies")
+  labs(y = "GMST anomaly\n(°C)")
 
 p2 <- clim_bins %>%
   group_by(age) %>%
@@ -894,14 +895,14 @@ p2 <- clim_bins %>%
   geom_col() +
   scale_fill_manual(values = c("TRUE" = "#E69F00", "FALSE" = "#56B4E9")) +
   coord_cartesian(ylim = c(-1.2, 0.7)) +
-  theme_minimal() +
+  theme_minimal(base_size = 14) +
   theme(
     legend.position = "none",
     axis.title.x = element_blank(),
     axis.text.x = element_blank(),
     axis.ticks.x = element_blank()
   ) +
-  labs(y = expression("Rate of Change\nẟT(°C) / 100 yr"))
+  labs(y = "δT\n(°C per century)")
 
 
 hur_plot_data <- clim_bins %>%
@@ -918,31 +919,31 @@ p3 <- ggplot(hur_plot_data, aes(x = age)) +
   geom_step(aes(y = Hur100_fqcy), color = "darkblue", linewidth = 0.8) +
   scale_fill_manual(values = c("TRUE" = "#4D4D4D", "FALSE" = "#999999")) +
   coord_cartesian(ylim = c(0, 50)) +
-  theme_minimal() +
+  theme_minimal(base_size = 14) +
   theme(
     strip.background = element_blank(),
     panel.background = element_blank(),
     legend.position = "none",
     axis.title.x = element_blank()
   ) +
-  labs(y = "Hurricane Average\n(events/100 yr)")
+  labs(y = "TC frequency\n(events per century)")
 
 # local Florida hurricane series: proportion of Florida-proximal records active in each bin.
 # Bars are dark where FL_pact >= 0.5 ("active" regime), as the Schmitt bars are dark above 10.
 p3fl <- ggplot(clim_bins, aes(xmin = age - 0.1, xmax = age, ymin = 0, ymax = FL_pact)) +
   geom_rect(aes(fill = FL_pact >= 0.5), alpha = 0.8) +
   annotate("segment", x = 3.5, xend = 6, y = 1.12, yend = 1.12, colour = "grey40", linewidth = 0.3) +
-  annotate("text", x = 4.75, y = 1.12, vjust = -0.4, size = 2.6, colour = "grey30",
+  annotate("text", x = 4.75, y = 1.12, vjust = -0.4, size = 3.65, colour = "grey30",
            label = "one record (Toomey et al. 2013)") +
   scale_fill_manual(values = c("TRUE" = "#08519C", "FALSE" = "#9ECAE1")) +
   scale_x_continuous(breaks = seq(0, 6, 0.5)) +
   coord_cartesian(xlim = c(0, 6), ylim = c(0, 1.25)) +
   scale_y_continuous(breaks = c(0, 0.5, 1)) +
-  theme_minimal() +
+  theme_minimal(base_size = 14) +
   theme(legend.position = "none",
         axis.title.x = element_blank(),
         axis.text.x = element_blank()) +
-  labs(y = "Hurricane activity,\nFlorida (prop. records)")
+  labs(y = "Florida activity\n(prop. records)")
 
 # regime segments drawn over the true span of each bin, (age - 0.1, age]
 regime_rows <- c(Thermal = "Thermal", Hydro_YUC = "Hydro (Yucatán)",
@@ -965,7 +966,7 @@ p4 <- ggplot(df_segments) +
                 fill = state), colour = "grey40", linewidth = 0.2) +
   geom_text(aes(x = label_x, y = as.numeric(row),
                 label = ifelse(age_end - age_start >= 0.25, state, "")),
-            color = "black", size = 2.4) +
+            color = "black", size = 3.45) +
   scale_y_continuous(breaks = seq_along(levels(df_segments$row)),
                      labels = levels(df_segments$row)) +
   scale_fill_manual(values = c(
@@ -977,7 +978,7 @@ p4 <- ggplot(df_segments) +
     "active"   = "#2171B5", "quiet"    = "#DEEBF7")) +
   scale_x_continuous(breaks = seq(0, 6, 0.5)) +
   coord_cartesian(xlim = c(0, 6)) +
-  theme_minimal() +
+  theme_minimal(base_size = 14) +
   theme(legend.position = "none") +
   labs(x = "Age (ka BP)", y = "Nominal Terms")
 
@@ -985,7 +986,7 @@ Figure_3 <- pr / p1 / p2 / p3 / p3fl / p4 +
   plot_layout(ncol = 1, heights = c(1, 1, 1, 1, 0.8, 1.7))
 Figure_3
 
-ggsave("Figure_3.pdf", plot = Figure_3, width = 8, height = 11.5, dpi = 300, device = cairo_pdf)
+ggsave("Figure_3.pdf", plot = Figure_3, width = 10, height = 15, dpi = 300, device = cairo_pdf)
 ```
 
 Before modelling, we inspect pairwise correlations among numeric variables (Section 2.1) and the distribution of abundance across combinations of climate regimes (Section 3.1.3). No predictor is removed on the basis of these analyses. Redundancy is handled instead by never entering the two hurricane metrics in the same model (Section 3.3) and by assessing overlap among smooth terms after fitting (concurvity, Section 4.2).
@@ -1008,7 +1009,7 @@ With the current data no combined candidate is rank-deficient (Section 3.3), but
 
 **Supplementary Figure S2.** Pearson correlation matrix of the continuous climate predictors across the 60 centennial bins.
 
-```{r corr, fig.width=8, fig.height=7}
+```{r corr, fig.width=8.5, fig.height=7.5}
 library(corrplot)
 
 clim_vars  <- c("GMHT_CPS0_30N", "dT_raw", "Hur100_fqcy", "Hur100_av")
@@ -1017,7 +1018,7 @@ cor_matrix <- cor(datos_cli[, clim_vars])
 corrplot(cor_matrix, method = "circle", type = "upper",
          tl.col = "black", tl.srt = 45, addCoef.col = "black")
 
-pdf("Supplementary_Figure_S2.pdf", width = 8, height = 7)
+pdf("Supplementary_Figure_S2.pdf", width = 8.5, height = 7.5, pointsize = 15)
 corrplot(cor_matrix, method = "circle", type = "upper",
          tl.col = "black", tl.srt = 45, addCoef.col = "black")
 invisible(dev.off())
@@ -1159,7 +1160,7 @@ p_fl_a <- ggplot(fl_compare, aes(age)) +
   
   scale_x_reverse() +
   
-  theme_bw() +
+  theme_bw(base_size = 14) +
   
   labs(
     x = "Age (ka BP)",
@@ -1189,12 +1190,12 @@ p_fl_b <- ggplot(
     y = "Standardized - Original"
   ) +
   
-  theme_bw(base_size = 12)
+  theme_bw(base_size = 15)
 
 library(patchwork)
 figS3 <- p_fl_a / p_fl_b + plot_annotation(tag_levels = "a")
 figS3
-ggsave("Supplementary_Figure_S3.pdf", plot = figS3, width = 8, height = 8, dpi = 300, device = cairo_pdf)
+ggsave("Supplementary_Figure_S3.pdf", plot = figS3, width = 9, height = 9, dpi = 300, device = cairo_pdf)
 ```
 
 The differences have a median of 0.100, a mean of 0.121 and a range of −0.211 to 0.489. The largest occur at 2.5, 3.3 and 5.9–6.0 ka. The two series are correlated at *r* = 0.794. Source standardization therefore preserves the overall temporal pattern but raises relative abundance in most bins (13 of the 44 differences, 30 %, are negative), most strongly at 2.4–2.5, 3.2–3.3 and 5.9–6.0 ka. This comparison concerns the response series; the GAMs refitted to the pooled series are compared with the source-standardized ones in Section 4.5.
@@ -1349,7 +1350,7 @@ gt::gtsave(tab_S4, "Supplementary_Table_S4.docx")
 
 The figure below summarizes the distribution of standardized *A. palmata* abundance across the retained climate-regime combinations. Combinations are ordered by their median abundance over all panels pooled, so the order is the same in every facet.
 
-```{r figS4, fig.width=12, fig.height=10}
+```{r figS4, fig.width=13, fig.height=11}
 
 figS4 <- ggplot(
   datos_filtrados,
@@ -1387,25 +1388,25 @@ figS4 <- ggplot(
     values = custom_colors
   ) +
   
-  theme_bw() +
+  theme_bw(base_size = 14) +
   
   theme(
     axis.text.x = element_text(
       angle = 45,
       hjust = 1,
-      size = 12
+      size = 15
     ),
-    axis.text.y = element_text(size = 12),
+    axis.text.y = element_text(size = 15),
     axis.title.x = element_text(
-      size = 14,
+      size = 17,
       face = "bold"
     ),
     axis.title.y = element_text(
-      size = 14,
+      size = 17,
       face = "bold"
     ),
     strip.text = element_text(
-      size = 14,
+      size = 17,
       face = "bold"
     ),
     legend.position = "none"
@@ -1417,7 +1418,7 @@ figS4 <- ggplot(
   )
 
 figS4
-ggsave("Supplementary_Figure_S4.pdf", plot = figS4, width = 12, height = 10, dpi = 300, device = cairo_pdf)
+ggsave("Supplementary_Figure_S4.pdf", plot = figS4, width = 13, height = 11, dpi = 300, device = cairo_pdf)
 ```
 
 **Supplementary Figure S4. Standardized *A. palmata* abundance under Holocene climate-regime combinations.** Boxplots of `counts_norm_sv` by combination of thermal, hydroclimatic and hurricane regime, per panel; points are individual centennial bins. Combinations are ordered by their median over all panels pooled, so the order is the same in every facet.
@@ -1493,7 +1494,7 @@ We fit the seven candidates to each panel of `merged_df_g` and plot ΔAIC and Ak
 
 **Supplementary Figure S5. Information-theoretic comparison of the marginal GAMs by panel.** (a) ΔAIC of each candidate (Supplementary Table S5); the red dashed line marks ΔAIC = 2, and the ΔAIC axis is scaled separately for each panel. (b) Akaike weights, on a common 0–1 scale. Candidates are listed in the same order in every panel.
 
-```{r marginal-results, fig.width=12, fig.height=7}
+```{r marginal-results, fig.width=13, fig.height=7.5}
 panels <- unique(merged_df_g$panel)
 
 results <- lapply(panels, function(p) {
@@ -1541,7 +1542,7 @@ plot_model_selection <- function(stats, panel_var, model_levels) {
       scale_x_discrete(drop = FALSE) +
       scale_colour_manual(values = custom_colors[site_order], guide = "none") +
       labs(x = NULL, y = ylab) +
-      theme_minimal(base_size = 12) +
+      theme_minimal(base_size = 15) +
       theme(strip.text = element_text(face = "bold"),
             panel.grid.minor = element_blank())
   }
@@ -1556,7 +1557,7 @@ plot_model_selection <- function(stats, panel_var, model_levels) {
 
 sup_fig4 <- plot_model_selection(stats_all, panel_var = "panel", model_levels = names(formulas_mg))
 sup_fig4
-ggsave("Supplementary_Figure_S5.pdf", plot = sup_fig4, width = 12, height = 7, dpi = 300, device = cairo_pdf)
+ggsave("Supplementary_Figure_S5.pdf", plot = sup_fig4, width = 13, height = 7.5, dpi = 300, device = cairo_pdf)
 ```
 
 #### 3.2.3 Marginal GAM model ranking
@@ -2203,7 +2204,7 @@ fit_combined_gams_safe <- function(formulas_cb, data, segment_name) {
       labs(title = paste("ΔAIC by model -", segment_name),
            subtitle = "Dashed line = ΔAIC = 2 (competitive threshold)",
            x = "Model", y = "ΔAIC") +
-      theme_minimal() +
+      theme_minimal(base_size = 14) +
       theme(legend.position = "bottom")
     
     p_weight <- ggplot(stats_df, aes(x = reorder(Model, -weight), y = weight)) +
@@ -2212,7 +2213,7 @@ fit_combined_gams_safe <- function(formulas_cb, data, segment_name) {
       labs(title = paste("AIC weights by model -", segment_name),
            subtitle = "Relative probability each model is best",
            x = "Model", y = "AIC weight") +
-      theme_minimal()
+      theme_minimal(base_size = 14)
     
     plots <- list(delta = p_delta, weight = p_weight)
   } else {
@@ -2244,7 +2245,7 @@ results_reg <- fit_combined_gams_safe(formulas_cb, datos_reg, "Regional")
 
 We stack the model statistics of all panels (`comparison_cb_full`), store the competitive models (ΔAIC ≤ 2; `competitive_models`, not displayed) and plot ΔAIC and Akaike weights by panel.
 
-```{r suppl-fig5, fig.width=12, fig.height=8}
+```{r suppl-fig5, fig.width=13, fig.height=8.5}
 comparison_cb_full <- bind_rows(results_pm$stats,
                            results_fl$stats,
                            results_bz$stats,
@@ -2258,7 +2259,7 @@ competitive_models <- comparison_cb_full %>%
 
 sup_fig5 <- plot_model_selection(comparison_cb_full, panel_var = "Segment", model_levels = names(formulas_cb))
 sup_fig5
-ggsave("Supplementary_Figure_S6.pdf", plot = sup_fig5, width = 12, height = 8, dpi = 300, device = cairo_pdf)
+ggsave("Supplementary_Figure_S6.pdf", plot = sup_fig5, width = 13, height = 8.5, dpi = 300, device = cairo_pdf)
 ```
 
 **Supplementary Figure S6. Information-theoretic comparison of the combined GAMs by panel.** (a) ΔAIC of each retained candidate (Supplementary Table S7); the red dashed line marks ΔAIC = 2, and the ΔAIC axis is scaled separately for each panel. (b) Akaike weights, on a common 0–1 scale. Candidates are listed in the same order in every panel; rows without a point are candidates not fitted in that panel (Hydro removed where its series has gaps, Section 3.2.1; rank-deficient candidates, Section 3.3.2).
@@ -2594,7 +2595,7 @@ To check the five selected combined models, we examine their residual diagnostic
 
 The five selected models are collected in `best_models` and their summaries are printed again. Smooth estimates with 95 % confidence intervals are extracted with `gratia::smooth_estimates()`, pooled across panels and plotted by predictor (one panel per smooth). Saint Croix is not shown, because it is not interpreted (Section 3.3.5); its terms are plotted with its diagnostics (Supplementary Fig. S7). The effects of the categorical regimes retained in the selected models are added as one extra panel per regime: thermal regime (Punta Maroma, Florida, Belize and the regional composite), hydroclimate (Florida) and hurricane regime (Belize and the regional composite). To put these effects on the same baseline as the smooths, which mgcv constrains to sum to zero over the fitted observations, the factor effects are centred in the same way: each regime's coefficient minus their mean weighted by the number of bins in each regime. Centring shifts all regimes by the same amount, so differences between regimes (the contrasts reported in Table 2) are unchanged; 95 % confidence intervals are computed from the full coefficient covariance matrix.
 
-```{r Fig4, warning=FALSE, message=FALSE, fig.width=12, fig.height=10}
+```{r Fig4, warning=FALSE, message=FALSE, fig.width=13, fig.height=11}
 
 library(gratia)
 library(dplyr)
@@ -2647,10 +2648,10 @@ fig4_sites <- setdiff(site_levels, "Saint Croix")
 pred_order <- intersect(c("age", "GMHT_CPS0_30N", "dT_raw", "Hur100_av", "Hur100_fqcy"),
                         unique(df_long$predictor))
 
-fig4_theme <- theme_minimal(base_size = 14) +
-  theme(axis.title = element_text(size = 12),
-        axis.text  = element_text(size = 12),
-        strip.text = element_text(size = 13))
+fig4_theme <- theme_minimal(base_size = 17) +
+  theme(axis.title = element_text(size = 15),
+        axis.text  = element_text(size = 15),
+        strip.text = element_text(size = 16))
 
 # One panel per smooth predictor (same look as the former facet_wrap)
 smooth_panels <- lapply(seq_along(pred_order), function(i) {
@@ -2705,7 +2706,8 @@ factor_panels <- purrr::compact(lapply(names(factor_order), function(fac) {
     facet_wrap(~predictor) +
     scale_colour_manual(values = site_cols, limits = site_levels, guide = "none") +
     labs(x = NULL, y = NULL) +
-    fig4_theme
+    fig4_theme +
+    theme(axis.text.x = element_text(angle = 30, hjust = 1))   # regime names do not overlap at 15 pt
 }))
 
 p_all <- wrap_plots(c(smooth_panels, factor_panels), ncol = 3) +
@@ -2713,7 +2715,7 @@ p_all <- wrap_plots(c(smooth_panels, factor_panels), ncol = 3) +
   theme(legend.position = "bottom")
 
 p_all
-ggsave("Figure_4.pdf", plot = p_all, width = 12, height = 8, dpi = 300, device = cairo_pdf)
+ggsave("Figure_4.pdf", plot = p_all, width = 13, height = 9, dpi = 300, device = cairo_pdf)
 ```
 
 **Figure 4** (`Figure_4.pdf`). Partial effects of the selected combined GAMs on the logit scale, coloured by panel (Punta Maroma, Florida, Belize and the regional composite; Saint Croix is not interpreted, Section 3.3.5). Smooth panels show each smooth term with its 95 % confidence band. Terms shrunk to EDF ≈ 0 plot as flat lines at zero: s(age) in Belize and the regional composite, s(GMHT_CPS0_30N) in Florida and the regional composite, s(dT_raw) in Punta Maroma, Florida and the regional composite, and s(Hur100_av) in the regional composite. Smooths are centred to a mean of zero over the fitted bins, so zero denotes the model's average contribution of that term and a curve below zero is associated with lower abundance than average. Factor panels (thermal regime, hydroclimate and hurricane regime) show the effect of each regime level with its 95 % confidence interval, centred in the same way (Section 4.1).
@@ -2779,7 +2781,7 @@ In all panels the response takes few distinct values, because each bin holds onl
 
 ##### 4.3.1 Punta Maroma
 
-```{r pm-diagn, warning=FALSE, message=FALSE, fig.width=12, fig.height=10}
+```{r pm-diagn, warning=FALSE, message=FALSE, fig.width=13, fig.height=11}
 par(mfrow = c(2,2))
 invisible(capture.output(gam.check(best_models[["Punta Maroma"]])))
 par(mfrow = c(2,3))
@@ -2789,7 +2791,7 @@ k.check(best_models[["Punta Maroma"]])
 
 ##### **4.3.2 Florida**
 
-```{r fl-diagn, warning=FALSE, message=FALSE, fig.width=12, fig.height=10}
+```{r fl-diagn, warning=FALSE, message=FALSE, fig.width=13, fig.height=11}
 
 par(mfrow = c(2,2))
 invisible(capture.output(gam.check(best_models[["Florida"]])))
@@ -2800,7 +2802,7 @@ k.check(best_models[["Florida"]])
 
 ##### **4.3.3 Belize**
 
-```{r bz-diagn, warning=FALSE, message=FALSE, fig.width=12, fig.height=10}
+```{r bz-diagn, warning=FALSE, message=FALSE, fig.width=13, fig.height=11}
 
 par(mfrow = c(2,2))
 invisible(capture.output(gam.check(best_models[["Belize"]])))
@@ -2811,7 +2813,7 @@ k.check(best_models[["Belize"]])
 
 ##### 4.3.4 Regional
 
-```{r reg-diagn, warning=FALSE, message=FALSE, fig.width=12, fig.height=10}
+```{r reg-diagn, warning=FALSE, message=FALSE, fig.width=13, fig.height=11}
 
 par(mfrow = c(2,2))
 invisible(capture.output(gam.check(best_models[["Regional"]])))
@@ -2822,7 +2824,7 @@ k.check(best_models[["Regional"]])
 
 ##### 4.3.5 Saint Croix
 
-```{r sc-diagn, warning=FALSE, message=FALSE, fig.width=12, fig.height=10}
+```{r sc-diagn, warning=FALSE, message=FALSE, fig.width=13, fig.height=11}
 
 par(mfrow = c(2,2))
 invisible(capture.output(gam.check(best_models[["Saint Croix"]])))
@@ -2833,7 +2835,7 @@ k.check(best_models[["Saint Croix"]])
 
 ```{r figS7-save, warning=FALSE, message=FALSE}
 # save Supplementary Figure S7 (a-e) as one multi-page PDF, one page per panel
-pdf("Supplementary_Figure_S7.pdf", width = 12, height = 10)
+pdf("Supplementary_Figure_S7.pdf", width = 13, height = 11, pointsize = 15)
 for (site in c("Punta Maroma", "Florida", "Belize", "Regional", "Saint Croix")) {
   par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
   invisible(capture.output(gam.check(best_models[[site]])))
@@ -2975,14 +2977,14 @@ plot_acf_pacf <- ggplot(df_all, aes(x = Lag, y = Value, fill = Site)) +
   geom_hline(data = acf_ci, aes(yintercept = -ci), linetype = "dashed", color = "grey40") +
   facet_grid(Type ~ Site, scales = "free_y") +
   labs(y = "Correlation", x = "Lag") +
-  theme_minimal(base_size = 12) +
+  theme_minimal(base_size = 15) +
   theme(
     strip.text = element_text(face = "bold"),
     plot.title = element_text(hjust = 0.5, face = "bold")
   )
 
 plot_acf_pacf
-ggsave("Supplementary_Figure_S8.pdf", plot = plot_acf_pacf, width = 12, height = 6, dpi = 300, device = cairo_pdf)   
+ggsave("Supplementary_Figure_S8.pdf", plot = plot_acf_pacf, width = 13, height = 6.5, dpi = 300, device = cairo_pdf)   
 ```
 
 **Supplementary Table S10. Residual independence of the selected combined GAMs** (output above).
@@ -3503,9 +3505,9 @@ figS9 <- shift_null %>%
   geom_vline(aes(xintercept = observed), colour = "red", linewidth = 0.8) +
   facet_wrap(Panel ~ Label, scales = "free", ncol = 4) +
   labs(x = "AIC improvement over s(age) (shifted climate series)", y = "Number of shifts") +
-  theme_minimal(base_size = 10)
+  theme_minimal(base_size = 13)
 figS9
-ggsave("Supplementary_Figure_S9.pdf", plot = figS9, width = 12, height = 8, device = cairo_pdf)
+ggsave("Supplementary_Figure_S9.pdf", plot = figS9, width = 13, height = 8.5, device = cairo_pdf)
 ```
 
 **Supplementary Figure S9. Circular-shift null distributions.** Histograms of the AIC improvement over `s(age)` obtained when the climatic series is shifted by 600–5,400 years relative to the coral record; the red line marks the observed improvement.
