@@ -1,0 +1,89 @@
+```{r sensitivity-mc-full, warning=FALSE, message=FALSE}
+## ---- (f) age and sampling uncertainty for ALL combined candidates (M1-M7, both branches) ----
+## Same replicates as (e) (age draws, within-site resampling), but each replicate refits every
+## combined candidate after drop_hydro(), as in the main analysis, and records which model has the
+## lowest AIC and the term-level p-values of the model selected with the audited ages.
+mc_full_file <- here("M3_sensitivity", "gam_uncertainty_mc_full_v4b.rds")
+sel_main <- c("Punta Maroma" = best_pm_cb$best_model, "Florida" = best_fl_cb$best_model,
+              "Belize" = best_bz_cb$best_model, "Saint Croix" = best_sc_cb$best_model,
+              "Regional" = best_reg_cb$best_model)
+## Each candidate is reduced to its AIC and term-level p-values. Models with categorical regimes are
+## fitted in a forked child process: on near-binary responses mgcv can abort R itself (memory
+## corruption) with collinear regimes (e.g. M7 in Punta Maroma), which tryCatch cannot intercept;
+## a crashed fit is recorded as not fitted.
+fit_one <- function(f, d, n) {
+  ns <- count_smooth_terms(f)
+  if (n < 8 || n <= ns * 3) return(NULL)
+  m <- tryCatch(gam(cap_smooth_k(f, safe_k_for(n, ns)), data = d, family = betar(link = "logit"),
+                    method = "REML", select = TRUE), error = function(e) NULL)
+  if (is.null(m)) return(NULL)
+  list(aic = AIC(m), p = tryCatch(term_pvalues(m), error = function(e) numeric(0)))
+}
+fit_set_safe <- function(d, fset) {
+  d <- d %>% filter(!is.na(counts_norm_sv), !is.na(GMHT_CPS0_30N), !is.na(Hur100_av))
+  n <- nrow(d)
+  out <- lapply(fset, function(f) {
+    if (any(c("Thermal", "Hurricane", "Hydro") %in% all.vars(f))) {
+      job <- parallel::mcparallel(fit_one(f, d, n), silent = TRUE)
+      r <- parallel::mccollect(job, wait = TRUE)[[1]]
+      if (is.null(r) || inherits(r, "try-error")) NULL else r
+    } else fit_one(f, d, n)
+  })
+  out[!vapply(out, is.null, logical(1))]
+}
+summ_full <- function(fits, sel) {
+  aic <- vapply(fits, function(x) x$aic, numeric(1)); best <- names(which.min(aic))
+  p <- if (!is.null(fits[[sel]])) fits[[sel]]$p else numeric(0)
+  g <- function(pat) { v <- p[grepl(pat, names(p))]; if (length(v)) min(v) else NA_real_ }
+  data.frame(best = best, dAIC_M1 = if ("M1" %in% names(aic)) unname(aic["M1"] - min(aic)) else NA_real_,
+             sel = sel, sel_fitted = !is.null(fits[[sel]]),
+             dAIC_sel = if (!is.null(fits[[sel]])) unname(aic[sel] - min(aic)) else NA_real_,
+             p_Thermal = g("^Thermal$"), p_Hurricane = g("^Hurricane$"), p_Hydro = g("^Hydro$"),
+             p_temp = g("GMHT"), p_dt = g("dT_raw"), p_hur = g("Hur100"))
+}
+if (TRUE) {
+  rec0  <- recs %>% select(spot, source, t_ka)
+  strat <- paste(rec0$spot, ifelse(rec0$spot == "Florida", rec0$source, ""))
+  idx   <- split(seq_len(nrow(rec0)), strat)
+  one_rep_full <- function(b, scen) {
+    r <- rec0
+    if (scen %in% c("Age", "Both")) r$t_ka <- age_draws[, b]
+    if (scen %in% c("Sampling", "Both"))
+      r <- r[unlist(lapply(idx, function(i) i[sample.int(length(i), length(i), replace = TRUE)])), ]
+    ser <- build_series(r)
+    bind_rows(lapply(panel_names, function(p) {
+      d <- ser %>% filter(panel == p)
+      cbind(Panel = p, Scenario = scen, rep = b, summ_full(fit_set_safe(d, drop_hydro(formulas_cb, d)), sel_main[[p]]))
+    }))
+  }
+  part <- as.integer(Sys.getenv("MC_PART", "1"))
+  reps <- if (part == 1) 1:150 else 151:300
+  set.seed(20261005 + part)
+  t0 <- Sys.time()
+  mc_full <- bind_rows(lapply(c("Age", "Sampling", "Both"), function(sc)
+    bind_rows(lapply(reps, function(b) tryCatch(one_rep_full(b, sc), error = function(e) NULL)))))
+  attr(mc_full, "info") <- list(B = length(reps), reps = range(reps), seed = 20261005 + part, date = Sys.time(),
+                                minutes = as.numeric(difftime(Sys.time(), t0, units = "mins")))
+  mc_full_file <- sub("\\.rds$", paste0("_part", part, ".rds"), mc_full_file)
+  saveRDS(mc_full, mc_full_file)
+}
+mc_full <- readRDS(mc_full_file)
+attr(mc_full, "info")[c("B", "seed", "minutes")]
+mc_full_tbl <- mc_full %>%
+  group_by(Panel = factor(Panel, panel_names), Scenario = factor(Scenario, c("Age", "Sampling", "Both"))) %>%
+  summarise(Replicates = n(), `Selected (audited ages)` = first(sel),
+            `Top model (share)` = { tb <- sort(table(best), decreasing = TRUE); sprintf("%s (%.0f %%)", names(tb)[1], 100 * tb[1] / n()) },
+            `Selected model best (%)` = round(100 * mean(best == sel)),
+            `Selected within 2 AIC (%)` = round(100 * mean(dAIC_sel <= 2, na.rm = TRUE)),
+            `Best includes a regime (%)` = round(100 * mean(grepl("M5|M6|M7", best))),
+            `dAIC vs s(age) > 2 (%)` = round(100 * mean(dAIC_M1 > 2)),
+            `Thermal p<0.05 (%)` = round(100 * mean(p_Thermal < 0.05, na.rm = TRUE)),
+            `Hurricane regime p<0.05 (%)` = round(100 * mean(p_Hurricane < 0.05, na.rm = TRUE)),
+            `GMHT p<0.05 (%)` = round(100 * mean(p_temp < 0.05, na.rm = TRUE)),
+            `dT p<0.05 (%)` = round(100 * mean(p_dt < 0.05, na.rm = TRUE)),
+            `Hur100 p<0.05 (%)` = round(100 * mean(p_hur < 0.05, na.rm = TRUE)),
+            .groups = "drop")
+write.csv(mc_full_tbl, "Supplementary_Table_S12b_full.csv", row.names = FALSE)
+mc_full_tbl
+```
+

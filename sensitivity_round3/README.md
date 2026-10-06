@@ -1,0 +1,7 @@
+# Sensitivity analyses, round 3 (2026-10-05)
+
+Run with the v4 climate table (hurricane metrics recounted in BP bins; see `df_GAM130326_regimes_v4.xlsx`, sheet `Hur_BP_traceability`).
+
+- `mc_full_chunk.qmd`: Monte Carlo/bootstrap extended to every combined candidate (M1-M7, both branches, after `drop_hydro()`). It is inserted after chunk (e) of `regional_analysis_Final.qmd`. Two halves (replicates 1-150 and 151-300, seeds 20261006 and 20261007): `M3_sensitivity/gam_uncertainty_mc_full_v4b_part1.rds`, `..._part2.rds`. Summary: `summ.R` -> `mc_full_summary.csv`. Fits with categorical regimes run in a forked child process, because mgcv can abort R (memory corruption) with collinear regimes; a crashed or hung fit (> 60 s) counts as not fitted.
+- `phase.R`: phase ensemble. Bin origin shifted by 0-90 yr; corals and TC event layers (Schmitt et al. 2025, table S4a) re-binned exactly; temperature interpolated at bin centres; regimes from the BP bin holding the bin centre. Output `phase_ensemble.csv`. `phase_coef.R` gives the hurricane-regime contrasts per phase (`phase_regime_coefs.csv`).
+- `df_GAM130326_regimes_2021frame.xlsx`: climate table with every series in years before 2021 CE (README sheet), used with coral ages + 0.071 ka.
