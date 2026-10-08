@@ -1,0 +1,534 @@
+Metadata:
+  Identification_Information:
+    Citation:
+      Citation_Information:
+        Originator: Jessica A. Jacobs
+        Originator: Julie N. Richey
+        Originator: Jennifer A. Flannery
+        Originator: Lauren T. Toth
+        Publication_Date: 20250131
+        Title: Sr/Ca, oxygen isotope, and linear extension data for five Holocene Orbicella faveolata corals from Dry Tortugas and Marquesas Keys, Florida, USA
+        Edition: 1.0
+        Geospatial_Data_Presentation_Form: tabular digital data
+        Larger_Work_Citation:
+          Citation_Information:
+            Originator: Jessica A. Jacobs
+            Originator: Julie N. Richey
+            Originator: Jennifer A. Flannery
+            Originator: Lauren T. Toth
+            Publication_Date: 20250131
+            Title: Sr/Ca, Oxygen Isotope, and Linear Extension Data for Five Holocene Orbicella faveolata Corals From Dry Tortugas and Marquesas Keys, Florida, USA
+            Edition: 1.0
+            Geospatial_Data_Presentation_Form: tabular digital data
+            Series_Information:
+              Series_Name: U.S. Geological Survey data release
+              Issue_Identification: doi:10.5066/P1TCYNHY
+            Publication_Information:
+              Publication_Place: St. Petersburg, Florida
+              Publisher: U.S. Geological Survey - St. Petersburg Coastal and Marine Science Center
+            Online_Linkage: https://doi.org/10.5066/P1TCYNHY
+    Description:
+      Abstract: This data release contains new, 40–70-year long subannual strontium-to-calcium ratio (Sr/Ca) records and linear extension measurements from five mid-to-late Holocene, Orbicella faveolata corals from the Dry Tortugas National Park (DT) and Marquesas Keys (MK), Florida (FL). U.S. Geological Survey (USGS) researchers used these Sr/Ca data to calculate sea-surface temperature (SST) using the Sr/Ca-SST equation from Flannery and others (2018). The data release also provides and stable oxygen isotope snapshots from two of the mid-Holocene corals. These data provide a proof-of-concept for the value coral-based paleoclimate records in the subtropical western Atlantic during the Holocene. Detailed information regarding data collection and processing methods can be found in Jacobs and others (2025).
+      Purpose: In this study, five new coral Sr/Ca-SST records are presented with an approximately monthly sampling resolution from DT and MK and ages from ~2-7 thousand years ago (ka). These records fill a critical spatial and temporal data gap and provide insight into changes in mean climate and variability during the Holocene in the subtropical western Atlantic.
+      Supplemental_Information:
+        Following USGS St. Petersburg Coastal and Marine Science Center (SPCMSC) data management protocols, the cores were assigned the following USGS field activity numbers (FANs): 1976-300-FA (PL1), 2004-304-FA (FJ), 2017-331-FA (PL2), 1983-300-FA (NG), 08CGS02 (PN). Please visit the Coastal and Marine Geoscience Data System (CMGDS) field activity webpage for more information about each FAN related to this dataset:
+        https://cmgds.marine.usgs.gov/fan_info.php?fan=1976-300-FA
+        https://cmgds.marine.usgs.gov/fan_info.php?fan=2004-304-FA
+        https://cmgds.marine.usgs.gov/fan_info.php?fan=2017-331-FA
+        https://cmgds.marine.usgs.gov/fan_info.php?fan=1983-300-FA
+        https://cmgds.marine.usgs.gov/fan_info.php?fan=08CGS02
+        Cores were collected with permission from the National Park Service and the Florida Keys National Marine Sanctuary, as applicable. For more information on core collection, refer to Hickey and others (2013) and Toth and others (2018).
+    Time_Period_of_Content:
+      Time_Period_Information:
+        Multiple_Dates/Times:
+          Single_Date/Time:
+            Calendar_Date: 2013
+          Single_Date/Time:
+            Calendar_Date: 20180821
+          Single_Date/Time:
+            Calendar_Date: 20250131
+      Currentness_Reference: publication date
+    Status:
+      Progress: Complete
+      Maintenance_and_Update_Frequency: None planned
+    Spatial_Domain:
+      Description_of_Geographic_Extent: Dry Tortugas National Park and Marquesas Keys
+      Bounding_Coordinates:
+        West_Bounding_Coordinate: -82.9700
+        East_Bounding_Coordinate: -82.4166
+        North_Bounding_Coordinate: 24.7200
+        South_Bounding_Coordinate: 24.5400
+    Keywords:
+      Theme:
+        Theme_Keyword_Thesaurus: USGS Metadata Identifier
+        Theme_Keyword: USGS:2a7b62ec-14b9-4182-933f-938a77689ce1
+      Theme:
+        Theme_Keyword_Thesaurus: ISO 19115 Topic Category
+        Theme_Keyword: oceans
+        Theme_Keyword: biota
+      Theme:
+        Theme_Keyword_Thesaurus: USGS Thesaurus
+        Theme_Keyword: coelenterates
+        Theme_Keyword: reef ecosystems
+        Theme_Keyword: geochemistry
+        Theme_Keyword: marine geology
+        Theme_Keyword: sea-surface temperature
+      Theme:
+        Theme_Keyword_Thesaurus: None
+        Theme_Keyword: sclerochronology
+        Theme_Keyword: paleoclimate
+        Theme_Keyword: Sr/Ca
+        Theme_Keyword: Strontium/Calcium
+        Theme_Keyword: Holocene
+        Theme_Keyword: Stable oxygen isotopes
+      Place:
+        Place_Keyword_Thesaurus: Geographic Names Information System (GNIS)
+        Place_Keyword: Dry Tortugas
+        Place_Keyword: Florida Keys
+        Place_Keyword: State of Florida
+      Temporal:
+        Temporal_Keyword_Thesaurus: USGS Thesaurus
+        Temporal_Keyword: Holocene
+    Access_Constraints: None.  Please see 'Distribution Info' for details.
+    Use_Constraints: None.  Users are advised to read the dataset's metadata thoroughly to understand appropriate use and data limitations.
+    Point_of_Contact:
+      Contact_Information:
+        Contact_Person_Primary:
+          Contact_Person: Jessica A. Jacobs
+          Contact_Organization: U.S. Geological Survey, St. Petersburg Coastal and Marine Science Center
+        Contact_Position: Physical Scientist
+        Contact_Address:
+          Address_Type: mailing and physical
+          Address: 600 4th Street South
+          City: Saint Petersburg
+          State_or_Province: Florida
+          Postal_Code: 33701
+          Country: USA
+        Contact_Voice_Telephone: 727-502-8041
+        Contact_Electronic_Mail_Address: jajacobs@usgs.gov
+    Data_Set_Credit: USGS coral core collection efforts were made possible with permission from the National Park Service and the Florida Keys National Marine Sanctuary.
+    Native_Data_Set_Environment: Environment as of metadata creation: MacOS Ventura 13.6.7; Microsoft Excel for Mac Version 16.85
+    Cross_Reference:
+      Citation_Information:
+        Originator: Jessica A. Jacobs
+        Originator: Julie N. Richey
+        Originator: Jennifer A. Flannery
+        Originator: Kaustubh Thirumalai
+        Originator: Lauren T. Toth
+        Publication_Date: 20250128
+        Title: Snapshots of Holocene sea-surface temperature variability from a subtropical western Atlantic coral reef
+        Geospatial_Data_Presentation_Form: publication
+        Series_Information:
+          Series_Name: Palaeogeography, Palaeoclimatology, Palaeoecology
+          Issue_Identification: 112777
+        Publication_Information:
+          Publication_Place: Online
+          Publisher: Elsevier
+        Online_Linkage: https://doi.org/10.1016/j.palaeo.2025.112777
+    Cross_Reference:
+      Citation_Information:
+        Originator: Jennifer A. Flannery
+        Originator: Julie N. Richey
+        Originator: Lauren T. Toth
+        Originator: Ilsa B. Kuffner
+        Originator: Richard Z. Poore
+        Publication_Date: 20180706
+        Title: Quantifying uncertainty in Sr/Ca‐based estimates of SST from the coral Orbicella faveolata
+        Geospatial_Data_Presentation_Form: publication
+        Series_Information:
+          Series_Name: Paleoceanography and Paleoclimatology
+          Issue_Identification: Volume 33, Issue 9
+        Publication_Information:
+          Publication_Place: Online
+          Publisher: American Geophysical Union
+        Other_Citation_Details: Pages 958-973
+        Online_Linkage: https://doi.org/10.1029/2018PA003389
+    Cross_Reference:
+      Citation_Information:
+        Originator: Todd D. Hickey
+        Originator: Christopher D. Reich
+        Originator: Kristine L. DeLong
+        Originator: Richard Z. Poore
+        Originator: John C. Brock
+        Publication_Date: 2013
+        Title: Holocene core logs and site methods for modern reef and head-coral cores: Dry Tortugas National Park, Florida
+        Geospatial_Data_Presentation_Form: publication
+        Series_Information:
+          Series_Name: U.S. Geological Survey Open-File Report
+          Issue_Identification: 2012–1095
+        Publication_Information:
+          Publication_Place: Reston, VA
+          Publisher: U.S. Geological Survey
+        Other_Citation_Details: 27 pages
+        Online_Linkage: https://doi.org/10.3133/ofr20121095
+    Cross_Reference:
+      Citation_Information:
+        Originator: Lauren T. Toth
+        Originator: Ilsa B. Kuffner
+        Originator: Anastasios Stathakopoulos
+        Originator: Eugene A. Shinn
+        Publication_Date: 20180821
+        Title: A 3,000-year lag between the geological and ecological shutdown of Florida’s coral reefs
+        Geospatial_Data_Presentation_Form: publication
+        Series_Information:
+          Series_Name: Global Change Biology
+          Issue_Identification: Volume 24, Issue 11
+        Publication_Information:
+          Publication_Place: Hoboken, New Jersey
+          Publisher: Wiley Online Library
+        Other_Citation_Details: Pages 5471-5483
+        Online_Linkage: https://doi.org/10.1111/gcb.14389
+    Cross_Reference:
+      Citation_Information:
+        Originator: Daniel P. Schrag
+        Publication_Date: 199904
+        Title: Rapid analysis of high-precision Sr/Ca ratios in corals and other marine carbonates
+        Geospatial_Data_Presentation_Form: publication
+        Series_Information:
+          Series_Name: Paleoceanography and Paleoclimatology
+          Issue_Identification: Volume 14, Issue 2
+        Publication_Information:
+          Publication_Place: Online
+          Publisher: American Geophysical Union
+        Other_Citation_Details: Pages 97-102
+        Online_Linkage: https://doi.org/10.1029/1998PA900025
+    Cross_Reference:
+      Citation_Information:
+        Originator: Ed C. Hathorne
+        Originator: Alex Gagnon
+        Originator: Thomas Felis
+        Originator: Jess Adkins
+        Originator: Ryuji Asami
+        Originator: and others
+        Publication_Date: 20130725
+        Title: Interlaboratory study for coral Sr/Ca and other element/Ca ratio measurements
+        Geospatial_Data_Presentation_Form: publication
+        Series_Information:
+          Series_Name: Geochemistry, Geophysics, Geosystems
+          Issue_Identification: Volume 14, Issue 9
+        Publication_Information:
+          Publication_Place: online
+          Publisher: American Geophysical Union
+        Other_Citation_Details: Pages 3730-3750
+        Online_Linkage: https://doi.org/10.1002/ggge.20230
+  Data_Quality_Information:
+    Attribute_Accuracy:
+      Attribute_Accuracy_Report: Sr/Ca data were determined using an Inductively Coupled Plasma Optical Emissions Spectrometer (ICP-OES) that had been calibrated using trace metal grade single-element standards and nitric acid (Jacobs and others, 2025). Analyses were completed once initial sample run calibrations of low, intermediate, and high concentration solutions passed with a calibration coefficient of >0.999 (out of 1.0) between analyte concentration and instrument intensity. Coral sample Sr/Ca data were corrected for drift using an internal gravimetric standard (IGS) method from Schrag (1999). Average IGS precision for all sample runs is 0.011 millimole per mole. Additionally, ICP-OES performances were compared with other laboratories by analyzing the JCp-1 standard after Hathorne and others (2013) and were determined to be within error of the mean values established in the publication. For oxygen isotope samples, the external standard IAEA-603 was analyzed (n=160) and the precision was 0.05‰ for delta-Oxygen-18 (δ¹⁸O), which is consistent with the long-term precision of this setup (0.06‰). Replicate sample results for δ¹⁸O were averaged prior to publishing.
+    Logical_Consistency_Report: Coral Sr/Ca samples were created with a target calcium concentration of 20 parts per million (ppm). Data were considered valid if calcium concentrations were between 10-30 ppm and values were within 2 standard deviations of the sample run mean. Additionally, multiple corallite paths were sampled to overlap at least five years of data from each coral. Data from overlapping paths were averaged to ensure reproducibility.
+    Completeness_Report: Dataset is considered complete for the information presented, as described in the abstract. Users are advised to read the rest of the metadata record carefully for additional details.
+    Positional_Accuracy:
+      Horizontal_Positional_Accuracy:
+        Horizontal_Positional_Accuracy_Report: No formal positional accuracy tests were conducted.
+      Vertical_Positional_Accuracy:
+        Vertical_Positional_Accuracy_Report: No formal positional accuracy tests were conducted.
+    Lineage:
+      Process_Step:
+        Process_Description: The U.S. Geological Survey (USGS) collected the coral cores used in this study in Dry Tortugas and Marquesas Keys between 1976 and 2017 using a rotary corer. Additional information on coral core collection can be found in Hickey and others (2013) and Toth and others (2018). Subsampling of the coral colonies was completed using a tri-axial micromill with a 0.5 millimeter (mm) forward increment, 2.25 mm cut depth, and a 0.5 mm drill bit along a continuous thecal wall. Between 88 and 237 micrograms (μg) of subsampled skeletal powder was weighed out for each sample from each of the coral colonies and acidified using ultrapure 2% nitric acid to obtain sample solutions with a target calcium concentration of 20 parts per million. A PerkinElmer (PE) 7300 dual view inductively coupled plasma-optical emission spectrometer (ICP-OES; for samples analyzed before March 2022) and a PE Avio 550 ICP-OES (for samples analyzed after March 2022) were used to make the Sr/Ca determinations (Jacobs and others, 2025). The resulting Sr/Ca data were converted into SST using the calibration equation from Flannery and others (2018). Data from this analysis were compiled into a comma-separated values file (.csv) and Microsoft Excel file (.xlsx) and are published with this release.
+        Process_Date: 20210730
+        Source_Produced_Citation_Abbreviation: Mid-to-late_Holocene_SrCa.csv
+        Source_Produced_Citation_Abbreviation: Mid-to-late_Holocene_SrCa.xlsx
+        Process_Contact:
+          Contact_Information:
+            Contact_Person_Primary:
+              Contact_Person: Jessica A. Jacobs
+              Contact_Organization: U.S. Geological Survey - St. Petersburg Coastal and Marine Science Center
+            Contact_Position: Physical Scientist
+            Contact_Address:
+              Address_Type: mailing and physical
+              Address: 600 4th Street South
+              City: St. Petersburg
+              State_or_Province: FL
+              Postal_Code: 33701
+              Country: USA
+            Contact_Voice_Telephone: 727-502-8041
+            Contact_Electronic_Mail_Address: jajacobs@usgs.gov
+      Process_Step:
+        Process_Description: Sr/Ca annual cycles were used to compute annual linear extension rates by measuring the distance between each summer peak. Data from this computation were compiled into a comma-separated values file (.csv) and Microsoft Excel file (.xlsx) and are published with this release.
+        Process_Date: 20231116
+        Source_Produced_Citation_Abbreviation: Mid-to-late_Holocene_LinExt.csv
+        Source_Produced_Citation_Abbreviation: Mid-to-late_Holocene_LinExt.xlsx
+        Process_Contact:
+          Contact_Information:
+            Contact_Person_Primary:
+              Contact_Person: Jessica A. Jacobs
+              Contact_Organization: U.S. Geological Survey - St. Petersburg Coastal and Marine Science Center
+            Contact_Position: Physical Scientist
+            Contact_Address:
+              Address_Type: mailing and physical
+              Address: 600 4th Street South
+              City: St. Petersburg
+              State_or_Province: FL
+              Postal_Code: 33701
+              Country: USA
+            Contact_Voice_Telephone: 727-502-8041
+            Contact_Electronic_Mail_Address: jajacobs@usgs.gov
+      Process_Step:
+        Process_Description: Select Sr/Ca sample splits (FJ and PL2 corals only) were sent for oxygen isotope analysis at the Paleo² Laboratory at the University of Arizona using a MAT 253+ Mass Spectrometer coupled to a Kiel IV Carbonate Device (Jacobs and others, 2025). Data from this analysis were compiled into a comma-separated values file (.csv) and Microsoft Excel file (.xlsx) and are published with this release.
+        Process_Date: 20220802
+        Source_Produced_Citation_Abbreviation: Mid-to-late_Holocene_paired_18O_SrCa.csv
+        Source_Produced_Citation_Abbreviation: Mid-to-late_Holocene_paired_18O_SrCa.xlsx
+        Process_Contact:
+          Contact_Information:
+            Contact_Person_Primary:
+              Contact_Person: Kaustubh Thirumalai
+              Contact_Organization: University of Arizona – Department of Geosciences
+            Contact_Address:
+              Address_Type: mailing and physical
+              Address: 1040 E. 4th Street, #521
+              City: Tucson
+              State_or_Province: AZ
+              Postal_Code: 85721
+              Country: USA
+            Contact_Voice_Telephone: 520-626-2236
+            Contact_Electronic_Mail_Address: kaustubh@arizona.edu
+  Entity_and_Attribute_Information:
+    Detailed_Description:
+      Entity_Type:
+        Entity_Type_Label: Mid-to-late_Holocene_SrCa.csv, Mid-to-late_Holocene_SrCa.xlsx
+        Entity_Type_Definition: Data files (.csv and .xlsx) of the Sr/Ca subannual values for five mid-to-late Holocene Orbicella faveolata corals.
+        Entity_Type_Definition_Source: USGS
+      Attribute:
+        Attribute_Label: Time (years)
+        Attribute_Definition: Year in the format of YY.XXX for the subannual Sr/Ca data for the coral core.
+        Attribute_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Range_Domain:
+            Range_Domain_Minimum: 0.042
+            Range_Domain_Maximum: 56.958
+            Attribute_Units_of_Measure: Decimal Year
+      Attribute:
+        Attribute_Label: 6.7 ka (PL1) Subannual Sr/Ca (mmol/mol)
+        Attribute_Definition: Subannual Sr/Ca millimole per mole (mmol/mol) values for coral core PL1 (6.7 ka)
+        Attribute_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Enumerated_Domain:
+            Enumerated_Domain_Value: nd
+            Enumerated_Domain_Value_Definition: No Data
+            Enumerated_Domain_Value_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Range_Domain:
+            Range_Domain_Minimum: 9.028
+            Range_Domain_Maximum: 9.579
+            Attribute_Units_of_Measure: mmol/mol
+      Attribute:
+        Attribute_Label: 6.6 ka (FJ) Subannual Sr/Ca (mmol/mol)
+        Attribute_Definition: Subannual Sr/Ca millimole per mole (mmol/mol) values for coral core FJ (6.6 ka)
+        Attribute_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Enumerated_Domain:
+            Enumerated_Domain_Value: nd
+            Enumerated_Domain_Value_Definition: No Data
+            Enumerated_Domain_Value_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Range_Domain:
+            Range_Domain_Minimum: 8.92
+            Range_Domain_Maximum: 9.571
+            Attribute_Units_of_Measure: mmol/mol
+      Attribute:
+        Attribute_Label: 5.8 ka (PL2) Subannual Sr/Ca (mmol/mol)
+        Attribute_Definition: Subannual Sr/Ca millimole per mole (mmol/mol) values for coral core PL2 (5.8 ka)
+        Attribute_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Range_Domain:
+            Range_Domain_Minimum: 8.8
+            Range_Domain_Maximum: 9.577
+            Attribute_Units_of_Measure: mmol/mol
+      Attribute:
+        Attribute_Label: 3.6 ka (NG) Subannual Sr/Ca (mmol/mol)
+        Attribute_Definition: Subannual Sr/Ca millimole per mole (mmol/mol) values for coral core NG (3.6 ka)
+        Attribute_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Enumerated_Domain:
+            Enumerated_Domain_Value: nd
+            Enumerated_Domain_Value_Definition: No Data
+            Enumerated_Domain_Value_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Range_Domain:
+            Range_Domain_Minimum: 9.071
+            Range_Domain_Maximum: 9.829
+            Attribute_Units_of_Measure: mmol/mol
+      Attribute:
+        Attribute_Label: 2.6 ka (PN) Subannual Sr/Ca (mmol/mol)
+        Attribute_Definition: Subannual Sr/Ca millimole per mole (mmol/mol) values for coral core PN (2.6 ka)
+        Attribute_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Enumerated_Domain:
+            Enumerated_Domain_Value: nd
+            Enumerated_Domain_Value_Definition: No Data
+            Enumerated_Domain_Value_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Range_Domain:
+            Range_Domain_Minimum: 8.939
+            Range_Domain_Maximum: 9.789
+            Attribute_Units_of_Measure: mmol/mol
+    Detailed_Description:
+      Entity_Type:
+        Entity_Type_Label: Mid-to-late_Holocene_LinExt.csv, Mid-to-late_Holocene_LinExt.xlsx
+        Entity_Type_Definition: Data files (.csv and .xlsx) of the linear extension rates for five mid-to-late Holocene Orbicella faveolata corals.
+        Entity_Type_Definition_Source: USGS
+      Attribute:
+        Attribute_Label: Year
+        Attribute_Definition: Year in the format of YY for annual linear extension data for the coral core.
+        Attribute_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Range_Domain:
+            Range_Domain_Minimum: 1
+            Range_Domain_Maximum: 57
+            Attribute_Units_of_Measure: Year
+      Attribute:
+        Attribute_Label: 6.7 ka (PL1) Linear Extension (cm/yr)
+        Attribute_Definition: Annual linear extension rates for coral core PL1 (6.7 ka) in centimeters per year (cm/yr).
+        Attribute_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Enumerated_Domain:
+            Enumerated_Domain_Value: nd
+            Enumerated_Domain_Value_Definition: No Data
+            Enumerated_Domain_Value_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Range_Domain:
+            Range_Domain_Minimum: 0.25
+            Range_Domain_Maximum: 0.8
+            Attribute_Units_of_Measure: cm/yr
+      Attribute:
+        Attribute_Label: 6.6 ka (FJ) Linear Extension (cm/yr)
+        Attribute_Definition: Annual linear extension rates for coral core FJ (6.6 ka) in centimeters per year (cm/yr).
+        Attribute_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Enumerated_Domain:
+            Enumerated_Domain_Value: nd
+            Enumerated_Domain_Value_Definition: No Data
+            Enumerated_Domain_Value_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Range_Domain:
+            Range_Domain_Minimum: 0.45
+            Range_Domain_Maximum: 1.0
+            Attribute_Units_of_Measure: cm/yr
+      Attribute:
+        Attribute_Label: 5.8 ka (PL2) Linear Extension (cm/yr)
+        Attribute_Definition: Annual linear extension rates for coral core PL2 (5.8 ka) in centimeters per year (cm/yr).
+        Attribute_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Range_Domain:
+            Range_Domain_Minimum: 0.4
+            Range_Domain_Maximum: 1.15
+            Attribute_Units_of_Measure: cm/yr
+      Attribute:
+        Attribute_Label: 3.6 ka (NG) Linear Extension (cm/yr)
+        Attribute_Definition: Annual linear extension rates for coral core NG (3.6 ka) in centimeters per year (cm/yr).
+        Attribute_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Enumerated_Domain:
+            Enumerated_Domain_Value: nd
+            Enumerated_Domain_Value_Definition: No Data
+            Enumerated_Domain_Value_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Range_Domain:
+            Range_Domain_Minimum: 0.25
+            Range_Domain_Maximum: 1.1
+            Attribute_Units_of_Measure: cm/yr
+      Attribute:
+        Attribute_Label: 2.6 ka (PN) Linear Extension (cm/yr)
+        Attribute_Definition: Annual linear extension rates for coral core PN (2.6 ka) in centimeters per year (cm/yr).
+        Attribute_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Enumerated_Domain:
+            Enumerated_Domain_Value: nd
+            Enumerated_Domain_Value_Definition: No Data
+            Enumerated_Domain_Value_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Range_Domain:
+            Range_Domain_Minimum: 0.25
+            Range_Domain_Maximum: 1.05
+            Attribute_Units_of_Measure: cm/yr
+    Detailed_Description:
+      Entity_Type:
+        Entity_Type_Label: Mid-to-late_Holocene_paired_18O_SrCa.csv, Mid-to-late_Holocene_paired_18O_SrCa.xlsx
+        Entity_Type_Definition: Data files (.csv and .xlsx) of the paired raw Sr/Ca and δ¹⁸O data for five mid-to-late Holocene Orbicella faveolata corals.
+        Entity_Type_Definition_Source: USGS
+      Attribute:
+        Attribute_Label: Core
+        Attribute_Definition: Coral age and identifier
+        Attribute_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Enumerated_Domain:
+            Enumerated_Domain_Value: 6.6 ka (FJ)
+            Enumerated_Domain_Value_Definition: The coral FJ (6.6 ka age).
+            Enumerated_Domain_Value_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Enumerated_Domain:
+            Enumerated_Domain_Value: 5.8 ka (PL2)
+            Enumerated_Domain_Value_Definition: The coral PL2 (5.8 ka age).
+            Enumerated_Domain_Value_Definition_Source: USGS
+      Attribute:
+        Attribute_Label: Sample ID
+        Attribute_Definition: Unique sample ID for paired Sr/Ca and δ¹⁸O data.
+        Attribute_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Unrepresentable_Domain: Full sample identifier for coral FJ (FJS-R-2) and PL2 (C-2017-DT-PL-2-18-1). Each sample identifier is followed by a three-digit number (i.e., #280). An asterisk following this number denotes averaged value of replicate samples.
+      Attribute:
+        Attribute_Label: Sr/Ca (mmol/mol)
+        Attribute_Definition: Raw Sr/Ca value in millimole per mole (mmol/mol).
+        Attribute_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Range_Domain:
+            Range_Domain_Minimum: 8.898
+            Range_Domain_Maximum: 9.506
+      Attribute:
+        Attribute_Label: δ¹⁸O (‰, VPDB)
+        Attribute_Definition: Raw δ¹⁸O value in per mil notation relative to the Vienna Pee Dee Belemnite scale (‰, VPDB).
+        Attribute_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Enumerated_Domain:
+            Enumerated_Domain_Value: nd
+            Enumerated_Domain_Value_Definition: No Data
+            Enumerated_Domain_Value_Definition_Source: USGS
+        Attribute_Domain_Values:
+          Range_Domain:
+            Range_Domain_Minimum: -4.810
+            Range_Domain_Maximum: -2.451
+            Attribute_Units_of_Measure: per mil
+  Distribution_Information:
+    Distributor:
+      Contact_Information:
+        Contact_Organization_Primary:
+          Contact_Organization: U.S. Geological Survey, St. Petersburg Coastal and Marine Science Center
+          Contact_Person: USGS SPCMSC Data Management
+        Contact_Address:
+          Address_Type: mailing and physical
+          Address: 600 4th Street South
+          City: Saint Petersburg
+          State_or_Province: FL
+          Postal_Code: 33701
+          Country: United States
+        Contact_Voice_Telephone: 727-502-8000
+        Contact_Electronic_Mail_Address: gs-g-spcmsc_data_inquiries@usgs.gov
+    Resource_Description: Mid-to-late_Holocene_SrCa.csv. Mid-to-late_Holocene_SrCa.xlsx, Mid-to-late_Holocene_LinExt.csv, Mid-to-late_Holocene_LinExt.xlsx, Mid-to-late_Holocene_paired_18O_SrCa.csv, Mid-to-late_Holocene_paired_18O_SrCa.xlsx
+    Distribution_Liability: Unless otherwise stated, all data, metadata and related materials are considered to satisfy the quality standards relative to the purpose for which the data were collected. Although these data and associated metadata have been reviewed for accuracy and completeness and approved for release by the U.S. Geological Survey (USGS), no warranty expressed or implied is made regarding the display or utility of the data for other purposes, nor on all computer systems, nor shall the act of distribution constitute any such warranty. Any use of trade, firm, or product names is for descriptive purposes only and does not imply endorsement by the U.S. Government.
+    Standard_Order_Process:
+      Digital_Form:
+        Digital_Transfer_Information:
+          Format_Name: comma-delimited text, Microsoft Excel format
+        Digital_Transfer_Option:
+          Online_Option:
+            Computer_Contact_Information:
+              Network_Address:
+                Network_Resource_Name: https://coastal.er.usgs.gov/data-release/doi-P1TCYNHY/data/Mid-to-late_Holocene_SrCa_LinExt_18O.zip
+      Fees: None
+  Metadata_Reference_Information:
+    Metadata_Date: 20250131
+    Metadata_Contact:
+      Contact_Information:
+        Contact_Organization_Primary:
+          Contact_Organization: U.S. Geological Survey, St. Petersburg Coastal and Marine Science Center
+          Contact_Person: USGS SPCMSC Data Management
+        Contact_Address:
+          Address_Type: mailing and physical
+          Address: 600 4th Street South
+          City: Saint Petersburg
+          State_or_Province: FL
+          Postal_Code: 33701
+          Country: United States
+        Contact_Voice_Telephone: 727-502-8000
+        Contact_Electronic_Mail_Address: gs-g-spcmsc_data_inquiries@usgs.gov
+    Metadata_Standard_Name: FGDC Biological Data Profile of the Content Standard for Digital Geospatial Metadata
+    Metadata_Standard_Version: FGDC-STD-001.1-1999

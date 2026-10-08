@@ -1,0 +1,281 @@
+# Florida Straits KNR166-2JPC51 9000 Year d18O, Mg/Ca SST, and d18Osw Data
+#----------------------------------------------------------------------- 
+#               World Data Service for Paleoclimatology, Boulder 
+#                                  and 
+#                     NOAA Paleoclimatology Program 
+#----------------------------------------------------------------------- 
+# Template Version 4.0
+# Encoding: UTF-8
+# NOTE: Please cite original publication, NOAA Landing Page URL, dataset and publication DOIs (where available),
+# and date accessed when using these downloaded data. If there is no publication information, please cite investigator, study title, NOAA Landing Page URL, and date accessed.
+#
+# NOAA_Landing_Page: https://www.ncei.noaa.gov/access/paleo-search/study/13608
+#   Landing_Page_Description: NOAA Landing Page of this file's parent study, which includes all study metadata.
+#
+# Study_Level_JSON_Metadata: https://www.ncei.noaa.gov/pub/data/metadata/published/paleo/json/noaa-ocean-13608.json
+#   Study_Level_JSON_Description: JSON metadata of this file's parent study, which includes all study metadata.
+#
+# Data_Type: Paleoceanography
+#
+# Dataset_DOI: 10.25921/gtk4-x327
+#
+# Science_Keywords: 
+#--------------------
+# Resource_Links
+#
+# Data_Download_Resource: https://www.ncei.noaa.gov/pub/data/paleo/contributions_by_author/schmidt2012/schmidt2012-noaa.txt
+#   Data_Download_Description: NOAA Template File; Geochemistry Data and Sea Surface Temperature Reconstruction
+#
+#--------------------
+# Contribution_Date
+#   Date: 2012-12-12
+#--------------------
+# File_Last_Modified_Date
+#   Date: 2025-06-09
+#--------------------
+# Title
+#   Study_Name: Florida Straits KNR166-2JPC51 9000 Year d18O, Mg/Ca SST, and d18Osw Data
+#--------------------
+# Investigators
+#   Investigators: Schmidt, M.W.(https://orcid.org/0000-0001-6362-7845); Weinlein, W.A.; Marcantonio, F.(https://orcid.org/0000-0003-1414-426X); Lynch-Stieglitz, J.(https://orcid.org/0000-0002-9353-1972)
+#--------------------
+# Description_Notes_and_Keywords
+#   Description: High resolution (~25 year) Holocene d18O, Mg/Ca-paleothermometry, and reconstructed d18OSW measurements on the planktonic foraminifera Globigerinoides ruber (white variety) from Florida Straits. 
+#--------------------
+# Publication
+#   Authors: Schmidt, M.W., W.A. Weinlein, F. Marcantonio, J. Lynch-Stieglitz
+#   Journal_Name: Paleoceanography
+#   Published_Title: Solar forcing of Florida Straits surface salinity during the early Holocene
+#   Published_Date_or_Year: 2012
+#   Volume: 27
+#   Pages: 
+#   Issue: 
+#   Report_Number: PA3204
+#   DOI: 10.1029/2012PA002284
+#   Full_Citation: 
+#   Abstract: Previous studies showed that sea surface salinity (SSS) in the Florida Straits as well as Florida Current transport covaried with changes in North Atlantic climate over the past two millennia. However, little is known about earlier Holocene hydrographic variability in the Florida Straits. Here, we combine Mg/Ca-paleothermometry and stable oxygen isotope measurements on the planktonic foraminifera Globigerinoides ruber (white variety) from Florida Straits sediment core KNR166-2 JPC 51 (24 deg 24.70'N, 83 deg 13.14'W, 198 m deep) to reconstruct a high-resolution (~25 yr/sample) early to mid Holocene record of sea surface temperature and d18OSW (a proxy for SSS) variability. After removing the influence of global d18OSW change due to continental ice volume variability, we find that early Holocene SSS enrichments are associated with increased evaporation/precipitation ratios in the Florida Straits during periods of reduced solar forcing, increased ice rafted debris in the North Atlantic and the development of more permanent El Niño-like conditions in the eastern equatorial Pacific. When considered with previous high-resolution reconstructions of Holocene tropical atmospheric circulation changes, our results provide evidence that variations in solar forcing over the early Holocene had a significant impact on the global tropical hydrologic cycle.
+#--------------------
+# Funding_Agency
+#   Funding_Agency_Name: US National Science Foundation
+#   Grant_Number: OCE-0823498
+#--------------------
+# Site_Information
+#   Site_Name:  KNR166-2-51JPC
+#   Location: Gulf Of Mexico
+#   Northernmost_Latitude: 24.4117
+#   Southernmost_Latitude: 24.4117
+#   Easternmost_Longitude: -83.219
+#   Westernmost_Longitude: -83.219
+#   Elevation_m: -198
+#--------------------
+# Data_Collection
+#   Collection_Name:  KNR166-2JPC51schmidt2012
+#   First_Year: 9149
+#   Last_Year: 1488
+#   Time_Unit: cal yr BP
+#   Core_Length_m: 5.545
+#   Parameter_Keywords: reconstruction
+#   Notes: 
+#--------------------
+# Chronology_Information
+#   Chronology: Radiocarbon
+#   Chronology_Download_Resource: https://www.ncei.noaa.gov/pub/data/paleo/templates/noaa-wds-paleo-14c-terms.csv
+#     Chronology_Download_Description: Radiocarbon terms and definitions.
+#   Chronology_Notes: Table 1. AMS 14C and Calendar Ages. Lab codes are CAMS#.
+#   Rejection_Rationale:
+#   Reservoir_Method:
+#   Calibration_Method:
+#   Age_Model_Method:
+#   Missing_Values: 
+#   Chronology_Table:
+# core_id	depth_cm	lab_code	age_14C_BP1950	age_14C_1s_yr	age_calib_kaBP1950	age_calib_uncert_yr	calib_curve
+# JPC51	5.25	40017	1940	40	1.49	110	Marine09
+# JPC51	159.25	49009	4040	45	4.07	146	Marine09
+# JPC51	312.25	40018	5970	60	6.4	131	Marine09
+# JPC51	394.5	76076	6880	40	7.39	87	Marine09
+# JPC51	480.25	40019	7520	70	7.99	152	Marine09
+# JPC51	494.5	76077	7610	35	8.07	90	Marine09
+# JPC51	632.25	40020	9690	75	10.56	194	Marine09
+#------------------
+# Variables 
+#
+#   PaST_Thesaurus_Download_Resource: https://www.ncei.noaa.gov/access/paleo-search/skos/past-thesaurus.rdf
+#     PaST_Thesaurus_Download_Description: Paleoenvironmental Standard Terms (PaST) Thesaurus terms, definitions, and relationships in SKOS format.
+#
+#   variables format: shortname <tab> what,material,error,units,seasonality,data_type,detail,method, C(har) or N(umeric) data,additional information
+#
+## depth_cm	depth,,,centimeter,,climate reconstructions;paleoceanography,,,N,
+## age_calkaBP	age,,,calendar kiloyear before present,,climate reconstructions;paleoceanography,,,N,
+## d18Ovg.rub-w250-355	delta 18O,Globigerinoides ruber white,,per mil VPDB,,paleoceanography,,,N,250-355 micron
+## Mg/Ca-g.rub-w	magnesium/calcium,Globigerinoides ruber white,,millimole per mole,,paleoceanography,,,N,
+## sst	sea surface temperature,magnesium/calcium,,degree Celsius,,climate reconstructions;paleoceanography,,,N,using G. ruber white
+## d18Osw-g.rub-w	delta 18O,delta 18O,,per mil SMOW,,climate reconstructions;paleoceanography,,,N,using G. ruber white
+## d18Osw-ivc-g.rubw	delta 18O,delta 18O,,per mil SMOW,,climate reconstructions;paleoceanography,corrected,,N,using G. ruber white; corrected for ice volume
+#--------------------
+# Data:
+# Missing_Values: 
+depth_cm	age_calkaBP	d18Ovg.rub-w250-355	Mg/Ca-g.rub-w	sst	d18Osw-g.rub-w	d18Osw-ivc-g.rubw
+5.25	1.488	-1.61	4.346	27.1	0.86	0.86
+8.25	1.538	-1.50	4.377	27.2	0.99	0.99
+16.25	1.671	-1.67	4.504	27.5	0.89	0.89
+24.25	1.805	-1.33	4.793	28.2	1.37	1.37
+32.25	1.938	-1.69	4.804	28.2	1.01	1.01
+40.25	2.072	-1.60	4.825	28.2	1.11	1.11
+48.25	2.205	-1.88	4.535	27.5		
+56.25	2.339	-1.62	4.758	28.1	1.06	1.06
+64.25	2.473	-1.84	4.612	27.7	0.77	0.77
+72.25	2.606	-1.98	4.596	27.7	0.62	0.62
+80.25	2.740	-1.60	4.811	28.2		
+88.25	2.873	-2.00	4.532	27.5	0.57	0.57
+96.25	3.007	-1.43	4.738	28.0		
+104.25	3.140	-1.92	4.396	27.2	0.58	0.58
+112.25	3.274	-1.89	4.736	28.0	0.78	0.78
+120.25	3.408	-1.91	5.007	28.6	0.89	0.89
+128.25	3.541	-1.76	4.937	28.5	1.01	1.01
+143.25	3.792	-1.64	4.711	28.0	1.02	1.02
+151.25	3.933	-1.87				
+159.25	4.067	-1.86	4.985	28.6	0.93	0.93
+167.25	4.189	-1.43	4.924	28.5	1.33	1.33
+176.25	4.319	-1.40	5.062	28.8	1.43	1.43
+184.25	4.441	-1.88	4.860	28.3	0.85	0.85
+192.25	4.563	-1.70	4.693	27.9	0.95	0.96
+200.25	4.686	-1.76	4.767	28.1	0.92	0.93
+208.25	4.808	-1.83	4.446	27.3	0.69	0.70
+216.25	4.930	-1.76	4.809	28.2	0.94	0.95
+224.25	5.052	-1.97	4.774	28.1	0.72	0.73
+232.25	5.174	-1.80	4.529	27.5	0.77	0.78
+240.25	5.296	-1.75	4.803	28.2	0.95	0.96
+248.25	5.419	-1.69	4.712	28.0	0.97	0.98
+256.25	5.541	-1.92	5.180	29.0	0.96	0.97
+264.25	5.663	-1.57	5.131	28.9	1.29	1.30
+272.25	5.785	-1.70	4.903	28.4	1.05	1.06
+280.25	5.907	-1.71	4.937	28.5	1.06	1.06
+288.25	6.029	-1.52	5.236	29.1	1.39	1.40
+296.25	6.152	-1.81	4.866	28.3	0.93	0.93
+300.5	6.213	-1.66	4.957	28.5	1.12	1.12
+302.5	6.243	-1.88	4.690	27.9	0.77	0.77
+304.25	6.274	-2.05	5.135	28.9	0.81	0.81
+306.5	6.304	-1.61	4.633	27.8	1.01	1.01
+308.5	6.335	-1.62	4.800	28.2	1.08	1.08
+310.5	6.365	-1.54	4.765	28.1	1.15	1.15
+312.25	6.396	-1.56	4.911	28.4	1.20	1.20
+314.5	6.420	-1.88	4.689	27.9	0.77	0.77
+316.5	6.444	-1.50	4.673	27.9	1.14	1.14
+318.5	6.469	-1.98	4.983	28.6	0.81	0.81
+320.25	6.493	-1.38	5.111	28.9	1.47	1.47
+322.5	6.517	-1.71	4.872	28.3	1.03	1.03
+324.5	6.541	-1.82	4.734	28.0	0.85	0.85
+326.5	6.566	-1.68	5.065	28.8	1.15	1.15
+328.25	6.590	-1.59	4.742	28.0	1.09	1.08
+330.5	6.614	-2.04	4.726	28.0	0.62	0.61
+332.5	6.638	-1.86	4.557	27.6	0.73	0.72
+334.5	6.662	-1.32	5.105	28.9	1.53	1.52
+336.25	6.687	-1.91	4.804	28.2	0.79	0.78
+338.5	6.711	-1.61	4.639	27.8	1.02	1.00
+340.5	6.735	-1.82	4.718	28.0	0.85	0.83
+342.5	6.759	-1.60	4.763	28.1	1.09	1.07
+344.25	6.784	-1.66	4.745	28.1	1.02	1.00
+346.5	6.808	-1.68	4.543	27.6	0.90	0.88
+348.5	6.832	-1.66	4.487	27.4	0.88	0.85
+350.5	6.856	-1.82	4.811	28.2	0.89	0.86
+352.25	6.880	-1.66	4.898	28.4	1.09	1.06
+354.5	6.905	-1.91	4.293	26.9	0.53	0.50
+356.5	6.929	-1.83	4.710	28.0	0.83	0.80
+358.5	6.953	-1.86	4.542	27.6	0.72	0.68
+360.25	6.977	-1.82	4.339	27.1	0.65	0.61
+362.5	7.001	-1.73	4.296	26.9	0.72	0.68
+364.5	7.026	-1.83	4.253	26.8	0.59	0.55
+366.5	7.050	-1.47	4.412	27.2	1.04	1.00
+368.25	7.074	-1.94	5.103	28.9	0.90	0.86
+370.25	7.098	-1.78	4.734	28.0	0.89	0.84
+372.25	7.123	-1.66	4.554	27.6	0.93	0.88
+374.5	7.147	-1.80	4.471	27.4	0.74	0.69
+376.25	7.171	-1.58	4.684	27.9	1.07	1.02
+378.5	7.195	-1.85	4.940	28.5	0.92	0.86
+380.5	7.219	-1.67	5.008	28.7	1.13	1.07
+382.5	7.244	-1.67	4.582	27.7	0.92	0.86
+384.25	7.268	-1.85	4.874	28.3	0.89	0.83
+386.5	7.292	-1.66	5.064	28.8	1.17	1.11
+388.5	7.316	-1.91	4.543	27.6		
+390.5	7.341	-1.45	4.698	27.9	1.21	1.15
+392.25	7.365	-1.63	4.615	27.7	0.98	0.92
+394.5	7.389	-1.34	4.701	27.9	1.32	1.26
+396.5	7.403	-1.68	4.624	27.8	0.94	0.88
+398.5	7.417	-1.35	4.832	28.3	1.37	1.31
+400.25	7.431	-1.50	4.575	27.6	1.10	1.04
+402.5	7.445	-1.56	4.697	27.9	1.10	1.04
+404.5	7.459	-1.60	4.735	28.0	1.07	1.01
+406.5	7.473	-1.34	4.884	28.4	1.40	1.33
+408.25	7.487	-1.68	4.629	27.8	0.94	0.87
+410.5	7.501	-1.49	4.621	27.8	1.13	1.06
+412.5	7.515	-1.51	4.926	28.5	1.25	1.18
+414.5	7.529	-1.63	4.645	27.8	1.00	0.92
+416.25	7.544	-1.42	4.549	27.6	1.16	1.08
+418.5	7.558	-1.70	4.761	28.1	0.98	0.90
+420.5	7.572	-1.40	4.661	27.9	1.24	1.16
+422.5	7.586	-1.23	4.725	28.0	1.43	1.35
+424.25	7.600	-1.46	4.528	27.5	1.11	1.03
+426.5	7.614	-1.30	4.920	28.5	1.46	1.38
+428.5	7.628	-1.49	4.411	27.2	1.02	0.94
+430.5	7.642	-1.36	4.294	26.9	1.08	1.00
+432.25	7.656	-1.89	4.637	27.8		
+434.5	7.670	-1.49	5.041	28.7	1.32	1.24
+436.5	7.684	-1.68	5.027	28.7	1.13	1.05
+438.5	7.698	-1.93	4.684	27.9	0.72	0.64
+440.25	7.712	-1.96	4.981	28.6	0.83	0.74
+442.5	7.726	-1.67	4.942	28.5	1.10	1.01
+446.5	7.754	-1.62	4.579	27.7	0.97	0.87
+448.25	7.768	-1.55	4.660	27.9	1.09	0.99
+450.5	7.782	-1.37	4.633	27.8	1.25	1.14
+452.5	7.796	-1.85	4.799	28.2	0.85	0.73
+454.5	7.810	-1.81	4.709	28.0	0.85	0.73
+456.25	7.824	-1.40	4.576	27.7	1.19	1.06
+458.5	7.838	-1.73	5.047	28.7	1.09	0.96
+460.5	7.853	-1.64	4.750	28.1	1.04	0.91
+462.5	7.867	-1.73	4.744	28.1	0.95	0.82
+464.25	7.881	-1.78	4.876	28.4	0.96	0.83
+466.5	7.895	-2.01	4.833	28.3	0.71 	0.58
+468.5	7.909	-1.76	5.193	29.1	1.13	1.00
+470.25	7.923	-1.53	5.164	29.0	1.35	1.21
+472.25	7.937	-1.69	5.190	29.0	1.19	1.05
+474.5	7.951	-1.77	4.828	28.2	0.95	0.81
+476.5	7.965	-1.59	4.943	28.5	1.18	1.04
+478.5	7.979	-1.73	5.283	29.2	1.19	1.05
+480.25	7.993	-1.60	5.176	29.0	1.28	1.14
+482.5	8.004	-2.06	4.858	28.3		
+484.5	8.015	-1.51	4.751	28.1	1.17	1.03
+486.5	8.025	-1.62	5.350	29.4	1.33	1.19
+488.25	8.036	-1.52	5.216	29.1	1.38	1.24
+490.5	8.047	-1.52	4.854	28.3	1.21	1.07
+492.5	8.058	-1.61	5.281	29.2	1.32	1.18
+494.5	8.069	-1.63	5.196	29.1	1.25	1.11
+496.25	8.105	-1.44	4.843	28.3	1.29	1.15
+498.5	8.141	-1.67	4.715	28.0	1.00	0.86
+500.5	8.177	-1.49	4.744	28.0	1.18	1.04
+502.5	8.213	-1.51	4.479	27.4	1.03	0.89
+504.25	8.249	-1.49	5.363	29.4	1.47	1.33
+506.5	8.285	-1.62	5.157	29.0	1.25	1.11
+508.5	8.321	-1.52	4.617	27.7	1.10	0.96
+510.5	8.357	-1.57	4.862	28.3	1.16	1.02
+512.5	8.393	-1.54	4.896	28.4	1.21	1.06
+514.5	8.429	-1.64	4.440	27.3	0.89	0.74
+516.5	8.465	-1.47	4.798	28.2	1.23	1.07
+518.5	8.501	-1.57	4.738	28.0	1.10	0.94
+520.5	8.537	-1.64	4.630	27.8	0.98	0.81
+522.5	8.573	-1.78	4.646	27.8	0.85	0.68
+524.5	8.609	-1.66	4.865	28.3	1.08	0.91
+526.5	8.645	-1.72	4.920	28.5	1.04	0.87
+528.5	8.681	-1.54	5.338	29.4	1.40	1.23
+529.25	8.699	-1.51	4.826	28.2	1.20	1.03
+532.5	8.753	-1.72	5.108	28.9	1.12	0.95
+534.5	8.789	-1.58	4.415	27.2	0.93	0.75
+536.25	8.825	-1.76	5.282	29.2	1.17	0.99
+538.5	8.861	-1.59	4.529	27.5	0.98	0.80
+540.5	8.897	-1.47	4.896	28.4	1.28	1.08
+542.5	8.933	-1.54	4.858	28.3	1.19	0.99
+544.25	8.969	-1.48	4.849	28.3	1.24	1.04
+546.5	9.005	-1.69	4.626	27.8	0.93	0.73
+548.5	9.041	-1.62	4.741	28.0	1.05	0.85
+550.5	9.077	-1.79	4.508	27.5		
+552.25	9.113	-1.61	4.973	28.6	1.18	0.98
+554.5	9.149	-1.98	4.809	28.2		

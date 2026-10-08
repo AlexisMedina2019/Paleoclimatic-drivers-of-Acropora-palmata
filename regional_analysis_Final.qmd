@@ -6,7 +6,8 @@ abstract: |
   main text. It uses three input files deposited in the repository: `ages_kernel_reg_updt2.xlsx`
   (dated *Acropora palmata* fossils, audited against the original age publications),
   `df_GAM130326_regimes_v4.xlsx` (centennial climate predictors) and `Marine20_0-15ka.csv`
-  (the Marine20 radiocarbon calibration curve, used to propagate age uncertainty). From these it reproduces:
+  (the Marine20 radiocarbon calibration curve, used to propagate age uncertainty); Florida-proximal
+  temperature records used for comparison only are in `florida_local_SST_records/`. From these it reproduces:
 
   1. binning of fossil ages into 0.1-ka (centennial) intervals, their alignment with
      climate predictors and the normalization of the response variable;
@@ -3106,9 +3107,9 @@ gt::gtsave(tab_S11, "Supplementary_Table_S11.docx")
 - **Saint Croix.** In the binomial model of one versus two records per bin, none of the climate smooths of the selected model is significant (*p* ≈ 1 for s(GMHT_CPS0_30N), s(dT_raw) and s(Hur100_av)), whereas s(dT_raw) and s(Hur100_av) are significant in the beta model (*p* = 0.042 and 0.036). The beta-model result therefore depends on how the near-binary response is modelled, consistent with not interpreting this panel (Section 3.3.5).
 - **Punta Maroma.** Because the selected model already contains the thermal regime, the check reproduces it: the thermal regime remains significant (*p* \< 10⁻⁴, as in the marginal thermal-regime model), whereas s(Hur100_av) is not (*p* = 0.12). The thermal-regime effect is therefore not absorbed by the hurricane smooth in this panel.
 
-#### 4.5.1 Local hurricane series in Florida
+#### 4.5.1 Local climate records in Florida
 
-In the Florida panel the hurricane regime (`Hurricane`) is the local Florida series (`Hur_FL`, Section 1.2) in all the analyses above. Here we compare, as single climate terms added to `s(age)`, the local regime, its continuous version (`FL_pact`, proportion of records active) and the two Schmitt et al. (2025) metrics. The comparison is repeated for bins younger than 3.5 ka, where the local series combines two to six records, because older bins rest on a single record.
+**Hurricanes.** In the Florida panel the hurricane regime (`Hurricane`) is the local Florida series (`Hur_FL`, Section 1.2) in all the analyses above. Here we compare, as single climate terms added to `s(age)`, the local regime, its continuous version (`FL_pact`, proportion of records active) and the two Schmitt et al. (2025) metrics. The comparison is repeated for bins younger than 3.5 ka, where the local series combines two to six records, because older bins rest on a single record.
 
 ```{r florida-local-hurricane, warning=FALSE, message=FALSE}
 fl_hur <- datos_fl_std %>%
@@ -3134,6 +3135,149 @@ fl_hur_tab <- purrr::map_dfr(c("0-6 ka" = 6, "0-3.5 ka" = 3.5), function(amax) {
 
 knitr::kable(fl_hur_tab, caption = "Florida panel: local vs Schmitt et al. (2025) hurricane predictors")
 ```
+
+**Temperature.** No continuous centennial temperature record exists for the Florida reef tract over 0–6 ka, so the 0°–30°N anomaly (`GMHT_CPS0_30N`; Kaufman et al. 2020) is used in Florida as in the other panels. Here we test whether it describes temperature change near the reef tract, by comparing it with the Florida-proximal records available (folder `florida_local_SST_records`; sources in its README): the Florida Straits *G. ruber* Mg/Ca SST record (Schmidt et al. 2012; 1.5–5.9 ka, 34 samples), four *G. ruber* Mg/Ca SST records from the Dry Tortugas and the Great Bahama Bank (Lund & Curry 2006; 0–1.36 ka), stacked as anomalies from each core mean, and *Orbicella faveolata* Sr/Ca from three Dry Tortugas–Marquesas Keys colonies within 0–6 ka (Jacobs et al. 2025; 5.8, 3.6 and 2.6 ka; lower Sr/Ca = warmer). For each record we compare (i) the sign of the linear trend (°C per ka of age, 95 % moving-block bootstrap interval) and (ii) the correlation of levels and of detrended anomalies on common bins (0.2 ka for the Florida Straits record, whose samples are ~0.13 ka apart; 0.1 ka for the Lund & Curry stack), with significance from 5,000 phase-randomised surrogates (Ebisuzaki 1997). For the corals, only the direction of change between colonies is compared. The Gulf of Mexico SST record of Garrison Basin (Thirumalai et al. 2021) was also considered as a local predictor, but its mid-to-late Holocene trend is opposite to that of the Florida Straits record and its levels are negatively correlated with it (*r* = −0.67), so it was not used.
+
+```{r florida-local-temperature, warning=FALSE, message=FALSE}
+set.seed(20261008)
+lsd <- here("florida_local_SST_records")
+
+## records
+sch <- read.delim(file.path(lsd, "schmidt2012-noaa.txt"), comment.char = "#", check.names = FALSE) %>%
+  transmute(age = age_calkaBP, sst = suppressWarnings(as.numeric(sst))) %>% filter(!is.na(sst))
+L  <- readLines(file.path(lsd, "lund2006.txt"), warn = FALSE)
+i0 <- grep("^2\\. Lund et al\\. 2006 Mg/Ca SST", L); i1 <- grep("^3\\. Lund et al\\. 2006 Mg/Ca SST smoothed", L)
+core <- NA; lund <- list()
+for (ln in L[(i0 + 1):(i1 - 1)]) {
+  t <- strsplit(trimws(ln), "\\s+")[[1]]
+  if (length(t) == 1 && grepl("^(MC|GGC)", t)) core <- t
+  else if (length(t) == 7 && !is.na(core) && !is.na(suppressWarnings(as.numeric(t[1]))))
+    lund[[length(lund) + 1]] <- data.frame(core = core, age = as.numeric(t[2]) / 1000, sst = as.numeric(t[7]))
+}
+lund <- bind_rows(lund) %>% filter(age <= 1.3) %>%
+  mutate(region = ifelse(core %in% c("MC62", "GGC79"), "Dry Tortugas", "Great Bahama Bank")) %>%
+  group_by(core) %>% mutate(sst = sst - mean(sst)) %>% ungroup()          # anomalies from each core mean
+srca <- read.csv(file.path(lsd, "Mid-to-late_Holocene_SrCa.csv"), check.names = FALSE,
+                 fileEncoding = "UTF-8-BOM", na.strings = c("nd", ""))
+coral <- bind_rows(lapply(names(srca)[-1], function(nm) {
+  v <- srca[[nm]]; v <- v[!is.na(v)]
+  data.frame(colony = sub(" subannual.*", "", nm, ignore.case = TRUE), age = as.numeric(sub(" ka.*", "", nm)),
+             years = round(length(v) / 12), SrCa = mean(v))
+})) %>% filter(age <= 6) %>% arrange(desc(age))
+kau_t <- datos_cli %>% transmute(age = round(interval_max, 1), sst = GMHT_CPS0_30N) %>% arrange(age)
+
+## helpers
+bin_rec <- function(d, lo, hi, w) {            # right-closed bins; empty bins interpolated
+  ub <- round(seq(lo + w, hi, by = w), 3)
+  b  <- round(pmax(ceiling(round(d$age - lo, 6) / w) * w + lo, lo + w), 3)
+  m  <- tapply(d$sst, factor(b, levels = ub), mean); ok <- !is.na(m)
+  data.frame(age = ub, sst = approx(ub[ok], m[ok], ub, rule = 2)$y, n = as.integer(table(factor(b, levels = ub))))
+}
+bin_kau <- function(lo, hi, w) {
+  ub <- round(seq(lo + w, hi, by = w), 3)
+  data.frame(age = ub, sst = sapply(ub, function(u) mean(kau_t$sst[kau_t$age > u - w + 1e-9 & kau_t$age <= u + 1e-9])))
+}
+phase_rand <- function(x) {
+  n <- length(x); f <- fft(x - mean(x)); k <- 2:ceiling(n / 2)
+  f[k] <- Mod(f[k]) * exp(1i * runif(length(k), 0, 2 * pi)); f[n - k + 2] <- Conj(f[k])
+  if (n %% 2 == 0) f[n / 2 + 1] <- Mod(f[n / 2 + 1]) * sample(c(-1, 1), 1)
+  Re(fft(f, inverse = TRUE)) / n + mean(x)
+}
+cor_pr <- function(x, y, nsim = 5000) {
+  r <- cor(x, y); c(r = r, p = mean(abs(replicate(nsim, cor(phase_rand(x), y))) >= abs(r)))
+}
+detr  <- function(d) resid(lm(sst ~ age, d))
+slope_ci <- function(d, B = 2000, block = 3) {
+  m <- lm(sst ~ age, d); e <- resid(m); f <- fitted(m); n <- nrow(d)
+  bs <- replicate(B, {
+    st <- sample(seq_len(n - block + 1), ceiling(n / block), replace = TRUE)
+    eb <- unlist(lapply(st, function(s) e[s:(s + block - 1)]))[seq_len(n)]
+    coef(lm(I(f + eb) ~ d$age))[2]})
+  c(slope = unname(coef(m)[2]), lo = unname(quantile(bs, .025)), hi = unname(quantile(bs, .975)))
+}
+
+## A. Florida Straits, 1.4-5.8 ka, 0.2-ka bins
+sA <- bin_rec(sch, 1.4, 5.8, 0.2); kA <- bin_kau(1.4, 5.8, 0.2)
+## B. Dry Tortugas + Great Bahama Bank stack, 0-1.3 ka, 0.1-ka bins
+sB <- bin_rec(lund, 0, 1.3, 0.1);  kB <- bin_kau(0, 1.3, 0.1)
+dtB  <- bin_rec(filter(lund, region == "Dry Tortugas"), 0, 1.3, 0.1)
+gbbB <- bin_rec(filter(lund, region == "Great Bahama Bank"), 0, 1.3, 0.1)
+lia_c <- function(x) c(mean(x$sst[x$age > 0.1 & x$age <= 0.7]) - mean(x$sst[x$age > 0.7]),
+                       mean(x$sst[x$age <= 0.1]) - mean(x$sst[x$age > 0.1 & x$age <= 0.7]))
+## C. corals: direction of change between colonies (Sr/Ca sign reversed, so that + = warmer)
+kC <- sapply(coral$age, function(a) kau_t$sst[which.min(abs(kau_t$age - 0.05 - a))])
+dir_chg <- function(v) sign(diff(v))
+
+tA <- slope_ci(sA); tAk <- slope_ci(kA); tB <- slope_ci(sB); tBk <- slope_ci(kB)
+fmt_ci <- function(t) sprintf("%+.2f (%+.2f to %+.2f)", t[1], t[2], t[3])
+fmt_r  <- function(x) sprintf("r = %.2f (p = %.2g)", x[1], x[2])
+tab_S15 <- tibble::tribble(
+  ~Record, ~Comparison, ~`Local record`, ~`0-30N anomaly`,
+  "Florida Straits (Schmidt et al. 2012), 1.4-5.8 ka, 0.2-ka bins (n = 22)", "Trend, degC per ka of age (95 % CI)", fmt_ci(tA), fmt_ci(tAk),
+  "Florida Straits (Schmidt et al. 2012), 1.4-5.8 ka, 0.2-ka bins (n = 22)", "Correlation, levels", fmt_r(cor_pr(kA$sst, sA$sst)), "",
+  "Florida Straits (Schmidt et al. 2012), 1.4-5.8 ka, 0.2-ka bins (n = 22)", "Correlation, detrended", fmt_r(cor_pr(detr(kA), detr(sA))), "",
+  "Dry Tortugas + Great Bahama Bank (Lund & Curry 2006), 0-1.3 ka, 0.1-ka bins (n = 13)", "Trend, degC per ka of age (95 % CI)", fmt_ci(tB), fmt_ci(tBk),
+  "Dry Tortugas + Great Bahama Bank (Lund & Curry 2006), 0-1.3 ka, 0.1-ka bins (n = 13)", "Correlation, levels (stack; DT; GBB)",
+    paste(fmt_r(cor_pr(kB$sst, sB$sst)), fmt_r(cor_pr(kB$sst, dtB$sst)), fmt_r(cor_pr(kB$sst, gbbB$sst)), sep = "; "), "",
+  "Dry Tortugas + Great Bahama Bank (Lund & Curry 2006), 0-1.3 ka, 0.1-ka bins (n = 13)", "Correlation, detrended (stack)", fmt_r(cor_pr(detr(kB), detr(sB))), "",
+  "Dry Tortugas + Great Bahama Bank (Lund & Curry 2006), 0-1.3 ka, 0.1-ka bins (n = 13)", "LIA (0.1-0.7 ka) minus 0.7-1.3 ka, degC (stack; DT; GBB)",
+    sprintf("%+.2f; %+.2f; %+.2f", lia_c(sB)[1], lia_c(dtB)[1], lia_c(gbbB)[1]), sprintf("%+.2f", lia_c(kB)[1]),
+  "Dry Tortugas + Great Bahama Bank (Lund & Curry 2006), 0-1.3 ka, 0.1-ka bins (n = 13)", "0-0.1 ka minus LIA, degC (stack; DT; GBB)",
+    sprintf("%+.2f; %+.2f; %+.2f", lia_c(sB)[2], lia_c(dtB)[2], lia_c(gbbB)[2]), sprintf("%+.2f", lia_c(kB)[2]),
+  "Coral Sr/Ca (Jacobs et al. 2025), 5.8, 3.6 and 2.6 ka", "Sr/Ca, mmol/mol (lower = warmer)", paste(sprintf("%.3f", coral$SrCa), collapse = "; "),
+    paste(sprintf("%+.2f", kC), collapse = "; "),
+  "Coral Sr/Ca (Jacobs et al. 2025), 5.8, 3.6 and 2.6 ka", "Direction of change, 5.8->3.6 and 3.6->2.6 ka",
+    paste(ifelse(dir_chg(-coral$SrCa) > 0, "warmer", "cooler"), collapse = ", "),
+    paste(ifelse(dir_chg(kC) > 0, "warmer", "cooler"), collapse = ", "))
+
+gt_S15 <- tab_S15 %>% gt(groupname_col = "Record") %>%
+  tab_header(title = "Florida-proximal temperature records vs the 0-30N temperature anomaly")
+gt_S15
+gt::gtsave(gt_S15, "Supplementary_Table_S15.docx")
+```
+
+**Supplementary Table S15. Florida-proximal temperature records compared with the 0°–30°N temperature anomaly (Kaufman et al. 2020).** Trends are linear slopes on the binned series (°C per ka of age; positive = cooling towards the present), with 95 % moving-block bootstrap intervals. Correlations between the 0°–30°N anomaly and each local record on common bins, with *p* from 5,000 phase-randomised surrogates. Lund & Curry (2006) series are anomalies from each core mean (DT, Dry Tortugas; GBB, Great Bahama Bank). For the corals, Sr/Ca of each colony and the 0°–30°N anomaly of its bin, and the direction of change between successive colonies.
+
+```{r figS10-local-temperature, fig.width=12, fig.height=8}
+z <- function(v) (v - mean(v)) / sd(v)
+fa <- ggplot() +
+  geom_line(data = sA, aes(age, z(sst), colour = "Florida Straits SST (Schmidt et al. 2012)"), linewidth = .8) +
+  geom_point(data = filter(sA, n > 0), aes(age, z(sst), colour = "Florida Straits SST (Schmidt et al. 2012)"), size = 1.6) +
+  geom_line(data = kA, aes(age, z(sst), colour = "0–30°N anomaly (Kaufman et al. 2020)"), linewidth = .8) +
+  scale_colour_manual(values = c("grey25", "#c0392b"), name = NULL) +
+  labs(x = "Age (ka BP)", y = "z (0.2-ka bins)", title = "a") +
+  theme_classic(base_size = 13) + theme(legend.position = "bottom") + guides(colour = guide_legend(nrow = 2))
+fb <- ggplot() +
+  annotate("rect", xmin = 0.1, xmax = 0.7, ymin = -Inf, ymax = Inf, alpha = .1) +
+  geom_line(data = dtB,  aes(age, z(sst), colour = "Dry Tortugas SST (Lund & Curry 2006)"), linewidth = .7) +
+  geom_line(data = gbbB, aes(age, z(sst), colour = "Great Bahama Bank SST (Lund & Curry 2006)"), linewidth = .7) +
+  geom_line(data = kB,   aes(age, z(sst), colour = "0–30°N anomaly (Kaufman et al. 2020)"), linewidth = .8) +
+  scale_colour_manual(values = c("grey25", "#1b9e77", "#7570b3"), name = NULL) +
+  labs(x = "Age (ka BP)", y = "z (0.1-ka bins)", title = "b") +
+  theme_classic(base_size = 13) + theme(legend.position = "bottom") + guides(colour = guide_legend(nrow = 3))
+fc <- ggplot(data.frame(age = coral$age, coral = z(-coral$SrCa), kau = z(kC))) +
+  geom_line(aes(age, coral, colour = "Coral −Sr/Ca (Jacobs et al. 2025)")) +
+  geom_point(aes(age, coral, colour = "Coral −Sr/Ca (Jacobs et al. 2025)"), size = 3) +
+  geom_line(aes(age, kau, colour = "0–30°N anomaly (Kaufman et al. 2020)")) +
+  geom_point(aes(age, kau, colour = "0–30°N anomaly (Kaufman et al. 2020)"), size = 3, shape = 15) +
+  scale_colour_manual(values = c("grey25", "#d95f02"), name = NULL) +
+  scale_x_continuous(limits = c(0, 6), breaks = 0:6) +
+  labs(x = "Age (ka BP)", y = "z (warmer up)", title = "c") +
+  theme_classic(base_size = 13) + theme(legend.position = "bottom") + guides(colour = guide_legend(nrow = 2))
+figS10 <- fa / (fb | fc)
+figS10
+ggsave("Supplementary_Figure_S10.pdf", plot = figS10, width = 12, height = 8, device = cairo_pdf)
+```
+
+**Supplementary Figure S10. Florida-proximal temperature records and the 0°–30°N temperature anomaly.** **a**, Florida Straits *G. ruber* Mg/Ca SST (Schmidt et al. 2012; points: bins with samples) and the 0°–30°N anomaly (Kaufman et al. 2020), standardised, on 0.2-ka bins. **b**, Dry Tortugas and Great Bahama Bank *G. ruber* Mg/Ca SST (Lund & Curry 2006; anomalies from each core mean) and the 0°–30°N anomaly, on 0.1-ka bins; shading, Little Ice Age. **c**, Mean Sr/Ca of three *Orbicella faveolata* colonies from the Dry Tortugas and Marquesas Keys (Jacobs et al. 2025; sign reversed, so that up is warmer) and the 0°–30°N anomaly of their bins.
+
+Results (Supplementary Table S15; Supplementary Fig. S10):
+
+- **Florida Straits, 1.4–5.8 ka.** Both series cool towards the present, at similar rates (+0.18 °C per ka of age, 95 % interval +0.05 to +0.31, in the Florida Straits; +0.21, +0.11 to +0.33, in the 0°–30°N anomaly). Their centennial anomalies are not correlated (levels *r* = 0.33, *p* = 0.17; detrended *r* = −0.08, *p* = 0.72).
+- **Dry Tortugas and Great Bahama Bank, 0–1.3 ka.** Both series warm towards the present (local stack −0.59 °C per ka, −0.72 to −0.46; 0°–30°N −0.37, interval including zero), and both are warmer in the youngest century than during the Little Ice Age (+0.41 °C in the stack, +0.84 °C in the 0°–30°N anomaly). The correlations are positive but, with 13 bins, significant only for the Great Bahama Bank (*r* = 0.61, *p* = 0.03; stack 0.44, *p* = 0.27). The two series differ in the Little Ice Age itself: the Dry Tortugas records are warmer than in the preceding six centuries (+0.62 °C), the 0°–30°N anomaly slightly cooler (−0.10 °C).
+- **Corals.** Sr/Ca indicates cooling from 5.8 to 3.6 ka and warming from 3.6 to 2.6 ka, the same sequence as the 0°–30°N anomaly. This comparison rests on one colony per interval from two sites, and inter-colony Sr/Ca offsets can be large.
+
+The 0°–30°N anomaly therefore reproduces the direction of millennial temperature change near the Florida reef tract, including the late-Holocene cooling and the warming of the last centuries, but not its centennial anomalies, which are not resolved by any of the available records at a common timescale. A centennial temperature effect in Florida cannot be tested with the regional series.
 
 #### 4.5.2 Age uncertainty, sampling, binning, the modern peak and Saint Croix
 
