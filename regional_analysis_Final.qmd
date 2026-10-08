@@ -3,12 +3,10 @@ title: "6000-yr APAL-Climate Regional Analysis"
 author: "Alexis E Medina Valmaseda"
 abstract: |
   This document is the executable record (Quarto/R) of all analyses reported in the
-  main text. It uses four input files deposited in the repository: `ages_kernel_reg_updt2.xlsx`
+  main text. It uses three input files deposited in the repository: `ages_kernel_reg_updt2.xlsx`
   (dated *Acropora palmata* fossils, audited against the original age publications),
-  `df_GAM130326_regimes_v4.xlsx` (centennial climate predictors), `Marine20_0-15ka.csv`
-  (the Marine20 radiocarbon calibration curve, used to propagate age uncertainty) and
-  `GB2_Thirumalai2021_SST_0-6.4ka.csv` (Garrison Basin sea-surface temperature, the local
-  temperature series tested for Florida). From these it reproduces:
+  `df_GAM130326_regimes_v4.xlsx` (centennial climate predictors) and `Marine20_0-15ka.csv`
+  (the Marine20 radiocarbon calibration curve, used to propagate age uncertainty). From these it reproduces:
 
   1. binning of fossil ages into 0.1-ka (centennial) intervals, their alignment with
      climate predictors and the normalization of the response variable;
@@ -168,7 +166,7 @@ The dataset comprises 236 dated records: Florida 111, Punta Maroma 64, Belize 39
 
 We import the centennial climate table (`df_GAM130326_regimes_v4.xlsx`) and assign each row the upper bound of its 0.1-ka bin. Ages are in ka BP (before 1950 CE), the convention of the two continuous climate sources (Kaufman et al. 2020; Schmitt et al. 2025).
 
-**Variables of the climate table.** `GMHT_CPS0_30N`: temperature anomaly of the Composite Plus Scale reconstruction for 0°–30°N (°C; Kaufman et al. 2020). `dT_raw`: its centennial rate of change (δT), the difference between consecutive 0.1-ka bins (°C per century). `Hur100_fqcy`: centennial tropical-cyclone (TC) frequency, the number of TC event layers in each 0.1-ka bin of the Great Blue Hole record (Schmitt et al. 2025). `Hur100_av`: smoothed centennial TC frequency, the mean of the two 100-year counts of the same record that overlap the bin (a centred 200-year smoothing). Both metrics count tropical storms and hurricanes; neither measures intensity. Schmitt et al. (2025, table S9) count events in windows of varve years before 2022 CE, so both metrics were recounted in our BP bins from their 50- and 100-year windows (a BP bin *j* spans 72 + 100*j* to 72 + 100(*j* + 1) years before 2022). As with the coral ages (Section 1.1), the youngest bin closes at the youngest dated colony (1956 CE): `Hur100_fqcy` counts 1850–1956 CE (15 events, one of them in 1956), and `Hur100_av` averages the windows 1800–1900 and 1900–2000 CE. Events after 2000 CE, including the 21st-century extrapolation of 45 events per century, are not used. The rebuild is documented bin by bin in sheet `Hur_BP_traceability` of the climate table; the earlier table (`df_GAM130326_regimes_v3.xlsx`) took the windows counted from 2022 CE in order, as if they were BP bins, which placed the counts about 150 years from the BP bins, and it had 45 events in the youngest bin. Counts recomputed from the individual event layers (Schmitt et al. 2025, table S4a) agree with the rebuilt series (*r* = 0.99; at most 2 events per bin apart). A sensitivity version that extends the youngest bin to 2022 CE as a rate per century (`df_GAM130326_regimes_v4c.xlsx`) is described in Section 4.7.1. `Thermal`, `Hydro` and `Hurricane`: categorical regimes (below). `Hydro_FL`, `Hur_FL`, `FL_pact` and `FL_nrec`: Florida series (below). `SST_FL`: local sea-surface temperature for the Florida panel (below; kept in a separate table, `sst_fl`).
+**Variables of the climate table.** `GMHT_CPS0_30N`: temperature anomaly of the Composite Plus Scale reconstruction for 0°–30°N (°C; Kaufman et al. 2020). `dT_raw`: its centennial rate of change (δT), the difference between consecutive 0.1-ka bins (°C per century). `Hur100_fqcy`: centennial tropical-cyclone (TC) frequency, the number of TC event layers in each 0.1-ka bin of the Great Blue Hole record (Schmitt et al. 2025). `Hur100_av`: smoothed centennial TC frequency, the mean of the two 100-year counts of the same record that overlap the bin (a centred 200-year smoothing). Both metrics count tropical storms and hurricanes; neither measures intensity. Schmitt et al. (2025, table S9) count events in windows of varve years before 2022 CE, so both metrics were recounted in our BP bins from their 50- and 100-year windows (a BP bin *j* spans 72 + 100*j* to 72 + 100(*j* + 1) years before 2022). As with the coral ages (Section 1.1), the youngest bin closes at the youngest dated colony (1956 CE): `Hur100_fqcy` counts 1850–1956 CE (15 events, one of them in 1956), and `Hur100_av` averages the windows 1800–1900 and 1900–2000 CE. Events after 2000 CE, including the 21st-century extrapolation of 45 events per century, are not used. The rebuild is documented bin by bin in sheet `Hur_BP_traceability` of the climate table; the earlier table (`df_GAM130326_regimes_v3.xlsx`) took the windows counted from 2022 CE in order, as if they were BP bins, which placed the counts about 150 years from the BP bins, and it had 45 events in the youngest bin. Counts recomputed from the individual event layers (Schmitt et al. 2025, table S4a) agree with the rebuilt series (*r* = 0.99; at most 2 events per bin apart). A sensitivity version that extends the youngest bin to 2022 CE as a rate per century (`df_GAM130326_regimes_v4c.xlsx`) is described in Section 4.7.1. `Thermal`, `Hydro` and `Hurricane`: categorical regimes (below). `Hydro_FL`, `Hur_FL`, `FL_pact` and `FL_nrec`: Florida series (below).
 
 The three categorical regimes were coded from the published chronologies compiled in Supplementary Material 2, converted to ka BP, assigning each bin to the period that contains its midpoint (a midpoint on a boundary goes to the younger period):
 
@@ -176,8 +174,6 @@ The three categorical regimes were coded from the published chronologies compile
 - **Hurricane** (Schmitt et al. 2025 only, the source of `Hur100_av` and `Hur100_fqcy`): high 0–0.2 ka (rise after 1800 CE); calm 0.2–0.6 ka (1400–1800 CE); enhanced 0.6–1.1 and 1.2–1.4 ka (900–1400 and 600–800 CE); moderate 1.1–1.2 and 1.4–4.0 ka (mean 9–14 events per century); low 4.0–6.0 ka (\~7 events per century; the record begins at 5.7 ka).
 - **Hydro**, by region. Yucatán (`Hydro`): wet 0–0.8 ka, dry 0.8–1.7 ka and wet 1.7–3.5 ka (Curtis et al. 1996, boundaries calibrated with IntCal20), wet 5.2–5.7 ka (Serrato Marks et al. 2021), no data elsewhere. Florida (`Hydro_FL`): dry 4.6–6.0 ka (Pollock et al. 2017; Donders 2014), wet 2.8–4.6 ka and dry 0–2.8 ka (Glaser et al. 2013), with multi-century droughts near 1.0 and 0.4 ka (Willard & Bernhardt 2011).
 - **Hurricane, Florida** (`Hur_FL`, `FL_pact`, `FL_nrec`). Schmitt et al. (2025) record storms reaching the Yucatán coast, and Florida-proximal records do not follow it (agreement in 34 % of the bins younger than 3.5 ka). The Florida panel therefore uses a local series built from six records on the Atlantic side of Florida: the western Great Bahama Bank / Florida Straits (Toomey et al. 2013; 0–6 ka), the Everglades (Yao et al. 2020; 0–3.5 ka), southwest Florida (Ercolani et al., via Oliva et al. 2017), Andros and Abaco (van Hengstum et al., via Oliva et al. 2017) and Abaco (Winkler et al. 2020). All ages are cal BP (1950). For each bin, `FL_pact` is the proportion of the records covering the bin that report an active interval at its midpoint, `FL_nrec` the number of those records, and `Hur_FL` is "active" when `FL_pact` ≥ 0.5 and "quiet" otherwise. Older than 3.5 ka the series rests on a single record (Toomey et al. 2013). Records from the Gulf coast of Florida were not used, because they sample Gulf landfalls. For Hydro and the hurricane regime, the Florida panel uses the Florida series; Punta Maroma, Belize, Saint Croix and the regional composite use the Yucatán series (Hurricane = Schmitt et al. 2025). The continuous hurricane metrics (`Hur100_av`, `Hur100_fqcy`) are those of Schmitt et al. (2025) in every panel. In the Yucatán Hydro series, undocumented bins are coded as a separate level, "no data", so that no bins are lost. The mapping is positional: `interval_max` is taken from the order in which interval labels first appear, which is correct only if the file has exactly one row per bin, ordered from youngest to oldest.
-
-- **Sea-surface temperature, Florida** (`SST_FL`, `dSST_FL`). The 0°–30°N temperature anomaly need not represent the thermal history of the Florida reef tract. As a local alternative we use the nearest continuous centennial SST record, the annual SST reconstructed from *Globigerinoides ruber* Mg/Ca in the composite core 2010-GB2, Garrison Basin, northwestern Gulf of Mexico (26.67°N, 93.92°W; Thirumalai et al. 2021; PANGAEA, https://doi.org/10.1594/PANGAEA.935982, CC-BY-4.0), deposited in the repository as `GB2_Thirumalai2021_SST_0-6.4ka.csv` (165 samples, 0–6.4 ka BP, with the published 16–84 % and 2.5–97.5 % ranges; identical to the PANGAEA file). SST is averaged within the same right-closed 0.1-ka bins as the corals, with post-1950 samples in the youngest bin (median 2 samples per bin, range 0–5); the two bins without samples (4.9 and 5.0 ka, a core gap at 4.80–5.01 ka) are linearly interpolated. `dSST_FL` is its centennial rate of change, defined as `dT_raw`. Garrison Basin lies about 1200 km from the Florida reef tract, so `SST_FL` is a regional Gulf of Mexico series, not a reef-tract series. It is not part of the main candidate sets; it enters Fig. 3 and the Florida sensitivity analysis (Section 4.5.1).
 
 Climate values are joined to every fossil record by `interval_max`, and the column is renamed `age` (ka). The resulting `merged_df` is record-level and therefore holds climate values only for bins that contain at least one fossil record.
 
@@ -195,23 +191,6 @@ datos_cli <- datos_cli %>%
 
 datos_cli <- datos_cli %>%
   mutate(Hydro_YUC = ifelse(is.na(Hydro), "no data", Hydro))
-
-## Florida local SST (Garrison Basin, Thirumalai et al. 2021): mean of the samples in each
-## right-closed 0.1-ka bin (post-1950 samples in the youngest bin, as the coral ages);
-## bins without samples are linearly interpolated. Kept apart from datos_cli, so that it
-## enters only Fig. 3 and the Florida sensitivity analysis (Section 4.5.1).
-gb2 <- read.csv(here("GB2_Thirumalai2021_SST_0-6.4ka.csv"), comment.char = "#")
-gb2$sd  <- (gb2$ci84 - gb2$ci16) / 2                 # 1 sigma from the 16-84 % range
-gb2$bin <- round(pmax(ceiling(round(pmax(gb2$age_ka, 0), 6) / 0.1) * 0.1, 0.1), 1)
-sst_bins <- round(breaks[-1], 1)
-bin_sst_fl <- function(sst) {
-  m <- tapply(sst, gb2$bin, mean)[as.character(sst_bins)]
-  approx(sst_bins[!is.na(m)], m[!is.na(m)], sst_bins, rule = 2)$y
-}
-sst_fl <- tibble::tibble(age    = sst_bins,
-                         SST_FL = bin_sst_fl(gb2$sst),
-                         n_GB2  = as.integer(table(factor(gb2$bin, levels = sst_bins)))) %>%
-  mutate(dSST_FL = c(0, diff(SST_FL)))               # same definition as dT_raw
 
 # Hydro and hurricane regime by region: Florida records take the Florida series,
 # all other records the Yucatán series (Hurricane = Schmitt et al. 2025)
@@ -877,14 +856,13 @@ We assemble Fig. 3. Panel (a) is Fig. 3a. Below it, four panels show, for each o
 
 - **(b)** the `GMHT_CPS0_30N` temperature anomaly (^o^C);
 - **(c)** the centennial rate of change of the temperature anomaly (δT, ^o^C; `dT_raw`), the difference between consecutive bins of the CPS reconstruction;
-- **(d)** local sea-surface temperature for Florida (`SST_FL`; Garrison Basin, Gulf of Mexico; Thirumalai et al. 2021), as the anomaly from its 0–6 ka mean; the two interpolated bins (4.9 and 5.0 ka) are drawn in outline;
-- **(e)** the smoothed centennial tropical-cyclone frequency (`Hur100_av`, events per century, centred 200-year smoothing) as bars (dark grey where \> 10) and the centennial tropical-cyclone frequency (`Hur100_fqcy`) as a step line;
-- **(f)** local hurricane activity in Florida (`FL_pact`): proportion of the Florida-proximal paleotempestological records that report an active interval in each bin, as bars (dark blue where ≥ 0.5, the threshold that defines the "active" regime); bins older than 3.5 ka rest on a single record (Toomey et al. 2013);
-- **(g)** the nominal thermal, hydroclimatic (Yucatán and Florida series) and hurricane (Yucatán and Florida series) regimes, drawn as contiguous time segments over the full span of each bin.
+- **(d)** the smoothed centennial tropical-cyclone frequency (`Hur100_av`, events per century, centred 200-year smoothing) as bars (dark grey where \> 10) and the centennial tropical-cyclone frequency (`Hur100_fqcy`) as a step line;
+- **(e)** local hurricane activity in Florida (`FL_pact`): proportion of the Florida-proximal paleotempestological records that report an active interval in each bin, as bars (dark blue where ≥ 0.5, the threshold that defines the "active" regime); bins older than 3.5 ka rest on a single record (Toomey et al. 2013);
+- **(f)** the nominal thermal, hydroclimatic (Yucatán and Florida series) and hurricane (Yucatán and Florida series) regimes, drawn as contiguous time segments over the full span of each bin.
 
-**Figure 3** (`Figure_3.pdf`). Reconstruction of regional coral abundance and paleoclimate trends. The climate panels (b–g) are drawn from the 60-bin climate table, so they cover the full 0–6 ka interval, including bins without fossil records.
+**Figure 3** (`Figure_3.pdf`). Reconstruction of regional coral abundance and paleoclimate trends. The climate panels (b–f) are drawn from the 60-bin climate table, so they cover the full 0–6 ka interval, including bins without fossil records.
 
-```{r fig3m, fig.width=12, fig.height=16.5}
+```{r fig3m, fig.width=12, fig.height=15}
 
 library(dplyr)
 library(tidyr)
@@ -925,21 +903,6 @@ p2 <- clim_bins %>%
     axis.ticks.x = element_blank()
   ) +
   labs(y = "δT\n(°C per century)")
-
-# local Florida SST (Garrison Basin, Gulf of Mexico): anomaly from its 0-6 ka mean,
-# coloured as the 0-30N anomaly; interpolated bins (no samples) drawn in outline only
-sst_plot <- sst_fl %>% mutate(anom = SST_FL - mean(SST_FL), interp = n_GB2 == 0)
-p2fl <- ggplot(sst_plot, aes(xmin = age - 0.1, xmax = age, ymin = 0, ymax = anom)) +
-  geom_rect(data = filter(sst_plot, !interp), aes(fill = anom > 0)) +
-  geom_rect(data = filter(sst_plot, interp), fill = NA, colour = "grey30", linewidth = 0.3) +
-  scale_fill_manual(values = c("TRUE" = "#B8860B", "FALSE" = "#0072B2")) +
-  scale_x_continuous(breaks = seq(0, 6, 0.5)) +
-  coord_cartesian(xlim = c(0, 6)) +
-  theme_minimal(base_size = 14) +
-  theme(legend.position = "none",
-        axis.title.x = element_blank(),
-        axis.text.x = element_blank()) +
-  labs(y = "Florida SST\nanomaly (°C)")
 
 
 hur_plot_data <- clim_bins %>%
@@ -1019,11 +982,11 @@ p4 <- ggplot(df_segments) +
   theme(legend.position = "none") +
   labs(x = "Age (ka BP)", y = "Nominal Terms")
 
-Figure_3 <- pr / p1 / p2 / p2fl / p3 / p3fl / p4 +
-  plot_layout(ncol = 1, heights = c(1, 1, 1, 0.8, 1, 0.8, 1.7))
+Figure_3 <- pr / p1 / p2 / p3 / p3fl / p4 +
+  plot_layout(ncol = 1, heights = c(1, 1, 1, 1, 0.8, 1.7))
 Figure_3
 
-ggsave("Figure_3.pdf", plot = Figure_3, width = 10, height = 16.5, dpi = 300, device = cairo_pdf)
+ggsave("Figure_3.pdf", plot = Figure_3, width = 10, height = 15, dpi = 300, device = cairo_pdf)
 ```
 
 Before modelling, we inspect pairwise correlations among numeric variables (Section 2.1) and the distribution of abundance across combinations of climate regimes (Section 3.1.3). No predictor is removed on the basis of these analyses. Redundancy is handled instead by never entering the two hurricane metrics in the same model (Section 3.3) and by assessing overlap among smooth terms after fitting (concurvity, Section 4.2).
@@ -3143,9 +3106,9 @@ gt::gtsave(tab_S11, "Supplementary_Table_S11.docx")
 - **Saint Croix.** In the binomial model of one versus two records per bin, none of the climate smooths of the selected model is significant (*p* ≈ 1 for s(GMHT_CPS0_30N), s(dT_raw) and s(Hur100_av)), whereas s(dT_raw) and s(Hur100_av) are significant in the beta model (*p* = 0.042 and 0.036). The beta-model result therefore depends on how the near-binary response is modelled, consistent with not interpreting this panel (Section 3.3.5).
 - **Punta Maroma.** Because the selected model already contains the thermal regime, the check reproduces it: the thermal regime remains significant (*p* \< 10⁻⁴, as in the marginal thermal-regime model), whereas s(Hur100_av) is not (*p* = 0.12). The thermal-regime effect is therefore not absorbed by the hurricane smooth in this panel.
 
-#### 4.5.1 Local climate predictors in Florida
+#### 4.5.1 Local hurricane series in Florida
 
-**Hurricanes.** In the Florida panel the hurricane regime (`Hurricane`) is the local Florida series (`Hur_FL`, Section 1.2) in all the analyses above. Here we compare, as single climate terms added to `s(age)`, the local regime, its continuous version (`FL_pact`, proportion of records active) and the two Schmitt et al. (2025) metrics. The comparison is repeated for bins younger than 3.5 ka, where the local series combines two to six records, because older bins rest on a single record.
+In the Florida panel the hurricane regime (`Hurricane`) is the local Florida series (`Hur_FL`, Section 1.2) in all the analyses above. Here we compare, as single climate terms added to `s(age)`, the local regime, its continuous version (`FL_pact`, proportion of records active) and the two Schmitt et al. (2025) metrics. The comparison is repeated for bins younger than 3.5 ka, where the local series combines two to six records, because older bins rest on a single record.
 
 ```{r florida-local-hurricane, warning=FALSE, message=FALSE}
 fl_hur <- datos_fl_std %>%
@@ -3171,190 +3134,6 @@ fl_hur_tab <- purrr::map_dfr(c("0-6 ka" = 6, "0-3.5 ka" = 3.5), function(amax) {
 
 knitr::kable(fl_hur_tab, caption = "Florida panel: local vs Schmitt et al. (2025) hurricane predictors")
 ```
-
-**Sea-surface temperature.** The 0°–30°N temperature anomaly (Kaufman et al. 2020) need not represent the thermal history of the Florida reef tract, so the Florida analyses are repeated with the local SST series of Garrison Basin (`SST_FL`, `dSST_FL`; Section 1.2) in place of `GMHT_CPS0_30N` and `dT_raw`. The design was fixed before any model was fitted:
-
-1.  the two temperature series are compared on the 60 bins (levels, linear trend removed, first differences, the 0–3.5 ka window and 0.5-ka means), with significance from 5,000 phase-randomised surrogates, which preserve the autocorrelation of each series (Ebisuzaki 1997);
-2.  marginal Florida models `s(age)` + `s(SST_FL)` and `s(age)` + `s(dSST_FL)` are compared with `s(age)` alone and with `s(age)` + `s(GMHT_CPS0_30N)`, over 0–6 ka and 0–3.5 ka;
-3.  the 11 combined candidates (Section 3.3.1) are refitted with `GMHT_CPS0_30N` → `SST_FL` and `dT_raw` → `dSST_FL`;
-4.  the marginal SST model and the selected combined SST model are submitted to the circular-shift test of Section 4.6 (49 shifts of 6–54 bins; all climatic series rotated together);
-5.  the SST calibration uncertainty is propagated with 300 draws of every sample from a normal distribution with the half-width of its 16–84 % range as SD, followed by re-binning and refitting of the marginal model.
-
-```{r florida-local-sst, warning=FALSE, message=FALSE}
-set.seed(20261005)
-fit_b <- function(f, d) gam(f, data = d, family = betar(link = "logit"), method = "REML")
-
-## 1. SST_FL vs the 0-30N anomaly on the 60 bins
-cli_t <- datos_cli %>% transmute(age = round(interval_max, 1), GMHT = GMHT_CPS0_30N) %>%
-  arrange(age) %>% left_join(sst_fl, by = "age")
-phase_rand <- function(x) {
-  n <- length(x); f <- fft(x - mean(x)); k <- 2:ceiling(n / 2)
-  ph <- runif(length(k), 0, 2 * pi)
-  f[k] <- Mod(f[k]) * exp(1i * ph); f[n - k + 2] <- Conj(f[k])
-  if (n %% 2 == 0) f[n / 2 + 1] <- Mod(f[n / 2 + 1]) * sample(c(-1, 1), 1)
-  Re(fft(f, inverse = TRUE)) / n + mean(x)
-}
-cor_pr <- function(x, y, nsim = 5000) {
-  r <- cor(x, y); null <- replicate(nsim, cor(phase_rand(x), y))
-  c(r = r, p = mean(abs(null) >= abs(r)))
-}
-detr <- function(v, a) resid(lm(v ~ a))
-g05  <- ceiling(cli_t$age / 0.5)
-w35  <- cli_t$age <= 3.5
-sst_cmp <- rbind(
-  "Levels (60 bins)"            = cor_pr(cli_t$SST_FL, cli_t$GMHT),
-  "Linear trend removed"        = cor_pr(detr(cli_t$SST_FL, cli_t$age), detr(cli_t$GMHT, cli_t$age)),
-  "First differences"           = cor_pr(diff(cli_t$SST_FL), diff(cli_t$GMHT)),
-  "Levels, 0-3.5 ka (35 bins)"  = cor_pr(cli_t$SST_FL[w35], cli_t$GMHT[w35]),
-  "Levels, 0.5-ka means"        = cor_pr(tapply(cli_t$SST_FL, g05, mean), tapply(cli_t$GMHT, g05, mean)))
-sst_trend <- c(SST_FL = unname(coef(lm(SST_FL ~ age, cli_t))[2]),
-               GMHT   = unname(coef(lm(GMHT ~ age, cli_t))[2]))      # degC per ka of age
-
-## 2. marginal Florida models
-fl_sst <- as.data.frame(datos_fl_std) %>% mutate(age = round(age, 1)) %>%
-  left_join(sst_fl %>% select(age, SST_FL, dSST_FL), by = "age")
-stopifnot(!anyNA(fl_sst$SST_FL))
-sst_marg <- list("s(age)"                            = counts_norm_sv ~ s(age),
-                 "s(age) + s(GMHT_CPS0_30N) [0-30N]" = counts_norm_sv ~ s(age) + s(GMHT_CPS0_30N),
-                 "s(age) + s(SST_FL) [local]"        = counts_norm_sv ~ s(age) + s(SST_FL),
-                 "s(age) + s(dSST_FL) [local]"       = counts_norm_sv ~ s(age) + s(dSST_FL))
-sst_marg_tab <- purrr::map_dfr(c("0-6 ka" = 6, "0-3.5 ka" = 3.5), function(amax) {
-  d <- fl_sst %>% filter(age <= amax + 1e-9) %>% droplevels()
-  purrr::imap_dfr(sst_marg, function(f, nm) {
-    m <- fit_b(f, d); pt <- term_pvalues(m); pt <- pt[!grepl("s\\(age\\)", names(pt))]
-    tibble::tibble(Model = nm, n = nrow(d), AIC = AIC(m),
-                   p_climate = if (length(pt)) pt[1] else NA_real_,
-                   dev_expl = 100 * summary(m)$dev.expl)
-  }) %>% mutate(dAIC = AIC - min(AIC))
-}, .id = "Window")
-
-## 3. combined candidates with the local SST
-sub_sst <- function(f) as.formula(gsub("dT_raw", "dSST_FL",
-             gsub("GMHT_CPS0_30N", "SST_FL", paste(deparse(f, width.cutoff = 500L), collapse = " "))))
-res_fl_sst  <- fit_combined_gams_safe(lapply(formulas_cb, sub_sst), fl_sst, "Florida (local SST)")
-best_fl_sst <- get_best_combined(res_fl_sst)
-
-## 4. circular-shift test (all climatic series rotated together, as in Section 4.6)
-sst_vars <- c("SST_FL", "dSST_FL", "GMHT_CPS0_30N", "dT_raw", "Hur100_fqcy", "Hur100_av",
-              "Thermal", "Hydro", "Hurricane")
-cli_sst <- datos_cli %>% arrange(interval_max) %>%
-  transmute(age = round(interval_max, 1), GMHT_CPS0_30N, dT_raw, Hur100_fqcy, Hur100_av,
-            Thermal, Hydro = Hydro_FL, Hurricane = Hur_FL) %>%
-  left_join(sst_fl %>% select(age, SST_FL, dSST_FL), by = "age")
-for (v in c("Thermal", "Hydro", "Hurricane"))
-  if (is.factor(fl_sst[[v]])) cli_sst[[v]] <- factor(cli_sst[[v]], levels = levels(fl_sst[[v]]))
-shift_sst <- function(f, d, combined) {
-  fit <- function(dd) tryCatch(
-    if (combined) gam(f, data = dd, family = betar(link = "logit"), method = "REML", select = TRUE)
-    else fit_b(f, dd), error = function(e) NULL)
-  ref <- AIC(fit_b(counts_norm_sv ~ s(age), d)); obs <- ref - AIC(fit(d))
-  nb  <- nrow(cli_sst)
-  null <- sapply(6:(nb - 6), function(k) {
-    rot <- cli_sst[((seq_len(nb) - 1 + k) %% nb) + 1, sst_vars]; rot$age <- cli_sst$age
-    m <- fit(merge(d[, c("age", "counts_norm_sv")], rot, by = "age"))
-    if (is.null(m) || m$rank < length(coef(m))) NA_real_ else ref - AIC(m)
-  })
-  c(dAIC_obs = obs, p_shift = (1 + sum(null >= obs, na.rm = TRUE)) / (1 + sum(!is.na(null))))
-}
-sst_shift <- rbind(
-  "Marginal s(SST_FL), 0-6 ka"   = shift_sst(sst_marg[[3]], fl_sst, FALSE),
-  "Marginal s(SST_FL), 0-3.5 ka" = shift_sst(sst_marg[[3]], filter(fl_sst, age <= 3.5 + 1e-9), FALSE),
-  "Selected combined (local SST)" = if (best_fl_sst$best_model == "M1") c(dAIC_obs = 0, p_shift = NA)
-                                    else shift_sst(formula(best_fl_sst$fit), fl_sst, TRUE))
-
-## 5. SST calibration uncertainty (marginal model)
-sst_draws <- t(replicate(300, {
-  bb <- bin_sst_fl(rnorm(nrow(gb2), gb2$sst, gb2$sd))
-  d  <- fl_sst %>% select(-SST_FL) %>% left_join(tibble::tibble(age = sst_bins, SST_FL = bb), by = "age")
-  m0 <- fit_b(counts_norm_sv ~ s(age), d); m <- fit_b(sst_marg[[3]], d)
-  c(dAIC = AIC(m0) - AIC(m), p = unname(term_pvalues(m)["s(SST_FL)"]), r_levels = cor(bb, cli_t$GMHT))
-}))
-sst_unc <- c(pct_p05 = 100 * mean(sst_draws[, "p"] < 0.05),
-             pct_dAIC2 = 100 * mean(sst_draws[, "dAIC"] > 2),
-             dAIC_median = median(sst_draws[, "dAIC"]),
-             r_q025 = unname(quantile(sst_draws[, "r_levels"], 0.025)),
-             r_q975 = unname(quantile(sst_draws[, "r_levels"], 0.975)))
-
-## Supplementary Table S15
-fmt3 <- function(x) ifelse(is.na(x), "", ifelse(x < 1e-4, "<1e-04", sprintf("%.3g", x)))
-tab_S15 <- bind_rows(
-  tibble::tibble(Analysis = "1. SST_FL vs 0-30N anomaly (r; phase-randomisation p)",
-                 Item = rownames(sst_cmp), Value = sprintf("%.2f", sst_cmp[, "r"]),
-                 p = fmt3(sst_cmp[, "p"]), Note = ""),
-  tibble::tibble(Analysis = "1. SST_FL vs 0-30N anomaly (r; phase-randomisation p)",
-                 Item = "Linear trend (degC per ka of age)",
-                 Value = sprintf("SST_FL %.2f; 0-30N %.2f", sst_trend["SST_FL"], sst_trend["GMHT"]),
-                 p = "", Note = "negative = warming towards the present"),
-  sst_marg_tab %>% transmute(Analysis = "2. Florida marginal models (AIC; climate-term p)",
-                 Item = paste0(Model, ", ", Window, " (n = ", n, ")"),
-                 Value = sprintf("AIC %.2f (dAIC %.2f); dev. expl. %.1f %%", AIC, dAIC, dev_expl),
-                 p = fmt3(p_climate), Note = ""),
-  best_fl_sst$ranking %>% head(5) %>%
-    transmute(Analysis = "3. Florida combined candidates with SST_FL (best five)",
-              Item = Model, Value = sprintf("AIC %.2f (dAIC %.2f; weight %.2f)", AIC, deltaAIC, weight),
-              p = "", Note = ""),
-  tibble::tibble(Analysis = "3. Florida combined candidates with SST_FL (best five)",
-                 Item = paste("Selected:", best_fl_sst$best_model),
-                 Value = { pt <- term_pvalues(best_fl_sst$fit); pt <- pt[!grepl("s\\(age\\)", names(pt))]
-                           if (length(pt)) paste0(names(pt), " ", fmt3(pt), collapse = "; ") else "no climate term" },
-                 p = "", Note = sprintf("reference: %s with the 0-30N anomaly (AIC %.2f)",
-                                        best_fl_cb$best_model, best_fl_cb$ranking$AIC[1])),
-  tibble::tibble(Analysis = "4. Circular-shift test (dAIC over s(age); p)",
-                 Item = rownames(sst_shift), Value = sprintf("%.2f", sst_shift[, "dAIC_obs"]),
-                 p = fmt3(sst_shift[, "p_shift"]),
-                 Note = ifelse(is.na(sst_shift[, "p_shift"]), "selected model has no climate term", "")),
-  tibble::tibble(Analysis = "5. SST calibration uncertainty (300 draws, marginal model)",
-                 Item = c("s(SST_FL) p < 0.05 (% of draws)", "dAIC over s(age) > 2 (% of draws)",
-                          "median dAIC over s(age)", "r with 0-30N, levels (95 % range)"),
-                 Value = c(sprintf("%.0f", sst_unc["pct_p05"]), sprintf("%.0f", sst_unc["pct_dAIC2"]),
-                           sprintf("%.2f", sst_unc["dAIC_median"]),
-                           sprintf("%.2f to %.2f", sst_unc["r_q025"], sst_unc["r_q975"])),
-                 p = "", Note = ""))
-
-gt_S15 <- tab_S15 %>% gt(groupname_col = "Analysis") %>%
-  cols_label(Item = "", Value = "Value", p = "p", Note = "Note") %>%
-  tab_header(title = "Florida panel: local sea-surface temperature (Garrison Basin) in place of the 0-30N anomaly")
-gt_S15
-gt::gtsave(gt_S15, "Supplementary_Table_S15.docx")
-```
-
-**Supplementary Table S15. Florida panel: local sea-surface temperature in place of the 0°–30°N temperature anomaly.** (1) Correlation of the binned Garrison Basin SST (`SST_FL`; Thirumalai et al. 2021) with the 0°–30°N anomaly (Kaufman et al. 2020) on the 60 centennial bins, with *p* from 5,000 phase-randomised surrogates, and the linear trend of each series. (2) Florida marginal models with each temperature predictor, over 0–6 and 0–3.5 ka. (3) Best five of the 11 combined candidates refitted with `SST_FL` and `dSST_FL`, and the climate terms of the selected model. (4) Circular-shift test (49 shifts of 600–5,400 years). (5) Propagation of the SST calibration uncertainty (300 draws).
-
-```{r figS10-sst, fig.width=12, fig.height=6}
-z <- function(v) (v - mean(v)) / sd(v)
-gbp <- gb2 %>% filter(age_ka <= 6)
-sa <- ggplot() +
-  geom_ribbon(data = gbp, aes(pmax(age_ka, 0), ymin = ci16, ymax = ci84), fill = "#2b6c9e", alpha = .2) +
-  geom_line(data = gbp, aes(pmax(age_ka, 0), sst), colour = "#2b6c9e", linewidth = .35) +
-  geom_step(data = cli_t, aes(age - 0.1, SST_FL), direction = "hv", colour = "#2b6c9e", linewidth = .8) +
-  scale_x_continuous(limits = c(0, 6), breaks = 0:6) +
-  labs(x = NULL, y = "SST (°C)", title = "a") + theme_classic(base_size = 13)
-sb <- ggplot(cli_t, aes(age)) +
-  geom_line(aes(y = z(SST_FL), colour = "Garrison Basin SST (Gulf of Mexico)"), linewidth = .7) +
-  geom_line(aes(y = z(GMHT), colour = "0–30°N anomaly (Kaufman et al. 2020)"), linewidth = .7) +
-  scale_colour_manual(values = c("#c0392b", "#2b6c9e"), name = NULL) +
-  scale_x_continuous(limits = c(0, 6), breaks = 0:6) +
-  labs(x = "Age (ka BP)", y = "Standardised (z)", title = "b") +
-  theme_classic(base_size = 13) + theme(legend.position = "bottom") +
-  guides(colour = guide_legend(nrow = 2))
-sc <- ggplot(cli_t, aes(GMHT, SST_FL, colour = age)) + geom_point(size = 1.8) +
-  scale_colour_viridis_c(name = "ka BP") +
-  labs(x = "0–30°N anomaly (°C)", y = "Garrison Basin SST (°C)", title = "c") + theme_classic(base_size = 13)
-figS10 <- ((sa / sb) | sc) + plot_layout(widths = c(2.2, 1))
-figS10
-ggsave("Supplementary_Figure_S10.pdf", plot = figS10, width = 12, height = 6, device = cairo_pdf)
-```
-
-**Supplementary Figure S10. Local sea-surface temperature for Florida.** **a**, Garrison Basin SST (Thirumalai et al. 2021): samples (thin line) with their 16–84 % range (shading) and the 0.1-ka bin means used in the models (steps). **b**, Standardised binned SST and 0°–30°N temperature anomaly (Kaufman et al. 2020). **c**, Binned SST against the 0°–30°N anomaly, coloured by age.
-
-Results (Supplementary Table S15; Supplementary Fig. S10):
-
-- **The two temperature series.** Their long-term trends are opposite: the Garrison Basin SST warms towards the present (−0.27 °C per ka of age, about +1.6 °C over 6 ka), whereas the 0°–30°N anomaly cools (+0.20 °C per ka). Around these trends they share centennial-to-millennial anomalies (*r* = 0.49 after removing the linear trend, phase-randomisation *p* = 0.006), but not their levels (*r* = −0.19, *p* = 0.54) or their bin-to-bin changes (*r* = 0.16, *p* = 0.25). The 0°–30°N anomaly therefore does not describe the long-term thermal trend of the Gulf of Mexico.
-- **Marginal models.** The local SST is not associated with Florida coral frequency (*p* = 0.23 over 0–6 ka and 0.22 over 0–3.5 ka; circular-shift *p* = 0.48 and 0.34), and `s(age)` alone remains the best marginal model (ΔAIC 0.19). Its rate of change is not associated either (*p* = 0.94).
-- **Combined models.** With the local SST the selected model is again M6_fqcy, with the same AIC as with the 0°–30°N anomaly (−6.53): both SST smooths are shrunk out (*p* = 0.64 and 0.96), and the only significant climate term remains centennial TC frequency (*p* = 0.0023). As with the 0°–30°N anomaly, the competitive set includes the `s(age)`-only model (ΔAIC 1.41), and the selected model does not exceed chance alignment (circular-shift *p* = 0.56).
-- **SST uncertainty.** Across 300 draws of the SST from its calibration uncertainty, `s(SST_FL)` is significant in 12 % of the draws and improves on `s(age)` by more than 2 AIC units in 22 % (median ΔAIC −0.69).
-
-Replacing the 0°–30°N anomaly with the nearest continuous local SST record therefore leaves the Florida result unchanged. This does not show that temperature had no effect on the Florida populations: Garrison Basin lies about 1200 km from the reef tract, its age model is not propagated here, and with 44 occupied bins the power of the test is low.
 
 #### 4.5.2 Age uncertainty, sampling, binning, the modern peak and Saint Croix
 
