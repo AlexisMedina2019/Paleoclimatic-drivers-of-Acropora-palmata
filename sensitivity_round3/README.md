@@ -6,3 +6,10 @@ Run with the v4 climate table (hurricane metrics recounted in BP bins; see `df_G
 - `phase.R`: phase ensemble. Bin origin shifted by 0-90 yr; corals and TC event layers (Schmitt et al. 2025, table S4a) re-binned exactly; temperature interpolated at bin centres; regimes from the BP bin holding the bin centre. Output `phase_ensemble.csv`. `phase_coef.R` gives the hurricane-regime contrasts per phase (`phase_regime_coefs.csv`).
 - `df_GAM130326_regimes_2021frame.xlsx`: climate table with every series in years before 2021 CE (README sheet), used with coral ages + 0.071 ka.
 - `lia.R`: LIA tests fixed before running (2026-10-05, 22:00). They exclude the two modern bins (0–0.2 ka), use CWP&MWA as the reference (cooler where CWP&MWA has no bins), and fit s(age) with k = 4, without s(age), and with the regime lagged 100 years, across the 10 phases. Outputs: `lia_tests.csv` (LIA coefficients) and `raw_by_regime.csv` (raw response by regime, phase 0).
+
+## Update 2026-10-30 (v5 climate table, reviewer point R1.3)
+
+- All round-3 analyses are re-run with `df_GAM130326_regimes_v5.xlsx` (CPS 0–30°N ensemble median at the bin centres; δT = change from the preceding century into the bin). The v4 results files are superseded (they remain in the git history).
+- `df_GAM130326_regimes_2021frame_v5.xlsx`: 2021 CE frame rebuilt with the same temperature definition (bin centres at 100k + 50 − 71 yr BP).
+- `round3_functions.R`: `make_cli()` uses the forward δT; new `run_frames()` (Section 4.7.1, now reproducible inside the qmd) and `run_cps_members()` (Section 4.7.5, 100 members: V1 + 99 drawn with seed 20261030, plus the median as a check). Output `cps_members.csv`.
+- Monte Carlo files renamed to `_v5` (`M3_sensitivity/gam_uncertainty_mc_v5.rds`, `gam_uncertainty_mc_full_v5_part*.rds`).

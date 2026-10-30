@@ -5,7 +5,7 @@ abstract: |
   This document is the executable record (Quarto/R) of all analyses reported in the
   main text. It uses three input files deposited in the repository: `ages_kernel_reg_updt2.xlsx`
   (dated *Acropora palmata* fossils, audited against the original age publications),
-  `df_GAM130326_regimes_v4.xlsx` (centennial climate predictors) and `Marine20_0-15ka.csv`
+  `df_GAM130326_regimes_v5.xlsx` (centennial climate predictors) and `Marine20_0-15ka.csv`
   (the Marine20 radiocarbon calibration curve, used to propagate age uncertainty); Florida-proximal
   temperature records used for comparison only are in `florida_local_SST_records/`. From these it reproduces:
 
@@ -30,7 +30,7 @@ abstract: |
   Ecological interpretation is given in the main text.
 format: html
 execute:
-  echo: true
+  echo: false
 ---
 
 # REGIONAL ACROPORA PALMATA ANALYSIS
@@ -50,8 +50,6 @@ We import the fossil chronology (`ages_kernel_reg_updt2.xlsx`, sheet `Registros`
 - **Effect.** *A. palmata* records in 0–6 ka: 257 → 236 (Punta Maroma 64, Florida 111, Belize 39, Saint Croix 22). Radiocarbon ages carry 95 % calibrated ranges of 0.3–0.5 kyr (3–5 centennial bins), so for the radiocarbon-dated sites the 0.1-kyr bin is an aggregation unit, not the resolving power of the records.
 
 - **Calibration curve and age uncertainty.** The age uncertainty shown in Fig. 2 is computed within this document, not taken from the source publications: the Marine20 curve (Heaton et al. 2020; https://doi.org/10.1017/RDC.2020.68), deposited in the repository as `Marine20_0-15ka.csv` (0–15,000 cal BP, columns cal BP, ¹⁴C age and its 1σ error), is combined with the conventional age, its error and the local ΔR with its error of each radiocarbon age (sheet `Trazabilidad`) to obtain its calibrated probability distribution, from which the ages are drawn (Section 1.4). No external calibration software is needed to reproduce it.
-
-<!-- Verificar antes de citar: DiNapoli et al. 2020, Greer et al. 2020. Heaton et al. 2020 = Marine20, Radiocarbon 62: 779–820. -->
 
 ```{r datos-reg}
 knitr::opts_chunk$set(dev.args = list(pointsize = 15))   # base-graphics text +3 pt; ggplot text sizes are set in each theme
@@ -165,22 +163,30 @@ The dataset comprises 236 dated records: Florida 111, Punta Maroma 64, Belize 39
 
 ### 1.2 Climatic predictor: import & alignment
 
-We import the centennial climate table (`df_GAM130326_regimes_v4.xlsx`) and assign each row the upper bound of its 0.1-ka bin. Ages are in ka BP (before 1950 CE), the convention of the two continuous climate sources (Kaufman et al. 2020; Schmitt et al. 2025).
+We import the centennial climate table (`df_GAM130326_regimes_v5.xlsx`) and assign each row the upper bound of its 0.1-ka bin. Ages are in ka BP (before 1950 CE), the convention of the two continuous climate sources (Kaufman et al. 2020; Schmitt et al. 2025).
 
-**Variables of the climate table.** `GMHT_CPS0_30N`: temperature anomaly of the Composite Plus Scale reconstruction for 0°–30°N (°C; Kaufman et al. 2020). `dT_raw`: its centennial rate of change (δT), the difference between consecutive 0.1-ka bins (°C per century). `Hur100_fqcy`: centennial tropical-cyclone (TC) frequency, the number of TC event layers in each 0.1-ka bin of the Great Blue Hole record (Schmitt et al. 2025). `Hur100_av`: smoothed centennial TC frequency, the mean of the two 100-year counts of the same record that overlap the bin (a centred 200-year smoothing). Both metrics count tropical storms and hurricanes; neither measures intensity. Schmitt et al. (2025, table S9) count events in windows of varve years before 2022 CE, so both metrics were recounted in our BP bins from their 50- and 100-year windows (a BP bin *j* spans 72 + 100*j* to 72 + 100(*j* + 1) years before 2022). As with the coral ages (Section 1.1), the youngest bin closes at the youngest dated colony (1956 CE): `Hur100_fqcy` counts 1850–1956 CE (15 events, one of them in 1956), and `Hur100_av` averages the windows 1800–1900 and 1900–2000 CE. Events after 2000 CE, including the 21st-century extrapolation of 45 events per century, are not used. The rebuild is documented bin by bin in sheet `Hur_BP_traceability` of the climate table; the earlier table (`df_GAM130326_regimes_v3.xlsx`) took the windows counted from 2022 CE in order, as if they were BP bins, which placed the counts about 150 years from the BP bins, and it had 45 events in the youngest bin. Counts recomputed from the individual event layers (Schmitt et al. 2025, table S4a) agree with the rebuilt series (*r* = 0.99; at most 2 events per bin apart). A sensitivity version that extends the youngest bin to 2022 CE as a rate per century (`df_GAM130326_regimes_v4c.xlsx`) is described in Section 4.7.1. `Thermal`, `Hydro` and `Hurricane`: categorical regimes (below). `Hydro_FL`, `Hur_FL`, `FL_pact` and `FL_nrec`: Florida series (below).
+**Variables of the climate table.** `GMHT_CPS0_30N`: temperature anomaly (°C, relative to 1800–1900 CE) of the Composite Plus Scale (CPS) reconstruction for the 0°–30°N latitude band of Kaufman et al. (2020). The band is a zonal composite of proxy records at all longitudes between the equator and 30°N, not a reconstruction restricted to the Atlantic–Caribbean. We use the median of its 500-member ensemble (file `0to30500-6bands-100yr2kwindow.csv` of the authors' code repository, deposited in `kaufman2020_CPS/`), whose 100-year bins are centred on 0, 100, … yr BP; the median is re-referenced to zero at 100 yr BP and linearly interpolated at the centres of our bins (50, 150, … yr BP). `dT_raw`: the centennial rate of change of that anomaly (δT), defined as the change from the preceding (older) century into each bin, δT~j~ = T~j~ − T~j+1~ (°C per century; positive values denote warming forward in time). For the oldest bin (5.9–6.0 ka), T~j+1~ is the median at 6.05 ka (column `GMHT_CPS0_30N_older`). *Round-3 correction.* Table v4 used a single ensemble member (V1, shifted by a constant) assigned to our bins without interpolation (a half-bin offset), and computed `dT_raw` as T~j~ − T~j−1~ (bin minus its younger neighbour), so that positive values denoted cooling, the value described the change that followed each century, and the youngest bin was set to 0. Both columns of v4 are kept in v5 (`GMHT_CPS0_30N_V1_v4`, `dT_raw_v4`); sheet `CPS_traceability` documents the rebuild, and Section 4.7.5 tests how the results depend on the choice of ensemble member. `Hur100_fqcy`: centennial tropical-cyclone (TC) frequency, the number of TC event layers in each 0.1-ka bin of the Great Blue Hole record (Schmitt et al. 2025). `Hur100_av`: smoothed centennial TC frequency, the mean of the two 100-year counts of the same record that overlap the bin (a centred 200-year smoothing). Both metrics count tropical storms and hurricanes; neither measures intensity. Schmitt et al. (2025, table S9) count events in windows of varve years before 2022 CE, so both metrics were recounted in our BP bins from their 50- and 100-year windows (a BP bin *j* spans 72 + 100*j* to 72 + 100(*j* + 1) years before 2022). As with the coral ages (Section 1.1), the youngest bin closes at the youngest dated colony (1956 CE): `Hur100_fqcy` counts 1850–1956 CE (15 events, one of them in 1956), and `Hur100_av` averages the windows 1800–1900 and 1900–2000 CE. Events after 2000 CE, including the 21st-century extrapolation of 45 events per century, are not used. The rebuild is documented bin by bin in sheet `Hur_BP_traceability` of the climate table; the earlier table (`df_GAM130326_regimes_v3.xlsx`) took the windows counted from 2022 CE in order, as if they were BP bins, which placed the counts about 150 years from the BP bins, and it had 45 events in the youngest bin. Counts recomputed from the individual event layers (Schmitt et al. 2025, table S4a) agree with the rebuilt series (*r* = 0.99; at most 2 events per bin apart). A sensitivity version that extends the youngest bin to 2022 CE as a rate per century (`df_GAM130326_regimes_v5c.xlsx`) is described in Section 4.7.1. `Thermal`, `Hydro` and `Hurricane`: categorical regimes (below). `Hydro_FL`, `Hur_FL`, `FL_pact` and `FL_nrec`: Florida series (below).
 
 The three categorical regimes were coded from the published chronologies compiled in Supplementary Material 2, converted to ka BP, assigning each bin to the period that contains its midpoint (a midpoint on a boundary goes to the younger period):
 
 - **Thermal** (published chronology, not the GMST series): warmer 0–0.1 ka (post-1850 CE); LIA 0.1–0.7 ka (\~1300–1850 CE); CWP&MWA 0.7–1.3 ka (700–1250 CE); cooler 1.3–4.8 ka; warmer 4.8–6.0 ka (mid-Holocene warmth).
 - **Hurricane** (Schmitt et al. 2025 only, the source of `Hur100_av` and `Hur100_fqcy`): high 0–0.2 ka (rise after 1800 CE); calm 0.2–0.6 ka (1400–1800 CE); enhanced 0.6–1.1 and 1.2–1.4 ka (900–1400 and 600–800 CE); moderate 1.1–1.2 and 1.4–4.0 ka (mean 9–14 events per century); low 4.0–6.0 ka (\~7 events per century; the record begins at 5.7 ka).
 - **Hydro**, by region. Yucatán (`Hydro`): wet 0–0.8 ka, dry 0.8–1.7 ka and wet 1.7–3.5 ka (Curtis et al. 1996, boundaries calibrated with IntCal20), wet 5.2–5.7 ka (Serrato Marks et al. 2021), no data elsewhere. Florida (`Hydro_FL`): dry 4.6–6.0 ka (Pollock et al. 2017; Donders 2014), wet 2.8–4.6 ka and dry 0–2.8 ka (Glaser et al. 2013), with multi-century droughts near 1.0 and 0.4 ka (Willard & Bernhardt 2011).
-- **Hurricane, Florida** (`Hur_FL`, `FL_pact`, `FL_nrec`). Schmitt et al. (2025) record storms reaching the Yucatán coast, and Florida-proximal records do not follow it (agreement in 34 % of the bins younger than 3.5 ka). The Florida panel therefore uses a local series built from six records on the Atlantic side of Florida: the western Great Bahama Bank / Florida Straits (Toomey et al. 2013; 0–6 ka), the Everglades (Yao et al. 2020; 0–3.5 ka), southwest Florida (Ercolani et al., via Oliva et al. 2017), Andros and Abaco (van Hengstum et al., via Oliva et al. 2017) and Abaco (Winkler et al. 2020). All ages are cal BP (1950). For each bin, `FL_pact` is the proportion of the records covering the bin that report an active interval at its midpoint, `FL_nrec` the number of those records, and `Hur_FL` is "active" when `FL_pact` ≥ 0.5 and "quiet" otherwise. Older than 3.5 ka the series rests on a single record (Toomey et al. 2013). Records from the Gulf coast of Florida were not used, because they sample Gulf landfalls. For Hydro and the hurricane regime, the Florida panel uses the Florida series; Punta Maroma, Belize, Saint Croix and the regional composite use the Yucatán series (Hurricane = Schmitt et al. 2025). The continuous hurricane metrics (`Hur100_av`, `Hur100_fqcy`) are those of Schmitt et al. (2025) in every panel. In the Yucatán Hydro series, undocumented bins are coded as a separate level, "no data", so that no bins are lost. The mapping is positional: `interval_max` is taken from the order in which interval labels first appear, which is correct only if the file has exactly one row per bin, ordered from youngest to oldest.
+- **Hurricane, Florida** (`Hur_FL`, `FL_pact`, `FL_nrec`). Schmitt et al. (2025) record storms reaching the Yucatán coast, and Florida-proximal records do not follow it (agreement in 46 % of the bins younger than 3.5 ka, no better than chance). The Florida panel therefore uses a local series built from five records on the Atlantic side of Florida: the western Great Bahama Bank / Florida Straits (Toomey et al. 2013; 0–6 ka), the Everglades (Yao et al. 2020; 0–3.5 ka), southwest Florida (Ercolani et al. 2015, via Oliva et al. 2017), and Blackwood Sinkhole (van Hengstum et al. 2016, via Oliva et al. 2017) and Thatchpoint Blue Hole (Winkler et al. 2020) on Great Abaco. An earlier record from Thatchpoint Blue Hole (van Hengstum et al. 2014) is not used, because Winkler et al. (2020) showed that its core spans only the last century; the bin-by-bin construction is in sheet `Hur_FL_traceability` of the climate table. All ages are cal BP (1950). For each bin, `FL_pact` is the proportion of the records covering the bin that report an active interval at its midpoint, `FL_nrec` the number of those records, and `Hur_FL` is "active" when `FL_pact` ≥ 0.5 and "quiet" otherwise. Older than 3.5 ka the series rests on a single record (Toomey et al. 2013). Records from the Gulf coast of Florida were not used, because they sample Gulf landfalls. For Hydro and the hurricane regime, the Florida panel uses the Florida series; Punta Maroma, Belize, Saint Croix and the regional composite use the Yucatán series (Hurricane = Schmitt et al. 2025). The continuous hurricane metrics (`Hur100_av`, `Hur100_fqcy`) are those of Schmitt et al. (2025) in every panel. In the Yucatán Hydro series, undocumented bins are coded as a separate level, "no data", so that no bins are lost. The mapping is positional: `interval_max` is taken from the order in which interval labels first appear, which is correct only if the file has exactly one row per bin, ordered from youngest to oldest.
 
 Climate values are joined to every fossil record by `interval_max`, and the column is renamed `age` (ka). The resulting `merged_df` is record-level and therefore holds climate values only for bins that contain at least one fossil record.
 
 ```{r data-integ}
-datos_cli <- read_excel(here("df_GAM130326_regimes_v4.xlsx"))
+datos_cli <- read_excel(here("df_GAM130326_regimes_v5.xlsx"))
 datos_cli<-as.data.frame(datos_cli)
+
+## δT = change INTO each bin from the preceding (older) century (round 3, R1.3);
+## rows are ordered youngest -> oldest, so the older neighbour is the next row
+stopifnot(isTRUE(all.equal(datos_cli$dT_raw,
+                           datos_cli$GMHT_CPS0_30N - datos_cli$GMHT_CPS0_30N_older, tolerance = 1e-5)),
+          isTRUE(all.equal(datos_cli$GMHT_CPS0_30N_older[-nrow(datos_cli)],
+                           datos_cli$GMHT_CPS0_30N[-1], tolerance = 1e-5)))
+T_6.05 <- datos_cli$GMHT_CPS0_30N_older[nrow(datos_cli)]   # CPS median at 6.05 ka (used by make_cli)
 
 library(dplyr)
 
@@ -856,7 +862,7 @@ ggsave("Figure_3a.pdf", plot = pr, width = 9, height = 5.5, dpi = 300, device = 
 We assemble Fig. 3. Panel (a) is Fig. 3a. Below it, four panels show, for each of the 60 centennial bins:
 
 - **(b)** the `GMHT_CPS0_30N` temperature anomaly (^o^C);
-- **(c)** the centennial rate of change of the temperature anomaly (δT, ^o^C; `dT_raw`), the difference between consecutive bins of the CPS reconstruction;
+- **(c)** the centennial rate of change of the temperature anomaly (δT, ^o^C per century; `dT_raw`), the change from the preceding (older) century into each bin; positive values (orange) denote warming forward in time;
 - **(d)** the smoothed centennial tropical-cyclone frequency (`Hur100_av`, events per century, centred 200-year smoothing) as bars (dark grey where \> 10) and the centennial tropical-cyclone frequency (`Hur100_fqcy`) as a step line;
 - **(e)** local hurricane activity in Florida (`FL_pact`): proportion of the Florida-proximal paleotempestological records that report an active interval in each bin, as bars (dark blue where ≥ 0.5, the threshold that defines the "active" regime); bins older than 3.5 ka rest on a single record (Toomey et al. 2013);
 - **(f)** the nominal thermal, hydroclimatic (Yucatán and Florida series) and hurricane (Yucatán and Florida series) regimes, drawn as contiguous time segments over the full span of each bin.
@@ -895,7 +901,7 @@ p2 <- clim_bins %>%
   ggplot(aes(x = age, y = dT_raw, fill = dT_raw > 0)) +
   geom_col() +
   scale_fill_manual(values = c("TRUE" = "#E69F00", "FALSE" = "#56B4E9")) +
-  coord_cartesian(ylim = c(-1.2, 0.7)) +
+  coord_cartesian(ylim = c(-0.3, 0.3)) +
   theme_minimal(base_size = 14) +
   theme(
     legend.position = "none",
@@ -903,7 +909,7 @@ p2 <- clim_bins %>%
     axis.text.x = element_blank(),
     axis.ticks.x = element_blank()
   ) +
-  labs(y = "δT\n(°C per century)")
+  labs(y = "δT (°C per century;\n+ = warming)")
 
 
 hur_plot_data <- clim_bins %>%
@@ -1658,7 +1664,7 @@ gt_ranking
 gt::gtsave(gt_ranking, "Supplementary_Table_S5.docx")   
 ```
 
-In Punta Maroma, M_the dominates (weight \> 0.99); M_hav follows at ΔAIC 19.8 and all other models at ΔAIC \> 22. In the regional composite, M_hur ranks first (weight 0.73), followed by M_the at ΔAIC 2.0 (weight 0.27); all models with a continuous predictor lie at ΔAIC \> 11. In Belize, M_temp (weight 0.49) and M_hur (ΔAIC 0.59, weight 0.37) are competitive, and all other models lie at ΔAIC \> 4. In Florida, M_hf ranks first (weight 0.68) and the other six models lie at ΔAIC 3.8–8.7, but s(Hur100_fqcy) is not significant (Section 3.2.4). In Saint Croix, M_hav ranks first (weight 0.62), followed by M_hf at ΔAIC 2.8; with *n* = 19 bins whose response takes essentially two values (Section 3.1.3), this ranking is not interpreted (Section 3.3.5).
+In Punta Maroma, M_the dominates (weight \> 0.99); M_hav follows at ΔAIC 19.8 and all other models at ΔAIC \> 22. In the regional composite, M_hur ranks first (weight 0.73), followed by M_the at ΔAIC 2.0 (weight 0.27); all models with a continuous predictor lie at ΔAIC \> 11. In Belize, M_temp (weight 0.49) and M_hur (ΔAIC 0.59, weight 0.37) are competitive, and all other models lie at ΔAIC \> 4. In Florida, M_hf ranks first (weight 0.67) and the other six models lie at ΔAIC 3.8–8.7, but s(Hur100_fqcy) is not significant (Section 3.2.4). In Saint Croix, M_hav ranks first (weight 0.62), followed by M_hf at ΔAIC 2.8; with *n* = 19 bins whose response takes essentially two values (Section 3.1.3), this ranking is not interpreted (Section 3.3.5).
 
 #### 3.2.4 Best-supported marginal GAMs
 
@@ -2280,7 +2286,7 @@ comparison_cb_full %>%
 **Table 2. Best-supported combined GAM per panel** (lowest AIC): model, AIC, Akaike weight, deviance explained, adjusted R², climate terms with term-level *p* \< 0.05 (`s(age)` excluded), factor contrasts with *p*-value \< 0.05 versus reference level, and EDF of every smooth.
 
 - **Punta Maroma — M6_av** (Akaike weight 0.56; deviance explained 91.1 %; adjusted R² 0.865). The thermal regime is the only significant climate term (*p* \< 10⁻⁴), with lower abundance under LIA (−3.50, *p* \< 10⁻⁴) and under the "cooler" regime (−1.49, *p* = 0.022) than under the "warmer" reference. s(Hur100_av) (EDF 1.32, *p* = 0.12) and s(GMHT_CPS0_30N) (EDF 0.38, *p* = 0.19) are not significant, s(dT_raw) is shrunk to EDF ≈ 0, and s(age) is retained (EDF 4.31, *p* \< 10⁻⁴).
-- **Florida — M6_fqcy** (weight 0.22; 36.0 %; adjusted R² 0.226). s(Hur100_fqcy) is the only significant term (EDF 2.08, *p* = 0.0023). Hydro (*p* = 0.62) and Thermal (*p* = 0.084) are not significant and no contrast reaches *p* \< 0.05; s(GMHT_CPS0_30N) and s(dT_raw) are shrunk to EDF ≈ 0, and s(age) to EDF 0.44.
+- **Florida — M6_fqcy** (weight 0.20; 36.0 %; adjusted R² 0.226). s(Hur100_fqcy) is the only significant term (EDF 2.08, *p* = 0.0023). Hydro (*p* = 0.62) and Thermal (*p* = 0.084) are not significant and no contrast reaches *p* \< 0.05; s(GMHT_CPS0_30N) and s(dT_raw) are shrunk to EDF ≈ 0, and s(age) to EDF 0.44.
 - **Belize — M7_fqcy** (weight 0.28; 79.9 %; adjusted R² 0.610). Significant terms: s(dT_raw) (EDF 0.90, *p* = 0.0015), Hurricane (*p* = 0.017), s(GMHT_CPS0_30N) (EDF 0.80, *p* = 0.022) and Thermal (*p* = 0.049). Abundance is lower under CWP&MWA (−2.10, *p* = 0.049) and the "cooler" regime (−1.15, *p* = 0.024) than under "warmer", and higher under the "moderate" hurricane regime (+1.01, *p* = 0.032) than under "low". s(Hur100_fqcy) is not significant (EDF 1.07, *p* = 0.14), and s(age) is shrunk to EDF ≈ 0.
 - **Saint Croix — M4_av** (weight 0.55; 70.4 %; adjusted R² 0.507). s(age) (EDF 1.58, *p* = 0.006), s(Hur100_av) (EDF 1.31, *p* = 0.036) and s(dT_raw) (EDF 1.16, *p* = 0.042) are significant; s(GMHT_CPS0_30N) is not (*p* = 0.068). This panel is not interpreted (Section 3.3.5).
 - **Regional composite — M7_av** (weight 0.39; 48.9 %; adjusted R² 0.325). The hurricane regime is the only significant term (*p* = 2.4 × 10⁻⁴), with higher abundance under the "high" regime (+2.88, *p* = 1.8 × 10⁻⁴; the two youngest bins, 0–0.2 ka) than under the "low" reference. Thermal is not significant (*p* = 0.08), and all four smooths, s(Hur100_av) included, are shrunk to EDF ≈ 0.
@@ -2492,7 +2498,7 @@ list(`Punta Maroma` = results_pm$excluded, Florida = results_fl$excluded,
      Regional = results_reg$excluded)
 ```
 
-No selected model is clearly separated from all alternatives. In Punta Maroma (Akaike weight 0.56) the competitive set (ΔAIC ≤ 2; Supplementary Fig. S6) comprises the two M6 models, which differ only in the hurricane metric (M6_av and M6_fqcy, ΔAIC 0.63; combined weight 0.97), and in the regional composite (0.39) the two M7 models (M7_av and M7_fqcy, ΔAIC 0.14; combined weight 0.75). In Belize (0.28) it comprises five models (M7_fqcy, M4_fqcy, M3, M4_av and M7_av; ΔAIC ≤ 1.60; combined weight 0.91). In Saint Croix the selected model is the only one within ΔAIC ≤ 2 (weight 0.55). In Florida (0.22) it comprises eight models (combined weight 0.95) and includes the model with `s(age)` alone (ΔAIC 1.41), so in this panel the data do not distinguish models with climate terms from the temporal trend alone (Supplementary Table S8).
+No selected model is clearly separated from all alternatives. In Punta Maroma (Akaike weight 0.56) the competitive set (ΔAIC ≤ 2; Supplementary Fig. S6) comprises the two M6 models, which differ only in the hurricane metric (M6_av and M6_fqcy, ΔAIC 0.63; combined weight 0.97), and in the regional composite (0.39) the two M7 models (M7_av and M7_fqcy, ΔAIC 0.14; combined weight 0.75). In Belize (0.28) it comprises five models (M7_fqcy, M4_fqcy, M3, M4_av and M7_av; ΔAIC ≤ 1.60; combined weight 0.91). In Saint Croix the selected model is the only one within ΔAIC ≤ 2 (weight 0.55). In Florida (0.20) it comprises eight models (combined weight 0.95) and includes the model with `s(age)` alone (ΔAIC 1.41), so in this panel the data do not distinguish models with climate terms from the temporal trend alone (Supplementary Table S8).
 
 ```{r competitive-set-terms}
 
@@ -2540,7 +2546,7 @@ gt::gtsave(tab_S8, "Supplementary_Table_S8.docx")
 
 **Supplementary Table S8. Term-level *p*-values across the competitive set.** For each panel, every combined GAM within ΔAIC ≤ 2 of the best model, with its ΔAIC, Akaike weight and the term-level *p*-value of each term (joint Wald test for factors; \* *p* \< 0.05; – term not in the model).
 
-In Punta Maroma the thermal regime is significant in both competitive models (*p* \< 10⁻⁴), and neither hurricane smooth is (*p* = 0.12 and 0.77). In the regional composite the hurricane regime is significant in both (*p* = 2.4 × 10⁻⁴ and 3.0 × 10⁻⁴), and neither the thermal regime nor any smooth is. In Belize s(dT_raw) is significant in all five competitive models, s(GMHT_CPS0_30N) in four, and the thermal and hurricane regimes in both M7 models; neither hurricane smooth is significant in any of them. In Florida s(Hur100_fqcy) is significant in M6_fqcy, M4_fqcy and M7_fqcy (*p* = 0.0023, 0.04 and 0.0024) but not in M5_fqcy (*p* = 0.051), s(Hur100_av) is not significant in M4_av (*p* = 0.52), and Hydro and Thermal are not significant in any competitive model. In Saint Croix s(Hur100_av) (*p* = 0.036) and s(dT_raw) (*p* = 0.042) are significant in the only competitive model. Across panels, the climate terms that are both selected and significant are the categorical regimes in Punta Maroma (thermal), Belize (thermal and hurricane) and the regional composite (hurricane), the two temperature smooths in Belize, and s(Hur100_fqcy) in Florida.
+In Punta Maroma the thermal regime is significant in both competitive models (*p* \< 10⁻⁴), and neither hurricane smooth is (*p* = 0.12 and 0.77). In the regional composite the hurricane regime is significant in both (*p* = 2.4 × 10⁻⁴ and 3.0 × 10⁻⁴), and neither the thermal regime nor any smooth is. In Belize s(dT_raw) is significant in all five competitive models, s(GMHT_CPS0_30N) in four, and the thermal and hurricane regimes in both M7 models; neither hurricane smooth is significant in any of them. In Florida s(Hur100_fqcy) is significant in M6_fqcy, M4_fqcy and M7_fqcy (*p* = 0.0023, 0.04 and 0.00075) but not in M5_fqcy (*p* = 0.051), s(Hur100_av) is not significant in M4_av (*p* = 0.52), and Hydro, Thermal and the local hurricane regime (M7_fqcy, *p* = 0.34) are not significant in any competitive model. In Saint Croix s(Hur100_av) (*p* = 0.036) and s(dT_raw) (*p* = 0.042) are significant in the only competitive model. Across panels, the climate terms that are both selected and significant are the categorical regimes in Punta Maroma (thermal), Belize (thermal and hurricane) and the regional composite (hurricane), the two temperature smooths in Belize, and s(Hur100_fqcy) in Florida.
 
 #### 3.3.4 Full summaries of the selected combined models
 
@@ -3103,13 +3109,13 @@ gt::gtsave(tab_S11, "Supplementary_Table_S11.docx")
 **Supplementary Table S11. Sensitivity analyses of the selected combined GAMs.** For each check, the term tested, its *p*-value in the reference analysis and in the sensitivity analysis, and the relevant model statistics.
 
 - **Residual autocorrelation.** The AR(1) parameter is 0.34 per century in Florida and 0.02 in Punta Maroma, and in neither panel does it improve the fit (likelihood-ratio *p* = 0.17 and 0.95; AIC of the AR(1) model 0.1 and 2.0 units higher). In Florida s(Hur100_fqcy), significant in the beta model (*p* = 0.0023), remains significant with independent and with AR(1) errors (*p* = 0.011 and 0.014). In Punta Maroma s(Hur100_av), not significant in the beta model (*p* = 0.12), is not significant in either Gaussian model (*p* = 0.22 in both).
-- **Florida source standardization.** The Florida result depends on how the sources are scaled. With the pooled series the selected model is M5_av (weight 0.39; deviance explained 29.3 % vs 36.0 %), in which the only significant climate term is the Florida hydroclimate (*p* = 0.00099); the best marginal model is also the hydroclimate model (weight 0.81; *p* = 0.0025, against 0.66 on the source-standardized series). On the source-standardized series the only significant climate term is instead s(Hur100_fqcy) (*p* = 0.0023). Pooling lets the most abundant source dominate the series, so we retain the source-standardized series; because the significant climate term changes with the scaling of the sources, the Florida result is not considered resolved.
+- **Florida source standardization.** The Florida result depends on how the sources are scaled. With the pooled series the selected model is M5_av (weight 0.37; deviance explained 29.3 % vs 36.0 %), in which the only significant climate term is the Florida hydroclimate (*p* = 0.00099); the best marginal model is also the hydroclimate model (weight 0.81; *p* = 0.0025, against 0.66 on the source-standardized series). On the source-standardized series the only significant climate term is instead s(Hur100_fqcy) (*p* = 0.0023). Pooling lets the most abundant source dominate the series, so we retain the source-standardized series; because the significant climate term changes with the scaling of the sources, the Florida result is not considered resolved.
 - **Saint Croix.** In the binomial model of one versus two records per bin, none of the climate smooths of the selected model is significant (*p* ≈ 1 for s(GMHT_CPS0_30N), s(dT_raw) and s(Hur100_av)), whereas s(dT_raw) and s(Hur100_av) are significant in the beta model (*p* = 0.042 and 0.036). The beta-model result therefore depends on how the near-binary response is modelled, consistent with not interpreting this panel (Section 3.3.5).
 - **Punta Maroma.** Because the selected model already contains the thermal regime, the check reproduces it: the thermal regime remains significant (*p* \< 10⁻⁴, as in the marginal thermal-regime model), whereas s(Hur100_av) is not (*p* = 0.12). The thermal-regime effect is therefore not absorbed by the hurricane smooth in this panel.
 
 #### 4.5.1 Local climate records in Florida
 
-**Hurricanes.** In the Florida panel the hurricane regime (`Hurricane`) is the local Florida series (`Hur_FL`, Section 1.2) in all the analyses above. Here we compare, as single climate terms added to `s(age)`, the local regime, its continuous version (`FL_pact`, proportion of records active) and the two Schmitt et al. (2025) metrics. The comparison is repeated for bins younger than 3.5 ka, where the local series combines two to six records, because older bins rest on a single record.
+**Hurricanes.** In the Florida panel the hurricane regime (`Hurricane`) is the local Florida series (`Hur_FL`, Section 1.2) in all the analyses above. Here we compare, as single climate terms added to `s(age)`, the local regime, its continuous version (`FL_pact`, proportion of records active) and the two Schmitt et al. (2025) metrics. The comparison is repeated for bins younger than 3.5 ka, where the local series combines two to five records, because older bins rest on a single record.
 
 ```{r florida-local-hurricane, warning=FALSE, message=FALSE}
 fl_hur <- datos_fl_std %>%
@@ -3136,7 +3142,7 @@ fl_hur_tab <- purrr::map_dfr(c("0-6 ka" = 6, "0-3.5 ka" = 3.5), function(amax) {
 knitr::kable(fl_hur_tab, caption = "Florida panel: local vs Schmitt et al. (2025) hurricane predictors")
 ```
 
-**Temperature.** No continuous centennial temperature record exists for the Florida reef tract over 0–6 ka, so the 0°–30°N anomaly (`GMHT_CPS0_30N`; Kaufman et al. 2020) is used in Florida as in the other panels. Here we test whether it describes temperature change near the reef tract, by comparing it with the Florida-proximal records available (folder `florida_local_SST_records`; sources in its README): the Florida Straits *G. ruber* Mg/Ca SST record (Schmidt et al. 2012; 1.5–5.9 ka, 34 samples), four *G. ruber* Mg/Ca SST records from the Dry Tortugas and the Great Bahama Bank (Lund & Curry 2006; 0–1.36 ka), stacked as anomalies from each core mean, and *Orbicella faveolata* Sr/Ca from three Dry Tortugas–Marquesas Keys colonies within 0–6 ka (Jacobs et al. 2025; 5.8, 3.6 and 2.6 ka; lower Sr/Ca = warmer). For each record we compare (i) the sign of the linear trend (°C per ka of age, 95 % moving-block bootstrap interval) and (ii) the correlation of levels and of detrended anomalies on common bins (0.2 ka for the Florida Straits record, whose samples are ~0.13 ka apart; 0.1 ka for the Lund & Curry stack), with significance from 5,000 phase-randomised surrogates (Ebisuzaki 1997). For the corals, only the direction of change between colonies is compared.
+**Temperature.** No continuous centennial temperature record exists for the Florida reef tract over 0–6 ka, so the 0°–30°N anomaly (`GMHT_CPS0_30N`; Kaufman et al. 2020) is used in Florida as in the other panels. Here we test whether it describes temperature change near the reef tract, by comparing it with the Florida-proximal records available (folder `florida_local_SST_records`; sources in its README): the Florida Straits *G. ruber* Mg/Ca SST record (Schmidt et al. 2012; 1.5–5.9 ka, 34 samples), four *G. ruber* Mg/Ca SST records from the Dry Tortugas and the Great Bahama Bank (Lund & Curry 2006; 0–1.36 ka), stacked as anomalies from each core mean, and *Orbicella faveolata* Sr/Ca from three Dry Tortugas–Marquesas Keys colonies within 0–6 ka (Jacobs et al. 2025; 5.8, 3.6 and 2.6 ka; lower Sr/Ca = warmer). For each record we compare (i) the sign of the linear trend (°C per ka of age, 95 % moving-block bootstrap interval) and (ii) the correlation of levels and of detrended anomalies on common bins (0.2 ka for the Florida Straits record, whose samples are \~0.13 ka apart; 0.1 ka for the Lund & Curry stack), with significance from 5,000 phase-randomised surrogates (Ebisuzaki 1997). For the corals, only the direction of change between colonies is compared.
 
 ```{r florida-local-temperature, warning=FALSE, message=FALSE}
 set.seed(20261008)
@@ -3419,10 +3425,10 @@ bin_tbl %>% mutate(across(c(dAIC_M1, starts_with("p_")), ~ signif(.x, 2)))
 ## Both: the two combined. For each replicate the five series are rebuilt (build_series) and
 ## the candidates without categorical regimes (M1-M4) are refitted (factor models on near-binary
 ## responses can abort mgcv); all candidates, M1-M7, are refitted in Section 4.7.3.
-## The result is stored in M3_sensitivity/gam_uncertainty_mc.rds; set rerun_mc <- TRUE to recompute.
+## The result is stored in M3_sensitivity/gam_uncertainty_mc_v5.rds; set rerun_mc <- TRUE to recompute.
 rerun_mc <- FALSE
 B_mc     <- 300
-mc_file  <- here("M3_sensitivity", "gam_uncertainty_mc.rds")
+mc_file  <- here("M3_sensitivity", "gam_uncertainty_mc_v5.rds")   # v5 climate table (round 3)
 if (!file.exists(mc_file) || rerun_mc) {
   rec0  <- recs %>% select(spot, source, t_ka)
   strat <- paste(rec0$spot, ifelse(rec0$spot == "Florida", rec0$source, ""))
@@ -3742,16 +3748,21 @@ old_cv_res %>%
 These analyses were added in the third round of revision, after the hurricane metrics were recounted in BP bins (Section 1.2). They test four questions that the analyses of Sections 4.5 and 4.6 leave open: whether the results depend on (i) how the youngest bin is closed and on the time reference of the bins, (ii) where the century boundaries fall (bin phase), (iii) age and sampling uncertainty in the models that are now selected, which contain categorical regimes (M6, M7), and (iv) the modern century, for the Little Ice Age contrast of Punta Maroma. All four were specified before they were run. Each chunk reads the stored results; `rerun_round3 <- TRUE` recomputes them (about 3 h). The functions are in `sensitivity_round3/round3_functions.R`.
 
 ```{r round3-setup, warning=FALSE, message=FALSE}
-rerun_round3 <- FALSE
+rerun_round3 <- TRUE   # 2026-10-30: v5 climate table (CPS median, forward dT); set back to FALSE after the run
 r3 <- function(...) here("sensitivity_round3", ...)
 source(r3("round3_functions.R"))
 ```
 
 #### 4.7.1 Youngest bin and time reference
 
-The main analysis closes the youngest bin at the youngest dated colony (1956 CE), as for the coral ages. Two alternatives were run through the complete pipeline: the youngest bin extended to 2022 CE as a rate per century (climate table `df_GAM130326_regimes_v4c.xlsx`), and every series expressed in years before 2021 CE, the reference of the U-Th ages of Punta Maroma (coral ages + 0.071 ka; TC events re-counted from the individual event layers of Schmitt et al. 2025, table S4a; temperature and regimes re-assigned by overlap; climate table `sensitivity_round3/df_GAM130326_regimes_2021frame.xlsx`). The table below reports the selected combined model of each run and the AIC advantage over `s(age)` with and without the youngest bin.
+The main analysis closes the youngest bin at the youngest dated colony (1956 CE), as for the coral ages. Two alternatives were run through the complete pipeline: the youngest bin extended to 2022 CE as a rate per century (climate table `df_GAM130326_regimes_v5c.xlsx`), and every series expressed in years before 2021 CE, the reference of the U-Th ages of Punta Maroma (coral ages + 0.071 ka; TC events re-counted from the individual event layers of Schmitt et al. 2025, table S4a; temperature interpolated at the bin centres from the CPS median and regimes re-assigned by overlap; climate table `sensitivity_round3/df_GAM130326_regimes_2021frame_v5.xlsx`). The table below reports the selected combined model of each run and the AIC advantage over `s(age)` with and without the youngest bin.
 
 ```{r round3-frames}
+if (rerun_round3) {
+  fr <- run_frames()
+  write.csv(fr$table2, r3("frames_table2.csv"), row.names = FALSE)
+  write.csv(fr$youngest, r3("frames_youngest_bin.csv"), row.names = FALSE)
+}
 frames_t2 <- read.csv(r3("frames_table2.csv"), check.names = FALSE)
 frames_yb <- read.csv(r3("frames_youngest_bin.csv"), check.names = FALSE)
 frames_t2 %>% select(Frame, Panel, Selected, Weight, DevExpl, Significant) %>%
@@ -3766,7 +3777,7 @@ Extending the youngest bin to 2022 CE keeps the main terms of Punta Maroma (ther
 
 #### 4.7.2 Bin phase
 
-The bin origin is shifted by 0, 10, …, 90 years. Coral ages and TC event layers are re-binned exactly; the temperature anomaly is interpolated at the bin centres, and each regime is taken from the BP bin that holds the bin centre. With no shift the ensemble reproduces the selected models of Table 2 in four panels; in Florida it selects M4_fqcy instead of M6_fqcy (Akaike weights 0.20 and 0.22 in Table 2), because counts from individual layers differ by one event from the window counts in two bins.
+The bin origin is shifted by 0, 10, …, 90 years. Coral ages and TC event layers are re-binned exactly; the temperature anomaly is interpolated at the bin centers, and each regime is taken from the BP bin that holds the bin center. With no shift the ensemble reproduces the selected models of Table 2 in four panels; in Florida it selects M4_fqcy instead of M6_fqcy (Akaike weights 0.20 and 0.22 in Table 2), because counts from individual layers differ by one event from the window counts in two bins.
 
 ```{r round3-phase}
 if (rerun_round3) {
@@ -3797,7 +3808,7 @@ The continuous TC metrics are significant in few phases: in the marginal models 
 Section 4.5.2(e) refits only M1–M4. Here every combined candidate (M1–M7, after `drop_hydro()`) is refitted in each of about 300 replicates per scenario (two halves, replicates 1–150 and 151–300, seeds 20261006 and 20261007), and the term-level *p*-values of the model selected with the audited ages are recorded.
 
 ```{r round3-mc-full}
-mc_full_files <- here("M3_sensitivity", c("gam_uncertainty_mc_full_v4b_part1.rds", "gam_uncertainty_mc_full_v4b_part2.rds"))
+mc_full_files <- here("M3_sensitivity", c("gam_uncertainty_mc_full_v5_part1.rds", "gam_uncertainty_mc_full_v5_part2.rds"))
 if (rerun_round3) {
   saveRDS(run_mc_full(1:150, 20261006),   mc_full_files[1])
   saveRDS(run_mc_full(151:300, 20261007), mc_full_files[2])
@@ -3820,7 +3831,7 @@ mc_full_tbl %>% gt(groupname_col = "Panel") %>%
   tab_header(title = "Age and sampling uncertainty propagated to all combined candidates (M1-M7)")
 ```
 
-In Punta Maroma the best model contains a regime in 95–96 % of the replicates, and the thermal regime of the selected model is significant in 88–100 %; s(Hur100_av) is significant in 18–30 %. In the regional composite the hurricane regime is significant in 81–98 % of the replicates and s(Hur100_av) in 19–22 %. At Belize, s(GMHT_CPS0_30N) is significant in 23–36 % of the replicates, s(dT_raw) in 34–42 % and the regimes in 44–94 %. The model selected with the audited ages is itself the best model in only 4–41 % of the replicates, so the identity of the selected model is uncertain, whereas the presence of a regime term in Punta Maroma and the regional composite is not.
+In Punta Maroma the best model contains a regime in 95–96 % of the replicates, and the thermal regime of the selected model is significant in 88–100 %; s(Hur100_av) is significant in 19–29 %. In the regional composite the hurricane regime is significant in 81–98 % of the replicates and s(Hur100_av) in 19–22 %. At Belize, s(GMHT_CPS0_30N) is significant in 23–36 % of the replicates, s(dT_raw) in 34–42 % and the regimes in 44–93 %. The model selected with the audited ages is itself the best model in only 4–42 % of the replicates, so the identity of the selected model is uncertain, whereas the presence of a regime term in Punta Maroma and the regional composite is not.
 
 #### 4.7.4 The Little Ice Age contrast of Punta Maroma
 
@@ -3843,9 +3854,48 @@ lia %>% filter(level == "LIA") %>%
 
 In the raw data the LIA bins of Punta Maroma have a mean normalized density of 0.154, against 0.127 in the "cooler" bins and 0.405 in the "warmer" bins, which include the modern maximum. Without the two modern centuries the LIA contrast of Punta Maroma ranges from −0.56 to +0.42 across phases and specifications without the lag (−0.35 to +0.28 with `s(age)`; positive in 9 of 10 phases) and from +0.26 to +1.05 with the lag, and it is not significant in any of the 40 fits. At Belize (−0.79 to +1.00) and in the regional composite (−1.09 to +0.04) the LIA contrast with the CWP&MWA is not significant in any phase or specification. The negative LIA coefficient of Table 2 is therefore a contrast between the LIA and the century that follows it: the low density of the LIA precedes the modern maximum. It does not show lower density during the LIA than during earlier cool intervals. At Punta Maroma the CWP&MWA (0.7–1.3 ka) has no dated colonies; it falls within the 0.64–1.38-ka low-density interval (Section 2), and bins without colonies do not enter the models.
 
-#### 4.7.5 Summary
+#### 4.7.5 Choice of temperature reconstruction (CPS ensemble members)
+
+Added in round 3 (reviewer point R1.3). The temperature predictors are built from the median of the 500-member CPS ensemble for 0°–30°N (Section 1.2). The spread among members is large relative to the centennial signal (mean 90 % range ≈ 2.5 °C over 0–6 ka, against a 0–6 ka range of the median of ≈ 1.2 °C), and the previous version of the table used a single member. Here we refit the models with individual members in place of the median. For each member, `GMHT_CPS0_30N` and `dT_raw` are rebuilt exactly as for the median (interpolation at the bin centres, change from the preceding century), and the coral series and all other predictors are left unchanged. We fit (i) the two marginal temperature models (M_temp, M_dt) and (ii) all combined candidates, and record for each panel whether the temperature smooths are significant, whether the regime terms of the selected model remain significant, and which model is selected. Member V1 (the series of table v4) is always included; the remaining members are drawn at random (seed 20261030). The test was specified before it was run (2026-10-30).
+
+```{r round3-cps-members, warning=FALSE, message=FALSE}
+cps_members_file <- r3("cps_members.csv")
+if (rerun_round3 || !file.exists(cps_members_file)) {
+  cps_ens <- read.csv(here("kaufman2020_CPS", "0to30500-6bands-100yr2kwindow.csv"))
+  cps_res <- run_cps_members(cps_ens, n_members = 100, seed = 20261030)
+  write.csv(cps_res, cps_members_file, row.names = FALSE)
+}
+cps_res <- read.csv(cps_members_file)
+cps_res %>% filter(member != "median") %>%
+  group_by(Panel) %>%
+  summarise(Members = n_distinct(member),
+            `M_temp better than s(age) (%)` = round(100 * mean(dAIC_temp_vs_sage < 0, na.rm = TRUE)),
+            `s(T) p < 0.05, marginal (%)`   = round(100 * mean(p_temp_marg < 0.05, na.rm = TRUE)),
+            `s(δT) p < 0.05, marginal (%)`  = round(100 * mean(p_dt_marg < 0.05, na.rm = TRUE)),
+            `Main selected model kept (%)`  = round(100 * mean(best == sel_main, na.rm = TRUE)),
+            `s(T) p < 0.05, selected (%)`   = round(100 * mean(p_temp_sel < 0.05, na.rm = TRUE)),
+            `s(δT) p < 0.05, selected (%)`  = round(100 * mean(p_dt_sel < 0.05, na.rm = TRUE)),
+            `Thermal p < 0.05, selected (%)`   = round(100 * mean(p_Thermal_sel < 0.05, na.rm = TRUE)),
+            `Hurricane p < 0.05, selected (%)` = round(100 * mean(p_Hurricane_sel < 0.05, na.rm = TRUE)),
+            `Best model has a regime (%)`      = round(100 * mean(best_has_regime, na.rm = TRUE)),
+            `Regime model within ΔAIC ≤ 2 (%)` = round(100 * mean(dAIC_best_regime <= 2, na.rm = TRUE)),
+            `s(T) p < 0.05, member's best (%)`  = round(100 * mean(p_temp_best < 0.05, na.rm = TRUE)),
+            `s(δT) p < 0.05, member's best (%)` = round(100 * mean(p_dt_best < 0.05, na.rm = TRUE)),
+            .groups = "drop") %>%
+  gt() %>% tab_header(title = "Results across members of the CPS 0–30°N ensemble") %>%
+  sub_missing(missing_text = "–")
+cps_res %>% filter(member == "V1") %>%
+  select(Panel, best, p_temp_marg, p_dt_marg, p_temp_sel, p_dt_sel, p_Thermal_sel, p_Hurricane_sel) %>%
+  mutate(across(where(is.numeric), ~ signif(.x, 2))) %>%
+  gt() %>% tab_header(title = "Member V1 (temperature series of table v4) with the corrected δT definition")
+```
+
+[Text to be written after the run.]
+
+#### 4.7.6 Summary
 
 Across the four tests, two results are stable. First, the frequency of dated colonies is highest in the two most recent centuries, which coincide with the "high" hurricane regime of Schmitt et al. (2025) and with the warm modern regime; this association holds across bin phases, time references and age and sampling uncertainty, but it rests on two bins and cannot be separated from recency bias. Second, at Punta Maroma the LIA bins have lower density than the modern century that follows them, but not lower than earlier cool intervals. The continuous TC metrics (Hur100_fqcy, Hur100_av) are not robust to bin phase or to age and sampling uncertainty, and no climatic predictor shows a consistent association before 0.2 ka.
+
 
 ## Session information
 

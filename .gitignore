@@ -9,3 +9,5 @@ Manuscript*.md
 Response*.md
 *.odg
 M3_sensitivity/Florida_local_SST/
+
+sensitivity_round3/round3_fit_log.txt
