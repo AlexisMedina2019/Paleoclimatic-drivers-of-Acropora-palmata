@@ -14,7 +14,7 @@ abstract: |
   2. kernel-density reconstructions of *A. palmata* age distributions for each reef
      site and for the regional composite, weighted so that they have the shape of the
      modelled series;
-  3. exploratory analyses of predictor correlation and of abundance across
+  3. exploratory analyses of predictor correlation and of the frequency of dated colonies across
      climate-regime combinations;
   4. beta-regression generalized additive models (GAMs) fitted separately to four reef
      sites (Punta Maroma, Florida, Belize, Saint Croix) and to a regional composite,
@@ -261,7 +261,7 @@ For each site, records are summed per bin (`counts`). Climate predictors are ave
 
 `normalize_counts()` divides counts by the site maximum (`counts_norm`, rounded to four decimals). Values exactly 0 or 1 are then transformed as y′ = (y(*n* − 1) + 0.5)/*n*, where *n* is the number of bins in the series (`counts_norm_sv`); all other values are unchanged. Only bins containing at least one record exist in the series, so no zeros occur and the correction affects only the maximum bin (e.g. 0.984 in Punta Maroma, *n* = 31).
 
-The response is therefore the relative abundance within bins in which a site is represented. Bins without records are not part of any model: 29 of 60 in Punta Maroma, 36 in Belize, 41 in Saint Croix, 16 in Florida and 3 in the regional composite.
+The response is therefore the relative dated-occurrence frequency (hereafter frequency) within bins in which a site is represented: the number of dated colonies per bin, relative to the site maximum. It measures how often colonies of each century were found and dated, not population abundance, which was not measured. Bins without records are not part of any model: 29 of 60 in Punta Maroma, 36 in Belize, 41 in Saint Croix, 16 in Florida and 3 in the regional composite.
 
 #### Florida source standardization
 
@@ -459,7 +459,7 @@ merged_df_g <- bind_rows(
 
 Kernel density estimates (KDE) are computed from the individual ages, weighted so that the density has the shape of the modelled series of Section 1.3. Each record receives the weight it carries in `counts_norm_sv`: in Punta Maroma, Belize and Saint Croix, `counts_norm_sv / counts` of its bin; in Florida, the product of its source-standardization factor and the Florida normalization factor; in the regional composite, the site weight multiplied by the regional normalization factor. The weights of the records in each bin therefore add up to `counts_norm_sv` of that bin (checked in the code). For a site with a single source the weights are constant except in the maximum bin, so the weighted KDE has the same shape as the KDE of the raw ages; the weighting changes the shape only for Florida (source standardization) and for the regional composite.
 
-Each density is a Gaussian KDE over 0–6 ka (bandwidth 0.09 ka, 512 points) with a reflection boundary correction (Silverman 1986; Jones 1993): ages are mirrored at 0 and 6 ka, so that the part of each kernel that would fall outside the window is folded back into it. Without the correction the density is underestimated within about two bandwidths of each edge, by up to one half at the edge itself, which would understate the modern peak and the abundance of the oldest centuries; with it each curve integrates to one over 0–6 ka. Post-1950 ages count at 0 ka, as in the binning. The bandwidth is a smoothing choice, not the resolving power of the record: the 95 % range of a radiocarbon age spans 0.3–0.5 ka (3–5 centennial bins), that of a U-Th age 0.02–0.05 ka. Two sources of uncertainty are estimated separately:
+Each density is a Gaussian KDE over 0–6 ka (bandwidth 0.09 ka, 512 points) with a reflection boundary correction (Silverman 1986; Jones 1993): ages are mirrored at 0 and 6 ka, so that the part of each kernel that would fall outside the window is folded back into it. Without the correction the density is underestimated within about two bandwidths of each edge, by up to one half at the edge itself, which would understate the modern peak and the density of the oldest centuries; with it each curve integrates to one over 0–6 ka. Post-1950 ages count at 0 ka, as in the binning. The bandwidth is a smoothing choice, not the resolving power of the record: the 95 % range of a radiocarbon age spans 0.3–0.5 ka (3–5 centennial bins), that of a U-Th age 0.02–0.05 ka. Two sources of uncertainty are estimated separately:
 
 - **Sampling** (which fossils were recovered and dated): 1,000 bootstrap resamples of the records with replacement, keeping their weights and stratified by source in Florida and by site in the regional composite. For each resample we keep the density curve and its mean in each 0.1-ka bin. `signal_all` holds the estimate and the 2.5–97.5 % and 25–75 % bootstrap envelopes of each curve; `centennial_density_all` holds the bin means of the estimate and their bootstrap SD and 95 % interval.
 - **Age** (where each dated fossil falls in time): 1,000 Monte Carlo draws of every age, with the record weights held at their central values; draws older than 6 ka leave the window. U-Th ages are drawn from a normal distribution with SD equal to half the reported 2σ error. Radiocarbon ages are drawn from their calibrated probability distribution, computed here from the conventional age, its error and the local ΔR with its error (combined in quadrature) under Marine20 (Heaton et al. 2020; https://doi.org/10.1017/RDC.2020.68; curve deposited as `Marine20_0-15ka.csv`), and shifted so that its median equals the audited age (the shift is ≤ 1 yr except for a few Florida ages calibrated with other software by their authors). The inputs are read from the sheet `Trazabilidad` of `ages_kernel_reg_updt2.xlsx`. Three Florida radiocarbon ages without a ΔR error take the median ΔR error of Florida. The 2.5–97.5 % range of the draws is the age envelope (`age_q025`, `age_q975` in `signal_all`) and the 95 % range of each age is shown in Fig. 2.
@@ -705,14 +705,15 @@ site_gaps
 low_density
 ```
 
-**Figure 2** (`Figure_2.pdf`). *Acropora palmata* age distributions and their uncertainty. (a–d) Each site: weighted kernel density (bandwidth 0.09 ka, reflection-corrected at 0 and 6 ka; line) with its 95 % sampling envelope (bootstrap of the records; light) and 95 % age envelope (Monte Carlo of the ages; dark); below, every dated fossil with its 95 % age range, by dating method (circles U-Th, triangles ¹⁴C). (e) Regional composite. Dashed horizontal line (every panel): density expected if the dated fossils were spread evenly over 0–6 ka (uniform distribution, 1/6 ≈ 0.17 ka⁻¹), the reference used to define the low-density intervals. Grey shading: low-density intervals (both upper 95 % limits below the uniform density). Coloured bars: published presence gaps, bounded by the audited ages. In Punta Maroma (U-Th only) the age envelope is narrower than the line at this scale: its chronology is effectively fixed and its uncertainty is almost entirely sampling. Where the age envelope is as wide as the sampling envelope (Saint Croix, dated only by radiocarbon), the timing of density peaks and troughs is not resolved at the centennial scale.
+**Figure 2** (`Figure_2.pdf`). *Acropora palmata* age distributions and their uncertainty. (a–d) Each site: weighted kernel density (bandwidth 0.09 ka, reflection-corrected at 0 and 6 ka; line) with its 95 % sampling envelope (bootstrap of the records; light) and 95 % age envelope (Monte Carlo of the ages; dark); below, every dated fossil with its 95 % age range, by dating method (circles U-Th, triangles ¹⁴C). (e) Regional composite. Dashed horizontal line (every panel): density expected if the dated fossils were spread evenly over 0–6 ka (uniform distribution, 1/6 ≈ 0.17 ka⁻¹), the reference used to define the low-density intervals. Yellow shading (legend): low-density intervals (both upper 95 % limits below the uniform density). Coloured bars: published presence gaps, bounded by the audited ages. In Punta Maroma (U-Th only) the age envelope is narrower than the line at this scale: its chronology is effectively fixed and its uncertainty is almost entirely sampling. Where the age envelope is as wide as the sampling envelope (Saint Croix, dated only by radiocarbon), the timing of density peaks and troughs is not resolved at the centennial scale.
 
 ```{r fig2m, fig.width=9.5, fig.height=11}
 library(patchwork)
 ## ---- Figure 2 ---------------------------------------------------------------------
 ## Per site: weighted KDE (bw 0.09 ka) with its 95 % sampling (bootstrap) and age (Monte Carlo)
 ## envelopes, and below it every age with its 95 % range, by dating method.
-## Grey shading: low-density intervals (both upper 95 % limits below the uniform density);
+## Yellow shading: low-density intervals (both upper 95 % limits below the uniform density),
+## shown in the legend (round 3, R2 L288: grey was the colour of the regional envelope);
 ## coloured bars: published presence gaps, bounded by the audited ages.
 meth_shape <- c("U-Th" = 16, "14C" = 17)
 env_alpha  <- c("Sampling (bootstrap)" = 0.22, "Age (Monte Carlo)" = 0.5)
@@ -739,7 +740,9 @@ kde_panel <- function(sp, show_x = FALSE) {
   ld  <- low_density %>% filter(spot == sp)
   sg  <- site_gaps %>% filter(spot == sp)
   p <- ggplot() +
-    geom_rect(data = ld, aes(xmin = xmin, xmax = xmax, ymin = -Inf, ymax = Inf), fill = "grey88") +
+    geom_rect(data = ld, aes(xmin = xmin, xmax = xmax, ymin = -Inf, ymax = Inf,
+                             fill = "Low-density interval"), alpha = 0.6) +
+    scale_fill_manual(values = c("Low-density interval" = "#EFD98B"), name = NULL, drop = FALSE) +
     geom_ribbon(data = env, aes(x, ymin = lo, ymax = hi, alpha = env), fill = col) +
     geom_hline(yintercept = 1 / 6, linetype = "dashed", linewidth = 0.3, colour = "grey40") +
     geom_line(data = d, aes(x, estimate), colour = col, linewidth = 0.7) +
@@ -783,7 +786,8 @@ GH
 II"
 fig2 <- wrap_plots(pl, design = design, heights = c(3, 1.1, 3, 1.1, 3), guides = "collect") &
   theme(legend.position = "bottom") &
-  guides(alpha = guide_legend(override.aes = list(fill = "grey30")),
+  guides(alpha = guide_legend(override.aes = list(fill = "grey30"), order = 1),
+         fill  = guide_legend(order = 3),
          shape = guide_legend(override.aes = list(colour = "grey30", size = 2)))
 
 fig2
@@ -826,11 +830,11 @@ bw_env %>% group_by(Panel = spot, bw) %>%
   mutate(age_over_sampling = age / sampling) %>% mutate(across(where(is.numeric), ~ round(.x, 2)))
 ```
 
-### 1.5 Abundance and Holocene trends in climatic variables
+### 1.5 Frequency of dated colonies and Holocene trends in climatic variables
 
-Panel (a) shows the modelled series of Section 1.3: the relative abundance `counts_norm_sv` of each site per 0.1-ka bin (Florida source-standardized), stacked by site. The height of each stack is the per-bin sum from which the regional composite is normalized. Bins without records have no bar. The legend gives the number of records per site.
+Panel (a) shows the modelled series of Section 1.3: the relative frequency `counts_norm_sv` of each site per 0.1-ka bin (Florida source-standardized), stacked by site. The height of each stack is the per-bin sum from which the regional composite is normalized. Bins without records have no bar. The legend gives the number of records per site.
 
-**Figure 3a** (`Figure_3a.pdf`). Relative abundance of *A. palmata* per 100-year interval, stacked by reef site.
+**Figure 3a** (`Figure_3a.pdf`). Relative frequency of dated *A. palmata* colonies per 100-year interval, stacked by reef site.
 
 ```{r count-by-site}
 library(ggplot2)
@@ -847,7 +851,7 @@ pr <- ggplot(norm_stack, aes(x = age, y = counts_norm_sv, fill = spot)) +
   scale_fill_manual(values = custom_colors[site_levels], labels = site_labels,
                     breaks = site_levels) +
   labs(x = "Time (ka BP)",
-       y = "Relative abundance\n(stacked by site)",
+       y = "Relative frequency\n(stacked by site)",
        fill = "Site") +
   theme_minimal(base_size = 15) +
   theme(panel.grid.minor = element_blank(),
@@ -867,7 +871,7 @@ We assemble Fig. 3. Panel (a) is Fig. 3a. Below it, four panels show, for each o
 - **(e)** local hurricane activity in Florida (`FL_pact`): proportion of the Florida-proximal paleotempestological records that report an active interval in each bin, as bars (dark blue where ≥ 0.5, the threshold that defines the "active" regime); bins older than 3.5 ka rest on a single record (Toomey et al. 2013);
 - **(f)** the nominal thermal, hydroclimatic (Yucatán and Florida series) and hurricane (Yucatán and Florida series) regimes, drawn as contiguous time segments over the full span of each bin.
 
-**Figure 3** (`Figure_3.pdf`). Reconstruction of regional coral abundance and paleoclimate trends. The climate panels (b–f) are drawn from the 60-bin climate table, so they cover the full 0–6 ka interval, including bins without fossil records.
+**Figure 3** (`Figure_3.pdf`). Relative frequency of dated *A. palmata* colonies and paleoclimate over the last 6 ka. The climate panels (b–f) are drawn from the 60-bin climate table, so they cover the full 0–6 ka interval, including bins without fossil records.
 
 ```{r fig3m, fig.width=12, fig.height=15}
 
@@ -996,7 +1000,7 @@ Figure_3
 ggsave("Figure_3.pdf", plot = Figure_3, width = 10, height = 15, dpi = 300, device = cairo_pdf)
 ```
 
-Before modelling, we inspect pairwise correlations among numeric variables (Section 2.1) and the distribution of abundance across combinations of climate regimes (Section 3.1.3). No predictor is removed on the basis of these analyses. Redundancy is handled instead by never entering the two hurricane metrics in the same model (Section 3.3) and by assessing overlap among smooth terms after fitting (concurvity, Section 4.2).
+Before modelling, we inspect pairwise correlations among numeric variables (Section 2.1) and the distribution of the frequency of dated colonies across combinations of climate regimes (Section 3.1.3). No predictor is removed on the basis of these analyses. Redundancy is handled instead by never entering the two hurricane metrics in the same model (Section 3.3) and by assessing overlap among smooth terms after fitting (concurvity, Section 4.2).
 
 ## **2.** Exploratory Data Analysis
 
@@ -1171,7 +1175,7 @@ p_fl_a <- ggplot(fl_compare, aes(age)) +
   
   labs(
     x = "Age (ka BP)",
-    y = "Relative abundance",
+    y = "Relative frequency",
     colour = NULL
   )
 
@@ -1205,17 +1209,17 @@ figS3
 ggsave("Supplementary_Figure_S3.pdf", plot = figS3, width = 9, height = 9, dpi = 300, device = cairo_pdf)
 ```
 
-The differences have a median of 0.100, a mean of 0.121 and a range of −0.211 to 0.489. The largest occur at 2.5, 3.3 and 5.9–6.0 ka. The two series are correlated at *r* = 0.794. Source standardization therefore preserves the overall temporal pattern but raises relative abundance in most bins (13 of the 44 differences, 30 %, are negative), most strongly at 2.4–2.5, 3.2–3.3 and 5.9–6.0 ka. This comparison concerns the response series; the GAMs refitted to the pooled series are compared with the source-standardized ones in Section 4.5.
+The differences have a median of 0.100, a mean of 0.121 and a range of −0.211 to 0.489. The largest occur at 2.5, 3.3 and 5.9–6.0 ka. The two series are correlated at *r* = 0.794. Source standardization therefore preserves the overall temporal pattern but raises the relative frequency in most bins (13 of the 44 differences, 30 %, are negative), most strongly at 2.4–2.5, 3.2–3.3 and 5.9–6.0 ka. This comparison concerns the response series; the GAMs refitted to the pooled series are compared with the source-standardized ones in Section 4.5.
 
 **Supplementary Figure S3.** (a) Pooled (black) and source-standardized (red) Florida series; the grey band marks their difference. (b) Difference std − norm. Age is in ka.
 
-#### **3.1.3 *Acropora palmata* abundance across climate-regime combinations**
+#### **3.1.3 Frequency of dated *Acropora palmata* colonies across climate-regime combinations**
 
 We combine the three regime labels into `ClimateCombo` (Thermal_Hydro_Hurricane) and tabulate their frequency per panel (**Supplementary Table S3**; each panel block ends with its number of bins). The regional composite is one of the panels, so its bins are not additional observations. No missing values occur.
 
 We then retain combinations observed in at least three bins in at least one panel. Because the filter is applied across panels, a retained combination can still have *n* = 1–2 in a given panel (e.g. LIA_wet_calm, *n* = 1 in Belize; warmer_wet_low, *n* = 1 in Punta Maroma). Nine combinations are excluded, each with one or two bins per panel: cooler_dry_enhanced, CWP&MWA_dry_quiet, LIA_dry_active, LIA_dry_quiet, CWP&MWA_wet_enhanced, LIA_wet_enhanced, CWP&MWA_dry_moderate, LIA_wet_high and warmer_wet_high. The filter retains 27 of 31 bins in Punta Maroma, 40 of 44 in Florida, 20 of 24 in Belize, 15 of 19 in Saint Croix and 51 of 57 in the regional composite.
 
-The filter excludes the youngest bin (0–0.1 ka). Its combination, warmer_wet_high, occurs in a single bin, and this bin holds the maximum relative abundance in Punta Maroma (0.98), Saint Croix (0.97) and the regional composite (0.99), and one of the highest values in Belize (0.75; maximum 0.98). Supplementary Table S4 and Supplementary Figure S4 therefore describe abundance across regimes *excluding* the modern peak; that peak is shown in Figs. 2 and 3, and its influence on the models is assessed by refitting them without it (Section 4.5).
+The filter excludes the youngest bin (0–0.1 ka). Its combination, warmer_wet_high, occurs in a single bin, and this bin holds the maximum relative frequency in Punta Maroma (0.98), Saint Croix (0.97) and the regional composite (0.99), and one of the highest values in Belize (0.75; maximum 0.98). Supplementary Table S4 and Supplementary Figure S4 therefore describe the frequency across regimes *excluding* the modern peak; that peak is shown in Figs. 2 and 3, and its influence on the models is assessed by refitting them without it (Section 4.5).
 
 **Supplementary Table S4** gives *n*, mean, SD and range of `counts_norm_sv` for each panel and retained combination. A panel-level summary (`resumen_panel`) is also computed but not shown.
 
@@ -1337,7 +1341,7 @@ tab_S4 <- resumen_panel_combo %>%
   gt() %>%
   tab_header(
     title = "Climate-combination summary",
-    subtitle = "Standardized Acropora abundance by climatic regime"
+    subtitle = "Relative frequency of dated Acropora palmata colonies by climatic regime"
   ) %>%
   fmt_number(
     columns = c(
@@ -1355,7 +1359,7 @@ gt::gtsave(tab_S4, "Supplementary_Table_S4.docx")
 
 ##### Coral-Climate Interactions
 
-The figure below summarizes the distribution of standardized *A. palmata* abundance across the retained climate-regime combinations. Combinations are ordered by their median abundance over all panels pooled, so the order is the same in every facet.
+The figure below summarizes the distribution of the relative frequency of dated *A. palmata* colonies across the retained climate-regime combinations. Combinations are ordered by their median frequency over all panels pooled, so the order is the same in every facet.
 
 ```{r figS4, fig.width=13, fig.height=11}
 
@@ -1420,21 +1424,21 @@ figS4 <- ggplot(
   ) +
   
   labs(
-    x = "Climate combinations (ordered by median abundance)",
-    y = "Standardized abundance (counts_norm_sv)"
+    x = "Climate combinations (ordered by median frequency)",
+    y = "Relative frequency (counts_norm_sv)"
   )
 
 figS4
 ggsave("Supplementary_Figure_S4.pdf", plot = figS4, width = 13, height = 11, dpi = 300, device = cairo_pdf)
 ```
 
-**Supplementary Figure S4. Standardized *A. palmata* abundance under Holocene climate-regime combinations.** Boxplots of `counts_norm_sv` by combination of thermal, hydroclimatic and hurricane regime, per panel; points are individual centennial bins. Combinations are ordered by their median over all panels pooled, so the order is the same in every facet.
+**Supplementary Figure S4. Relative frequency of dated *A. palmata* colonies under Holocene climate-regime combinations.** Boxplots of `counts_norm_sv` by combination of thermal, hydroclimatic and hurricane regime, per panel; points are individual centennial bins. Combinations are ordered by their median over all panels pooled, so the order is the same in every facet.
 
-Among the retained combinations (Supplementary Table S4), mean abundance is highest under warmer_no data_low in the regional composite (0.32, *n* = 6), under warmer_wet_low in Belize (0.63, *n* = 2), under cooler_no data_moderate in Punta Maroma (0.19, *n* = 4) and under cooler_wet_active in Florida (0.51, *n* = 10). It is lowest under LIA_wet_calm in the regional composite (0.08, *n* = 3), under LIA_wet_calm and cooler_no data_low in Belize (0.25, *n* = 1 and 4), under warmer_wet_low in Punta Maroma (0.08, *n* = 1) and under CWP&MWA_dry_active and cooler_wet_quiet in Florida (0.29–0.30, *n* = 3–5). Most bins fall under cooler_wet_moderate (*n* = 2–18 per panel) and cooler_no data_low (*n* = 3–8). In Saint Croix the response takes essentially two values: 13 of the 15 retained bins hold a single record (0.50), so differences among combinations rest on two bins with two records each (CWP&MWA_dry_enhanced and warmer_wet_low). Most combinations are represented by fewer than five bins per panel, so these patterns are descriptive only.
+Among the retained combinations (Supplementary Table S4), mean frequency is highest under warmer_no data_low in the regional composite (0.32, *n* = 6), under warmer_wet_low in Belize (0.63, *n* = 2), under cooler_no data_moderate in Punta Maroma (0.19, *n* = 4) and under cooler_wet_active in Florida (0.51, *n* = 10). It is lowest under LIA_wet_calm in the regional composite (0.08, *n* = 3), under LIA_wet_calm and cooler_no data_low in Belize (0.25, *n* = 1 and 4), under warmer_wet_low in Punta Maroma (0.08, *n* = 1) and under CWP&MWA_dry_active and cooler_wet_quiet in Florida (0.29–0.30, *n* = 3–5). Most bins fall under cooler_wet_moderate (*n* = 2–18 per panel) and cooler_no data_low (*n* = 3–8). In Saint Croix the response takes essentially two values: 13 of the 15 retained bins hold a single record (0.50), so differences among combinations rest on two bins with two records each (CWP&MWA_dry_enhanced and warmer_wet_low). Most combinations are represented by fewer than five bins per panel, so these patterns are descriptive only.
 
 ### 3.2. Marginal GAM effects analysis
 
-Relative abundance is continuous and bounded in (0, 1), so we fit GAMs with a beta distribution and logit link (`mgcv::gam`, family `betar`). Smoothing parameters are estimated by REML. Continuous predictors enter as thin-plate regression splines (mgcv default, basis dimension *k* = 10).
+The relative frequency is continuous and bounded in (0, 1), so we fit GAMs with a beta distribution and logit link (`mgcv::gam`, family `betar`). Smoothing parameters are estimated by REML. Continuous predictors enter as thin-plate regression splines (mgcv default, basis dimension *k* = 10).
 
 Climate regimes enter as factors with reference levels "warmer" (Thermal), "wet" (Hydro) and "low" (Hurricane). Their coefficients are contrasts on the logit scale relative to the reference, conditional on the other terms. Every model includes a smooth of age, `s(age)`, which absorbs temporal structure not attributed to the climate predictor.
 
@@ -1792,9 +1796,9 @@ print_best_models(best_reg,
                   datos_reg)
 ```
 
-We then extract, for each of these models: AIC, deviance explained and adjusted R²; the climate term with the lowest term-level *p*-value (`s(age)` excluded) and that *p*-value; the factor contrasts with *p* \< 0.05; the EDF of each smooth; and a support label ("Supported" if the term-level climate *p* \< 0.05, otherwise "Weak support"). Term-level *p*-values come from a joint Wald test of the whole term (`anova()`): for a categorical regime, all levels are tested together; for a continuous predictor, the spline is tested. Contrasts are relative to the reference levels warmer / wet / low. *p*-values below 10⁻⁴ are reported as "\<1e-04", the precision limit of mgcv's approximation for smooth terms.
+We then extract, for each of these models: AIC, deviance explained and adjusted R²; the climate term with the lowest term-level *p*-value (`s(age)` excluded) and that *p*-value; the factor contrasts with *p* \< 0.05; the EDF of each smooth; and whether that term is nominally significant (term-level *p* \< 0.05). This column reports nominal significance only. Whether an association survives the robustness tests (chance alignment of the series, cross-validation, age and sampling uncertainty, bin phase and the youngest bin) is assessed in Section 4 and reported in Table 2 and Supplementary Tables S12–S14. Term-level *p*-values come from a joint Wald test of the whole term (`anova()`): for a categorical regime, all levels are tested together; for a continuous predictor, the spline is tested. Contrasts are relative to the reference levels warmer / wet / low. *p*-values below 10⁻⁴ are reported as "\<1e-04", the precision limit of mgcv's approximation for smooth terms.
 
-**Table 1. Best-supported marginal GAMs by panel.** Highest-ranked categorical-regime (linear) and continuous-climate (smooth) models, with model fit, climate term with the lowest term-level *p*-value, significant contrasts versus the reference level, EDF of the smooth terms and support label.
+**Table 1. Best-supported marginal GAMs by panel.** Highest-ranked categorical-regime (linear) and continuous-climate (smooth) models, with model fit, climate term with the lowest term-level *p*-value, significant contrasts versus the reference level, EDF of the smooth terms and nominal significance of the climate term (*p* \< 0.05). Nominal significance does not imply robustness (Section 4).
 
 ```{r comparison-table}
 library(webshot2)
@@ -1849,8 +1853,7 @@ extract_gam_stats <- function(model, panel, model_type, model_name,
     SignificantContrasts = sig_contr,
     EDF_Terms         = paste0(rownames(st_tab), " (EDF=",
                                round(st_tab[, "edf"], 2), ")", collapse = "; "),
-    Inference         = ifelse(!is.na(climate_p) && climate_p < alpha,
-                               "Supported", "Weak support"),
+    Nominal_p05       = ifelse(!is.na(climate_p) && climate_p < alpha, "Yes", "No"),
     stringsAsFactors  = FALSE
   )
 }
@@ -1948,7 +1951,7 @@ tbl_summary <- bind_rows(
 tbl_summary <- tbl_summary %>%
   mutate(Model_Label = recode(Model, !!!model_labels)) %>%
   select(Panel, Type, Model, Model_Label, AIC, DevianceExplained, R2_Adj,
-         ClimateTerm, Climate_p_label, SignificantContrasts, EDF_Terms, Inference)
+         ClimateTerm, Climate_p_label, SignificantContrasts, EDF_Terms, Nominal_p05)
 
 gt_summary_m <- tbl_summary %>%
   arrange(factor(Panel, levels = c("Punta Maroma", "Florida", "Belize",
@@ -1966,7 +1969,7 @@ gt_summary_m <- tbl_summary %>%
     Climate_p_label      = "Climate p-value (term)",
     SignificantContrasts = "Significant contrasts vs. reference",
     EDF_Terms            = "EDF Terms",
-    Inference            = "Inference"
+    Nominal_p05          = "Term p < 0.05 (nominal)"
   ) %>%
   cols_width(Model ~ px(90), SignificantContrasts ~ px(240), EDF_Terms ~ px(260)) %>%
   tab_style(style = list(cell_fill(color = "#7298c2"),
@@ -1980,6 +1983,12 @@ gt_summary_m <- tbl_summary %>%
                      "continuous predictors). Contrasts are relative to the",
                      "reference levels warmer / wet / low."),
     locations = cells_column_labels(columns = Climate_p_label)) %>%
+  tab_footnote(
+    footnote = paste("Nominal significance of the climate term only. Robustness to chance",
+                     "alignment, cross-validation, age and sampling uncertainty, bin phase",
+                     "and the youngest bin is assessed separately (Section 4;",
+                     "Supplementary Tables S12-S14)."),
+    locations = cells_column_labels(columns = Nominal_p05)) %>%
   opt_row_striping() %>%
   tab_options(table.font.size = 12, data_row.padding = px(5))
 
@@ -1989,8 +1998,8 @@ gt::gtsave(gt_summary_m, "Table_1.docx")
 
 Climate terms reach *p* \< 0.05 (term-level test) in the best marginal models of three panels:
 
-- **Punta Maroma:** Thermal (*p* \< 10⁻⁴; deviance explained 89.4 %), driven by lower abundance under LIA (−3.79, *p* \< 10⁻⁴) and, less so, under the "cooler" regime (−1.48, *p* = 0.031) than under the "warmer" reference. The best continuous model, with s(Hur100_av) (EDF 3.00, *p* = 0.0017; deviance explained 84.5 %), is also significant but lies 19.8 AIC units behind the thermal-regime model (Section 3.2.3).
-- **Regional composite:** Hurricane (*p* = 2.3 × 10⁻⁴; deviance explained 50.8 %), with lower abundance under the "calm" regime (−2.41, *p* = 0.043) than under the "low" reference. The best continuous model, with s(GMHT_CPS0_30N) (EDF 2.31, *p* = 0.0048; deviance explained 33.9 %), lies 11.8 AIC units behind.
+- **Punta Maroma:** Thermal (*p* \< 10⁻⁴; deviance explained 89.4 %), driven by lower frequency under LIA (−3.79, *p* \< 10⁻⁴) and, less so, under the "cooler" regime (−1.48, *p* = 0.031) than under the "warmer" reference. The best continuous model, with s(Hur100_av) (EDF 3.00, *p* = 0.0017; deviance explained 84.5 %), is also significant but lies 19.8 AIC units behind the thermal-regime model (Section 3.2.3).
+- **Regional composite:** Hurricane (*p* = 2.3 × 10⁻⁴; deviance explained 50.8 %), with lower frequency under the "calm" regime (−2.41, *p* = 0.043) than under the "low" reference. The best continuous model, with s(GMHT_CPS0_30N) (EDF 2.31, *p* = 0.0048; deviance explained 33.9 %), lies 11.8 AIC units behind.
 - **Belize:** s(GMHT_CPS0_30N) (EDF 1.0, i.e. linear; *p* = 0.0097; deviance explained 48.9 %). The hurricane regime is not significant at term level (*p* = 0.057), although the "high" contrast is (+4.22, *p* = 0.019; the two youngest bins, 0–0.2 ka).
 
 No climate term reaches *p* \< 0.05 in Florida (Hydro, *p* = 0.66; s(Hur100_fqcy), *p* = 0.056) or Saint Croix (Hurricane, *p* = 0.29; s(Hur100_av), *p* = 0.076).
@@ -2285,11 +2294,11 @@ comparison_cb_full %>%
 
 **Table 2. Best-supported combined GAM per panel** (lowest AIC): model, AIC, Akaike weight, deviance explained, adjusted R², climate terms with term-level *p* \< 0.05 (`s(age)` excluded), factor contrasts with *p*-value \< 0.05 versus reference level, and EDF of every smooth.
 
-- **Punta Maroma — M6_av** (Akaike weight 0.56; deviance explained 91.1 %; adjusted R² 0.865). The thermal regime is the only significant climate term (*p* \< 10⁻⁴), with lower abundance under LIA (−3.50, *p* \< 10⁻⁴) and under the "cooler" regime (−1.49, *p* = 0.022) than under the "warmer" reference. s(Hur100_av) (EDF 1.32, *p* = 0.12) and s(GMHT_CPS0_30N) (EDF 0.38, *p* = 0.19) are not significant, s(dT_raw) is shrunk to EDF ≈ 0, and s(age) is retained (EDF 4.31, *p* \< 10⁻⁴).
+- **Punta Maroma — M6_av** (Akaike weight 0.56; deviance explained 91.1 %; adjusted R² 0.865). The thermal regime is the only significant climate term (*p* \< 10⁻⁴), with lower frequency under LIA (−3.50, *p* \< 10⁻⁴) and under the "cooler" regime (−1.49, *p* = 0.022) than under the "warmer" reference. s(Hur100_av) (EDF 1.32, *p* = 0.12) and s(GMHT_CPS0_30N) (EDF 0.38, *p* = 0.19) are not significant, s(dT_raw) is shrunk to EDF ≈ 0, and s(age) is retained (EDF 4.31, *p* \< 10⁻⁴).
 - **Florida — M6_fqcy** (weight 0.20; 36.0 %; adjusted R² 0.226). s(Hur100_fqcy) is the only significant term (EDF 2.08, *p* = 0.0023). Hydro (*p* = 0.62) and Thermal (*p* = 0.084) are not significant and no contrast reaches *p* \< 0.05; s(GMHT_CPS0_30N) and s(dT_raw) are shrunk to EDF ≈ 0, and s(age) to EDF 0.44.
-- **Belize — M7_fqcy** (weight 0.28; 79.9 %; adjusted R² 0.610). Significant terms: s(dT_raw) (EDF 0.90, *p* = 0.0015), Hurricane (*p* = 0.017), s(GMHT_CPS0_30N) (EDF 0.80, *p* = 0.022) and Thermal (*p* = 0.049). Abundance is lower under CWP&MWA (−2.10, *p* = 0.049) and the "cooler" regime (−1.15, *p* = 0.024) than under "warmer", and higher under the "moderate" hurricane regime (+1.01, *p* = 0.032) than under "low". s(Hur100_fqcy) is not significant (EDF 1.07, *p* = 0.14), and s(age) is shrunk to EDF ≈ 0.
+- **Belize — M7_fqcy** (weight 0.28; 79.9 %; adjusted R² 0.610). Significant terms: s(dT_raw) (EDF 0.90, *p* = 0.0015), Hurricane (*p* = 0.017), s(GMHT_CPS0_30N) (EDF 0.80, *p* = 0.022) and Thermal (*p* = 0.049). Frequency is lower under CWP&MWA (−2.10, *p* = 0.049) and the "cooler" regime (−1.15, *p* = 0.024) than under "warmer", and higher under the "moderate" hurricane regime (+1.01, *p* = 0.032) than under "low". s(Hur100_fqcy) is not significant (EDF 1.07, *p* = 0.14), and s(age) is shrunk to EDF ≈ 0.
 - **Saint Croix — M4_av** (weight 0.55; 70.4 %; adjusted R² 0.507). s(age) (EDF 1.58, *p* = 0.006), s(Hur100_av) (EDF 1.31, *p* = 0.036) and s(dT_raw) (EDF 1.16, *p* = 0.042) are significant; s(GMHT_CPS0_30N) is not (*p* = 0.068). This panel is not interpreted (Section 3.3.5).
-- **Regional composite — M7_av** (weight 0.39; 48.9 %; adjusted R² 0.325). The hurricane regime is the only significant term (*p* = 2.4 × 10⁻⁴), with higher abundance under the "high" regime (+2.88, *p* = 1.8 × 10⁻⁴; the two youngest bins, 0–0.2 ka) than under the "low" reference. Thermal is not significant (*p* = 0.08), and all four smooths, s(Hur100_av) included, are shrunk to EDF ≈ 0.
+- **Regional composite — M7_av** (weight 0.39; 48.9 %; adjusted R² 0.325). The hurricane regime is the only significant term (*p* = 2.4 × 10⁻⁴), with higher frequency under the "high" regime (+2.88, *p* = 1.8 × 10⁻⁴; the two youngest bins, 0–0.2 ka) than under the "low" reference. Thermal is not significant (*p* = 0.08), and all four smooths, s(Hur100_av) included, are shrunk to EDF ≈ 0.
 
 Models with categorical regimes are selected in four panels: M6 (thermal regime) in Punta Maroma and Florida, and M7 (thermal and hurricane regimes) in Belize and the regional composite. Only in Saint Croix does the selected model (M4_av) contain no categorical term.
 
@@ -2725,7 +2734,7 @@ p_all
 ggsave("Figure_4.pdf", plot = p_all, width = 13, height = 9, dpi = 300, device = cairo_pdf)
 ```
 
-**Figure 4** (`Figure_4.pdf`). Partial effects of the selected combined GAMs on the logit scale, coloured by panel (Punta Maroma, Florida, Belize and the regional composite; Saint Croix is not interpreted, Section 3.3.5). Smooth panels show each smooth term with its 95 % confidence band. Terms shrunk to EDF ≈ 0 plot as flat lines at zero: s(age) in Belize and the regional composite, s(GMHT_CPS0_30N) in Florida and the regional composite, s(dT_raw) in Punta Maroma, Florida and the regional composite, and s(Hur100_av) in the regional composite. Smooths are centred to a mean of zero over the fitted bins, so zero denotes the model's average contribution of that term and a curve below zero is associated with lower abundance than average. Factor panels (thermal regime, hydroclimate and hurricane regime) show the effect of each regime level with its 95 % confidence interval, centred in the same way (Section 4.1).
+**Figure 4** (`Figure_4.pdf`). Partial effects of the selected combined GAMs on the logit scale, coloured by panel (Punta Maroma, Florida, Belize and the regional composite; Saint Croix is not interpreted, Section 3.3.5). Smooth panels show each smooth term with its 95 % confidence band. Terms shrunk to EDF ≈ 0 plot as flat lines at zero: s(age) in Belize and the regional composite, s(GMHT_CPS0_30N) in Florida and the regional composite, s(dT_raw) in Punta Maroma, Florida and the regional composite, and s(Hur100_av) in the regional composite. Smooths are centred to a mean of zero over the fitted bins, so zero denotes the model's average contribution of that term and a curve below zero is associated with a lower frequency than average. Factor panels (thermal regime, hydroclimate and hurricane regime) show the effect of each regime level with its 95 % confidence interval, centred in the same way (Section 4.1).
 
 ### 4.2 Concurvity analysis
 
@@ -2770,7 +2779,7 @@ gt::gtsave(tab_S9, "Supplementary_Table_S9.docx")
 
 **Supplementary Table S9. Concurvity of the selected combined GAMs** (output above). In the four models with categorical regimes, the parametric terms are almost completely approximated by the smooths (observed concurvity 0.995–1.000); the Saint Croix model has no parametric term other than the intercept. Observed concurvity is high for s(age) (0.84–0.98) and for s(GMHT_CPS0_30N) (0.81–0.95, except 0.74 in Saint Croix), ranges from 0.64 to 0.96 for s(dT_raw), and ranges from 0.43 to 0.98 for the hurricane smooth (0.98 in Belize, 0.74–0.78 in Florida and the regional composite, 0.54 in Punta Maroma and 0.43 in Saint Croix).
 
-The temporal trend, background temperature, hurricane activity and the categorical regimes are therefore partly interchangeable in these data, because the regimes are defined on the same chronology (Section 2.1) and the continuous climate series have a temporal structure of their own (Fig. 3). With `select = TRUE`, the term that carries this shared temporal pattern differs among panels: s(age) is retained in Punta Maroma (EDF 4.31) and Saint Croix (EDF 1.58), reduced to EDF 0.44 in Florida and shrunk to EDF ≈ 0 in Belize and the regional composite, where all four smooths are shrunk to EDF ≈ 0 and the hurricane regime carries the temporal pattern. Which term `select = TRUE` retains is not uniquely determined, and the effects in Table 2 and Fig. 4 should be read as conditional on the other terms rather than as independent contributions. The dependence of the selected models on the youngest bin, which holds the abundance maximum in Punta Maroma and the regional composite and is one of the two bins of the "high" hurricane regime, is examined in Section 4.5.2.
+The temporal trend, background temperature, hurricane activity and the categorical regimes are therefore partly interchangeable in these data, because the regimes are defined on the same chronology (Section 2.1) and the continuous climate series have a temporal structure of their own (Fig. 3). With `select = TRUE`, the term that carries this shared temporal pattern differs among panels: s(age) is retained in Punta Maroma (EDF 4.31) and Saint Croix (EDF 1.58), reduced to EDF 0.44 in Florida and shrunk to EDF ≈ 0 in Belize and the regional composite, where all four smooths are shrunk to EDF ≈ 0 and the hurricane regime carries the temporal pattern. Which term `select = TRUE` retains is not uniquely determined, and the effects in Table 2 and Fig. 4 should be read as conditional on the other terms rather than as independent contributions. The dependence of the selected models on the youngest bin, which holds the frequency maximum in Punta Maroma and the regional composite and is one of the two bins of the "high" hurricane regime, is examined in Section 4.5.2.
 
 ### 4.3 GAM diagnostic plots
 
@@ -2778,7 +2787,7 @@ For each panel we show the four `gam.check()` residual plots and all model terms
 
 **Supplementary Figure S7.** Residual diagnostics and fitted terms of the selected combined GAMs: (a) Punta Maroma, (b) Florida, (c) Belize, (d) regional composite and (e) Saint Croix.
 
-In all panels the response takes few distinct values, because each bin holds only a few records and abundance is normalized to the panel maximum: 2 distinct values in Saint Croix, 4 in Belize, 5 in Punta Maroma, 14 in Florida and 46 in the regional composite. This discreteness produces the diagonal bands in the plots of residuals against the linear predictor and should not be read as a missing covariate; for the same reason, departures of the deviance residuals from normality (Shapiro–Wilk *p* = 0.02–0.04 in Belize, Saint Croix and the regional composite; 0.055 in Florida and 0.29 in Punta Maroma) are expected and do not by themselves indicate misspecification. The basis dimension is adequate for every smooth (EDF well below *k′*); the only k-index below 1 with *p* \< 0.05 is s(age) in Florida (0.77, *p* = 0.048), whose EDF is 0.44 of 9, so increasing *k* would not help; it reflects residual pattern along age, consistent with the positive lag-1 autocorrelation in this panel (Section 4.4). Panel by panel:
+In all panels the response takes few distinct values, because each bin holds only a few records and the frequency is normalized to the panel maximum: 2 distinct values in Saint Croix, 4 in Belize, 5 in Punta Maroma, 14 in Florida and 46 in the regional composite. This discreteness produces the diagonal bands in the plots of residuals against the linear predictor and should not be read as a missing covariate; for the same reason, departures of the deviance residuals from normality (Shapiro–Wilk *p* = 0.02–0.04 in Belize, Saint Croix and the regional composite; 0.055 in Florida and 0.29 in Punta Maroma) are expected and do not by themselves indicate misspecification. The basis dimension is adequate for every smooth (EDF well below *k′*); the only k-index below 1 with *p* \< 0.05 is s(age) in Florida (0.77, *p* = 0.048), whose EDF is 0.44 of 9, so increasing *k* would not help; it reflects residual pattern along age, consistent with the positive lag-1 autocorrelation in this panel (Section 4.4). Panel by panel:
 
 - **Punta Maroma:** the fitted values span 0.07–0.96 against observed values of 0.08–0.98; the maximum bin (0–0.1 ka; response 0.98, fitted 0.955) determines the upper end of the response–fitted relationship.
 - **Florida:** fitted values span 0.12–0.74 against observed values of 0.08–0.99, so the model does not reproduce the extremes, consistent with its low deviance explained (36.0 %).
@@ -3109,7 +3118,7 @@ gt::gtsave(tab_S11, "Supplementary_Table_S11.docx")
 **Supplementary Table S11. Sensitivity analyses of the selected combined GAMs.** For each check, the term tested, its *p*-value in the reference analysis and in the sensitivity analysis, and the relevant model statistics.
 
 - **Residual autocorrelation.** The AR(1) parameter is 0.34 per century in Florida and 0.02 in Punta Maroma, and in neither panel does it improve the fit (likelihood-ratio *p* = 0.17 and 0.95; AIC of the AR(1) model 0.1 and 2.0 units higher). In Florida s(Hur100_fqcy), significant in the beta model (*p* = 0.0023), remains significant with independent and with AR(1) errors (*p* = 0.011 and 0.014). In Punta Maroma s(Hur100_av), not significant in the beta model (*p* = 0.12), is not significant in either Gaussian model (*p* = 0.22 in both).
-- **Florida source standardization.** The Florida result depends on how the sources are scaled. With the pooled series the selected model is M5_av (weight 0.37; deviance explained 29.3 % vs 36.0 %), in which the only significant climate term is the Florida hydroclimate (*p* = 0.00099); the best marginal model is also the hydroclimate model (weight 0.81; *p* = 0.0025, against 0.66 on the source-standardized series). On the source-standardized series the only significant climate term is instead s(Hur100_fqcy) (*p* = 0.0023). Pooling lets the most abundant source dominate the series, so we retain the source-standardized series; because the significant climate term changes with the scaling of the sources, the Florida result is not considered resolved.
+- **Florida source standardization.** The Florida result depends on how the sources are scaled. With the pooled series the selected model is M5_av (weight 0.37; deviance explained 29.3 % vs 36.0 %), in which the only significant climate term is the Florida hydroclimate (*p* = 0.00099); the best marginal model is also the hydroclimate model (weight 0.81; *p* = 0.0025, against 0.66 on the source-standardized series). On the source-standardized series the only significant climate term is instead s(Hur100_fqcy) (*p* = 0.0023). Pooling lets the largest source dominate the series, so we retain the source-standardized series; because the significant climate term changes with the scaling of the sources, the Florida result is not considered resolved.
 - **Saint Croix.** In the binomial model of one versus two records per bin, none of the climate smooths of the selected model is significant (*p* ≈ 1 for s(GMHT_CPS0_30N), s(dT_raw) and s(Hur100_av)), whereas s(dT_raw) and s(Hur100_av) are significant in the beta model (*p* = 0.042 and 0.036). The beta-model result therefore depends on how the near-binary response is modelled, consistent with not interpreting this panel (Section 3.3.5).
 - **Punta Maroma.** Because the selected model already contains the thermal regime, the check reproduces it: the thermal regime remains significant (*p* \< 10⁻⁴, as in the marginal thermal-regime model), whereas s(Hur100_av) is not (*p* = 0.12). The thermal-regime effect is therefore not absorbed by the hurricane smooth in this panel.
 
@@ -3287,7 +3296,7 @@ The 0°–30°N anomaly therefore reproduces the direction of millennial tempera
 
 #### 4.5.2 Age uncertainty, sampling, binning, the modern peak and Saint Croix
 
-These analyses test how much the combined-model results depend on (i) the uncertainty of the individual ages, (ii) which fossils were sampled, (iii) the width and phase of the bins, (iv) the youngest bin, which holds the modern abundance peak, (v) the information criterion and (vi) the inclusion of Saint Croix in the regional composite. All of them rebuild the five series with `build_series()`, which applies the rules of Section 1.3 to any set of records; applied to the audited ages it reproduces `merged_df_g` exactly (checked in the code).
+These analyses test how much the combined-model results depend on (i) the uncertainty of the individual ages, (ii) which fossils were sampled, (iii) the width and phase of the bins, (iv) the youngest bin, which holds the modern frequency peak, (v) the information criterion and (vi) the inclusion of Saint Croix in the regional composite. All of them rebuild the five series with `build_series()`, which applies the rules of Section 1.3 to any set of records; applied to the audited ages it reproduces `merged_df_g` exactly (checked in the code).
 
 ```{r sensitivity-m3, warning=FALSE, message=FALSE}
 library(dplyr)
@@ -3476,7 +3485,7 @@ gtsave(tab_S12, "Supplementary_Table_S12.docx")
 
 **Supplementary Table S12. Propagation of age and sampling uncertainty to the combined GAMs** (output above). For each panel and scenario: number of replicates, model selected most often among M1–M4 (the candidates without categorical regimes; the selected M6 and M7 models are not refitted) and its share, percentage of replicates in which that model improves on `s(age)` by more than 2 AIC units, median and 95 % range of that improvement, and percentage of replicates in which each climate smooth is significant (*p* \< 0.05) in its M4 model.
 
-- **The modern peak (a).** Removing the youngest bin (0–0.1 ka) removes the AIC advantage of the selected model over `s(age)` in Punta Maroma (from 48.2 to −3.5 AIC units) and in the regional composite (from 20.1 to −1.9). In these two panels, therefore, the support for the selected models (thermal regime in Punta Maroma, hurricane regime in the regional composite) depends on the last century, which holds the abundance maximum of both series and is one of the two bins of the "high" hurricane regime. In Belize the advantage is unchanged (8.4 → 8.2), but of the two temperature smooths only s(dT_raw) remains significant. In Florida the advantage increases (1.4 → 4.5) and s(Hur100_fqcy) remains significant. In Saint Croix it decreases (4.3 → 1.2) and neither s(dT_raw) nor s(Hur100_av) remains significant. The table reports the significance of smooth terms only, and both models are fitted with `select = TRUE`, so the improvements differ from the ΔAIC vs `s(age)` of Section 4.6.
+- **The modern peak (a).** Removing the youngest bin (0–0.1 ka) removes the AIC advantage of the selected model over `s(age)` in Punta Maroma (from 48.2 to −3.5 AIC units) and in the regional composite (from 20.1 to −1.9). In these two panels, therefore, the support for the selected models (thermal regime in Punta Maroma, hurricane regime in the regional composite) depends on the last century, which holds the frequency maximum of both series and is one of the two bins of the "high" hurricane regime. In Belize the advantage is unchanged (8.4 → 8.2), but of the two temperature smooths only s(dT_raw) remains significant. In Florida the advantage increases (1.4 → 4.5) and s(Hur100_fqcy) remains significant. In Saint Croix it decreases (4.3 → 1.2) and neither s(dT_raw) nor s(Hur100_av) remains significant. The table reports the significance of smooth terms only, and both models are fitted with `select = TRUE`, so the improvements differ from the ΔAIC vs `s(age)` of Section 4.6.
 - **Information criterion (c).** AICc, which penalizes complexity more strongly in small samples, selects the same model as AIC only in the regional composite (M7_av). In Punta Maroma it selects the other M6 model (M6_fqcy; the AIC-selected M6_av is 5.4 AICc units behind), so the thermal regime is retained under either criterion. In Belize it selects M3 (the AIC-selected M7_fqcy is 26.6 units behind), in Florida `s(age)` alone (M1; M6_fqcy is 3.8 units behind) and in Saint Croix M2 (M4_av is 6.3 units behind). Under AICc, therefore, the categorical regimes of the Belize model and the climate terms of the Florida and Saint Croix models are not supported.
 - **Bin width and phase (d).** This analysis compares only the candidates without categorical regimes (M1–M4), because the regimes are not rebuilt for other bin widths. With 0.2-ka bins, starting at 0 or at 0.1 ka, s(GMHT_CPS0_30N) in M4_av remains significant in both phases in Punta Maroma (*p* ≤ 1.5 × 10⁻⁴), Belize (*p* ≤ 1.2 × 10⁻³) and the regional composite (*p* ≤ 2.9 × 10⁻⁵), and the best model improves on `s(age)` by 20–22 AIC units in Punta Maroma, 16–24 in Belize and 13–24 in the regional composite. The hurricane smooths are not stable: s(Hur100_av) is significant only in the regional composite with the 0.1-ka phase (*p* = 0.0045), and s(Hur100_fqcy) only in Punta Maroma with the same phase (*p* = 0.0053). Florida and Saint Croix show no consistent climate effect at either bin width.
 - **Regional composite without Saint Croix (b).** Without Saint Croix the composite has 55 bins instead of 57, and the results are unchanged: the best marginal model is again the hurricane-regime model (M_hur), and the selected combined model is again M7_av (deviance explained 56.5 % vs 48.9 %). The regional conclusions therefore do not depend on Saint Croix or on its large weight in the composite.
@@ -3484,7 +3493,7 @@ gtsave(tab_S12, "Supplementary_Table_S12.docx")
 
 ### 4.6 Predictive validation and robustness of the coral–climate associations
 
-Every model includes `s(age)`, which represents the temporal structure of each series: the long-term trend and low-frequency variation in abundance, including taphonomic and sampling effects that cannot be separated from ecological change. Climatic effects are therefore estimated conditional on `s(age)`. All analyses in this section compare the selected models with a reference model, `counts_norm_sv ~ s(age)`, and so ask whether climate adds information beyond the temporal structure of the coral record.
+Every model includes `s(age)`, which represents the temporal structure of each series: the long-term trend and low-frequency variation in the frequency of dated colonies, including taphonomic and sampling effects that cannot be separated from ecological change. Climatic effects are therefore estimated conditional on `s(age)`. All analyses in this section compare the selected models with a reference model, `counts_norm_sv ~ s(age)`, and so ask whether climate adds information beyond the temporal structure of the coral record.
 
 For each panel we evaluate three models: the reference model, the best marginal model (lowest AIC, Section 3.2) and the selected combined model (Section 3.3). Four analyses are run:
 
@@ -3835,15 +3844,15 @@ In Punta Maroma the best model contains a regime in 95–96 % of the replicates,
 
 #### 4.7.4 The Little Ice Age contrast of Punta Maroma
 
-The thermal-regime contrast of Punta Maroma (LIA −3.50, reference "warmer"; Table 2) compares the LIA bins with the "warmer" bins, and at this site "warmer" consists of the modern century (normalized density 0.98, the maximum) and three mid-Holocene bins. To test whether the LIA differs from the other cool or warm intervals, independently of the modern century, the two youngest bins (0–0.2 ka) are removed and the reference is set to the Caribbean Warm Period–Medieval Warm Anomaly (CWP&MWA) or, where that regime has no bins, to "cooler". Four specifications are fitted in each of the 10 phases: with `s(age)`, with `s(age, k = 4)`, without `s(age)`, and with the regime lagged by one century.
+The thermal-regime contrast of Punta Maroma (LIA −3.50, reference "warmer"; Table 2) compares the LIA bins with the "warmer" bins, and at this site "warmer" consists of the modern century (normalized frequency 0.98, the maximum) and three mid-Holocene bins. To test whether the LIA differs from the other cool or warm intervals, independently of the modern century, the two youngest bins (0–0.2 ka) are removed and the reference is set to the Caribbean Warm Period–Medieval Warm Anomaly (CWP&MWA) or, where that regime has no bins, to "cooler". Four specifications are fitted in each of the 10 phases: with `s(age)`, with `s(age, k = 4)`, without `s(age)`, and with the regime lagged by one century.
 
 ```{r round3-lia}
 if (rerun_round3) write.csv(run_lia_tests(), r3("lia_tests.csv"), row.names = FALSE)
 lia <- read.csv(r3("lia_tests.csv"))
 raw_reg <- merged_df_g %>% filter(panel %in% c("Punta Maroma", "Belize", "Regional")) %>%
   group_by(Panel = panel, Thermal) %>%
-  summarise(Bins = n(), `Mean density` = round(mean(counts_norm_sv), 3), `Median density` = round(median(counts_norm_sv), 3), .groups = "drop")
-raw_reg %>% gt(groupname_col = "Panel") %>% tab_header(title = "Normalized density by thermal regime (all bins, audited ages)")
+  summarise(Bins = n(), `Mean frequency` = round(mean(counts_norm_sv), 3), `Median frequency` = round(median(counts_norm_sv), 3), .groups = "drop")
+raw_reg %>% gt(groupname_col = "Panel") %>% tab_header(title = "Normalized frequency by thermal regime (all bins, audited ages)")
 lia %>% filter(level == "LIA") %>%
   group_by(Panel = panel, Specification = spec) %>%
   summarise(`LIA estimate, range` = sprintf("%.2f to %.2f", min(est), max(est)),
@@ -3852,7 +3861,7 @@ lia %>% filter(level == "LIA") %>%
   tab_header(title = "LIA contrast without the two modern centuries (reference CWP&MWA, or 'cooler' where absent)")
 ```
 
-In the raw data the LIA bins of Punta Maroma have a mean normalized density of 0.154, against 0.127 in the "cooler" bins and 0.405 in the "warmer" bins, which include the modern maximum. Without the two modern centuries the LIA contrast of Punta Maroma ranges from −0.56 to +0.42 across phases and specifications without the lag (−0.35 to +0.28 with `s(age)`; positive in 9 of 10 phases) and from +0.26 to +1.05 with the lag, and it is not significant in any of the 40 fits. At Belize (−0.79 to +1.00) and in the regional composite (−1.09 to +0.04) the LIA contrast with the CWP&MWA is not significant in any phase or specification. The negative LIA coefficient of Table 2 is therefore a contrast between the LIA and the century that follows it: the low density of the LIA precedes the modern maximum. It does not show lower density during the LIA than during earlier cool intervals. At Punta Maroma the CWP&MWA (0.7–1.3 ka) has no dated colonies; it falls within the 0.64–1.38-ka low-density interval (Section 2), and bins without colonies do not enter the models.
+In the raw data the LIA bins of Punta Maroma have a mean normalized frequency of 0.154, against 0.127 in the "cooler" bins and 0.405 in the "warmer" bins, which include the modern maximum. Without the two modern centuries the LIA contrast of Punta Maroma ranges from −0.56 to +0.42 across phases and specifications without the lag (−0.35 to +0.28 with `s(age)`; positive in 9 of 10 phases) and from +0.26 to +1.05 with the lag, and it is not significant in any of the 40 fits. At Belize (−0.79 to +1.00) and in the regional composite (−1.09 to +0.04) the LIA contrast with the CWP&MWA is not significant in any phase or specification. The negative LIA coefficient of Table 2 is therefore a contrast between the LIA and the century that follows it: the low density of the LIA precedes the modern maximum. It does not show lower density during the LIA than during earlier cool intervals. At Punta Maroma the CWP&MWA (0.7–1.3 ka) has no dated colonies; it falls within the 0.64–1.38-ka low-density interval (Section 2), and bins without colonies do not enter the models.
 
 #### 4.7.5 Choice of temperature reconstruction (CPS ensemble members)
 
@@ -3890,12 +3899,11 @@ cps_res %>% filter(member == "V1") %>%
   gt() %>% tab_header(title = "Member V1 (temperature series of table v4) with the corrected δT definition")
 ```
 
-[Text to be written after the run.]
+\[Text to be written after the run.\]
 
 #### 4.7.6 Summary
 
 Across the four tests, two results are stable. First, the frequency of dated colonies is highest in the two most recent centuries, which coincide with the "high" hurricane regime of Schmitt et al. (2025) and with the warm modern regime; this association holds across bin phases, time references and age and sampling uncertainty, but it rests on two bins and cannot be separated from recency bias. Second, at Punta Maroma the LIA bins have lower density than the modern century that follows them, but not lower than earlier cool intervals. The continuous TC metrics (Hur100_fqcy, Hur100_av) are not robust to bin phase or to age and sampling uncertainty, and no climatic predictor shows a consistent association before 0.2 ka.
-
 
 ## Session information
 
