@@ -106,8 +106,8 @@ ul.task-list li input[type="checkbox"] {
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>          used (Mb) gc trigger (Mb) max used (Mb)
-Ncells  614890 32.9    1323657 70.7   780998 41.8
-Vcells 1223648  9.4    8388608 64.0  1927684 14.8</code></pre>
+Ncells  614902 32.9    1323760 70.7   781614 41.8
+Vcells 1228163  9.4    8388608 64.0  1927684 14.8</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code>here() starts at C:/Users/alexi/Downloads/Paleoclimatic-drivers-of-Acropora-palmata</code></pre>
@@ -679,14 +679,15 @@ Please cite as: </code></pre>
 <section id="climatic-predictor-import-alignment" class="level3">
 <h3 class="anchored" data-anchor-id="climatic-predictor-import-alignment">1.2 Climatic predictor: import &amp; alignment</h3>
 <p>We import the centennial climate table (<code>df_GAM130326_regimes_v5.xlsx</code>) and assign each row the upper bound of its 0.1-ka bin. Ages are in ka BP (before 1950 CE), the convention of the two continuous climate sources (Kaufman et al.&nbsp;2020; Schmitt et al.&nbsp;2025).</p>
-<p><strong>Variables of the climate table.</strong> <code>GMHT_CPS0_30N</code>: temperature anomaly (°C, relative to 1800–1900 CE) of the Composite Plus Scale (CPS) reconstruction for the 0°–30°N latitude band of Kaufman et al.&nbsp;(2020). The band is a zonal composite of proxy records at all longitudes between the equator and 30°N, not a reconstruction restricted to the Atlantic–Caribbean. We use the median of its 500-member ensemble (file <code>0to30500-6bands-100yr2kwindow.csv</code> of the authors’ code repository, deposited in <code>kaufman2020_CPS/</code>), whose 100-year bins are centred on 0, 100, … yr BP; the median is re-referenced to zero at 100 yr BP and linearly interpolated at the centres of our bins (50, 150, … yr BP). <code>dT_raw</code>: the centennial rate of change of that anomaly (δT), defined as the change from the preceding (older) century into each bin, δT<sub>j</sub> = T<sub>j</sub> − T<sub>j+1</sub> (°C per century; positive values denote warming forward in time). For the oldest bin (5.9–6.0 ka), T<sub>j+1</sub> is the median at 6.05 ka (column <code>GMHT_CPS0_30N_older</code>). <em>Round-3 correction.</em> Table v4 used a single ensemble member (V1, shifted by a constant) assigned to our bins without interpolation (a half-bin offset), and computed <code>dT_raw</code> as T<sub>j</sub> − T<sub>j−1</sub> (bin minus its younger neighbour), so that positive values denoted cooling, the value described the change that followed each century, and the youngest bin was set to 0. Both columns of v4 are kept in v5 (<code>GMHT_CPS0_30N_V1_v4</code>, <code>dT_raw_v4</code>); sheet <code>CPS_traceability</code> documents the rebuild, and Section 4.7.5 tests how the results depend on the choice of ensemble member. <code>Hur100_fqcy</code>: centennial tropical-cyclone (TC) frequency, the number of TC event layers in each 0.1-ka bin of the Great Blue Hole record (Schmitt et al.&nbsp;2025). <code>Hur100_av</code>: smoothed centennial TC frequency, the mean of the two 100-year counts of the same record that overlap the bin (a centred 200-year smoothing). Both metrics count tropical storms and hurricanes; neither measures intensity. Schmitt et al.&nbsp;(2025, table S9) count events in windows of varve years before 2022 CE, so both metrics were recounted in our BP bins from their 50- and 100-year windows (a BP bin <em>j</em> spans 72 + 100<em>j</em> to 72 + 100(<em>j</em> + 1) years before 2022). As with the coral ages (Section 1.1), the youngest bin closes at the youngest dated colony (1956 CE): <code>Hur100_fqcy</code> counts 1850–1956 CE (15 events, one of them in 1956), and <code>Hur100_av</code> averages the windows 1800–1900 and 1900–2000 CE. Events after 2000 CE, including the 21st-century extrapolation of 45 events per century, are not used. The rebuild is documented bin by bin in sheet <code>Hur_BP_traceability</code> of the climate table; the earlier table (<code>df_GAM130326_regimes_v3.xlsx</code>) took the windows counted from 2022 CE in order, as if they were BP bins, which placed the counts about 150 years from the BP bins, and it had 45 events in the youngest bin. Counts recomputed from the individual event layers (Schmitt et al.&nbsp;2025, table S4a) agree with the rebuilt series (<em>r</em> = 0.99; at most 2 events per bin apart). A sensitivity version that extends the youngest bin to 2022 CE as a rate per century (<code>df_GAM130326_regimes_v5c.xlsx</code>) is described in Section 4.7.1. <code>Thermal</code>, <code>Hydro</code> and <code>Hurricane</code>: categorical regimes (below). <code>Hydro_FL</code>, <code>Hur_FL</code>, <code>FL_pact</code> and <code>FL_nrec</code>: Florida series (below).</p>
+<p><strong>Variables of the climate table.</strong> <code>GMHT_CPS0_30N</code>: temperature anomaly (°C, relative to 1800–1900 CE) of the Composite Plus Scale (CPS) reconstruction for the 0°–30°N latitude band of Kaufman et al.&nbsp;(2020). The band is a zonal composite of proxy records at all longitudes between the equator and 30°N, not a reconstruction restricted to the Atlantic–Caribbean. Of the 54 records of the Temperature 12k database in this band, 14 are from the Caribbean Sea, the Gulf of Mexico and South Florida; the others are from the eastern Atlantic and West Africa (5), the Indian Ocean, East Africa and the Arabian Sea (16), the western Pacific and East Asia (15) and the eastern Pacific (4) (files in <code>ScientificDataAnalysis/lipdFilesWithEnsembles</code> of the same repository). The anomaly therefore describes the tropical Northern Hemisphere as a whole, and its timing need not match that of the Caribbean. We use the median of its 500-member ensemble (file <code>0to30500-6bands-100yr2kwindow.csv</code> of the authors’ code repository, deposited in <code>kaufman2020_CPS/</code>), whose 100-year bins are centred on 0, 100, … yr BP; the median is re-referenced to zero at 100 yr BP and linearly interpolated at the centres of our bins (50, 150, … yr BP). <code>dT_raw</code>: the centennial rate of change of that anomaly (δT), defined as the change from the preceding (older) century into each bin, δT<sub>j</sub> = T<sub>j</sub> − T<sub>j+1</sub> (°C per century; positive values denote warming forward in time). For the oldest bin (5.9–6.0 ka), T<sub>j+1</sub> is the median at 6.05 ka (column <code>GMHT_CPS0_30N_older</code>). <em>Round-3 correction.</em> Table v4 used a single ensemble member (V1, shifted by a constant) assigned to our bins without interpolation (a half-bin offset), and computed <code>dT_raw</code> as T<sub>j</sub> − T<sub>j−1</sub> (bin minus its younger neighbour), so that positive values denoted cooling, the value described the change that followed each century, and the youngest bin was set to 0. Both columns of v4 are kept in v5 (<code>GMHT_CPS0_30N_V1_v4</code>, <code>dT_raw_v4</code>); sheet <code>CPS_traceability</code> documents the rebuild, and Section 4.7.5 tests how the results depend on the choice of ensemble member. <code>Hur100_fqcy</code>: centennial tropical-cyclone (TC) frequency, the number of TC event layers in each 0.1-ka bin of the Great Blue Hole record (Schmitt et al.&nbsp;2025). <code>Hur100_av</code>: smoothed centennial TC frequency, the mean of the two 100-year counts of the same record that overlap the bin (a centred 200-year smoothing). Both metrics count tropical storms and hurricanes; neither measures intensity. Schmitt et al.&nbsp;(2025, table S9) count events in windows of varve years before 2022 CE, so both metrics were recounted in our BP bins from their 50- and 100-year windows (a BP bin <em>j</em> spans 72 + 100<em>j</em> to 72 + 100(<em>j</em> + 1) years before 2022). As with the coral ages (Section 1.1), the youngest bin closes at the youngest dated colony (1956 CE): <code>Hur100_fqcy</code> counts 1850–1956 CE (15 events, one of them in 1956), and <code>Hur100_av</code> averages the windows 1800–1900 and 1900–2000 CE. Events after 2000 CE, including the 21st-century extrapolation of 45 events per century, are not used. The rebuild is documented bin by bin in sheet <code>Hur_BP_traceability</code> of the climate table; the earlier table (<code>df_GAM130326_regimes_v3.xlsx</code>) took the windows counted from 2022 CE in order, as if they were BP bins, which placed the counts about 150 years from the BP bins, and it had 45 events in the youngest bin. Counts recomputed from the individual event layers (Schmitt et al.&nbsp;2025, table S4a) agree with the rebuilt series (<em>r</em> = 0.99; at most 2 events per bin apart). A sensitivity version that extends the youngest bin to 2022 CE as a rate per century (<code>df_GAM130326_regimes_v5c.xlsx</code>) is described in Section 4.7.1. <code>Thermal</code>, <code>Hydro</code> and <code>Hurricane</code>: categorical regimes (below). <code>Hydro_FL</code>, <code>Hur_FL</code>, <code>FL_pact</code> and <code>FL_nrec</code>: Florida series (below).</p>
 <p>The three categorical regimes were coded from the published chronologies compiled in Supplementary Material 2, converted to ka BP, assigning each bin to the period that contains its midpoint (a midpoint on a boundary goes to the younger period):</p>
 <ul>
-<li><strong>Thermal</strong> (published chronology, not the GMST series): warmer 0–0.1 ka (post-1850 CE); LIA 0.1–0.7 ka (~1300–1850 CE); CWP&amp;MWA 0.7–1.3 ka (700–1250 CE); cooler 1.3–4.8 ka; warmer 4.8–6.0 ka (mid-Holocene warmth).</li>
+<li><strong>Thermal</strong> (regional chronologies of the Caribbean and the Yucatán Peninsula compiled in Supplementary Material 2, independent of the 0°–30°N anomaly): warmer 0–0.1 ka (post-1850 CE); LIA 0.1–0.7 ka (~1300–1850 CE); CWP&amp;MWA 0.7–1.3 ka (700–1250 CE); cooler 1.3–4.8 ka; warmer 4.8–6.0 ka (mid-Holocene warmth).</li>
 <li><strong>Hurricane</strong> (Schmitt et al.&nbsp;2025 only, the source of <code>Hur100_av</code> and <code>Hur100_fqcy</code>): high 0–0.2 ka (rise after 1800 CE); calm 0.2–0.6 ka (1400–1800 CE); enhanced 0.6–1.1 and 1.2–1.4 ka (900–1400 and 600–800 CE); moderate 1.1–1.2 and 1.4–4.0 ka (mean 9–14 events per century); low 4.0–6.0 ka (~7 events per century; the record begins at 5.7 ka).</li>
 <li><strong>Hydro</strong>, by region. Yucatán (<code>Hydro</code>): wet 0–0.8 ka, dry 0.8–1.7 ka and wet 1.7–3.5 ka (Curtis et al.&nbsp;1996, boundaries calibrated with IntCal20), wet 5.2–5.7 ka (Serrato Marks et al.&nbsp;2021), no data elsewhere. Florida (<code>Hydro_FL</code>): dry 4.6–6.0 ka (Pollock et al.&nbsp;2017; Donders 2014), wet 2.8–4.6 ka and dry 0–2.8 ka (Glaser et al.&nbsp;2013), with multi-century droughts near 1.0 and 0.4 ka (Willard &amp; Bernhardt 2011).</li>
 <li><strong>Hurricane, Florida</strong> (<code>Hur_FL</code>, <code>FL_pact</code>, <code>FL_nrec</code>). Schmitt et al.&nbsp;(2025) record storms reaching the Yucatán coast, and Florida-proximal records do not follow it (agreement in 46 % of the bins younger than 3.5 ka, no better than chance). The Florida panel therefore uses a local series built from five records on the Atlantic side of Florida: the western Great Bahama Bank / Florida Straits (Toomey et al.&nbsp;2013; 0–6 ka), the Everglades (Yao et al.&nbsp;2020; 0–3.5 ka), southwest Florida (Ercolani et al.&nbsp;2015, via Oliva et al.&nbsp;2017), and Blackwood Sinkhole (van Hengstum et al.&nbsp;2016, via Oliva et al.&nbsp;2017) and Thatchpoint Blue Hole (Winkler et al.&nbsp;2020) on Great Abaco. An earlier record from Thatchpoint Blue Hole (van Hengstum et al.&nbsp;2014) is not used, because Winkler et al.&nbsp;(2020) showed that its core spans only the last century; the bin-by-bin construction is in sheet <code>Hur_FL_traceability</code> of the climate table. All ages are cal BP (1950). For each bin, <code>FL_pact</code> is the proportion of the records covering the bin that report an active interval at its midpoint, <code>FL_nrec</code> the number of those records, and <code>Hur_FL</code> is “active” when <code>FL_pact</code> ≥ 0.5 and “quiet” otherwise. Older than 3.5 ka the series rests on a single record (Toomey et al.&nbsp;2013). Records from the Gulf coast of Florida were not used, because they sample Gulf landfalls. For Hydro and the hurricane regime, the Florida panel uses the Florida series; Punta Maroma, Belize, Saint Croix and the regional composite use the Yucatán series (Hurricane = Schmitt et al.&nbsp;2025). The continuous hurricane metrics (<code>Hur100_av</code>, <code>Hur100_fqcy</code>) are those of Schmitt et al.&nbsp;(2025) in every panel. In the Yucatán Hydro series, undocumented bins are coded as a separate level, “no data”, so that no bins are lost. The mapping is positional: <code>interval_max</code> is taken from the order in which interval labels first appear, which is correct only if the file has exactly one row per bin, ordered from youngest to oldest.</li>
 </ul>
+<p><strong>Two sources of thermal information.</strong> The thermal regime and the continuous temperature predictors come from different kinds of record, and they do not describe the same history. The regime follows regional chronologies, in which the Caribbean Warm Period–Medieval Warm Anomaly (0.7–1.3 ka) is warm and the Little Ice Age (0.1–0.7 ka) is cool. The CPS median for 0°–30°N shows no Medieval warm interval: its anomaly stays between −0.50 and −0.68 °C from 650 to 1250 CE. Its minimum falls at 0.4–0.5 ka (about 1450–1550 CE), and the anomaly rises from then on, so δT is positive in the three late Little Ice Age bins (0.1–0.4 ka) while the anomaly is still below zero. An early minimum is plausible for a band that includes much of the tropical Pacific, because the coldest phase of the Little Ice Age was not synchronous: it fell in the fifteenth century in the central and eastern Pacific, in the seventeenth century in northwestern Europe and southeastern North America, and in the mid-nineteenth century in most other regions (Neukom et al.&nbsp;2019). The spread of the ensemble is also large relative to this signal (5–95 % range −1.9 to +0.3 °C at 0.45 ka), so the timing of the minimum is poorly constrained. The regime and the continuous predictors are therefore not interchangeable descriptions of temperature, and results based on one are not expected to reproduce those based on the other.</p>
 <p>Climate values are joined to every fossil record by <code>interval_max</code>, and the column is renamed <code>age</code> (ka). The resulting <code>merged_df</code> is record-level and therefore holds climate values only for bins that contain at least one fossil record.</p>
 </section>
 <section id="response-variable-centennial-counts-and-normalization" class="level3">
@@ -1365,13 +1366,13 @@ Attaching package: 'nlme'</code></pre>
 </div>
 <p>We assemble Fig. 3. Panel (a) is Fig. 3a. Below it, four panels show, for each of the 60 centennial bins:</p>
 <ul>
-<li><strong>(b)</strong> the <code>GMHT_CPS0_30N</code> temperature anomaly (<sup>o</sup>C);</li>
+<li><strong>(b)</strong> the <code>GMHT_CPS0_30N</code> temperature anomaly (<sup>o</sup>C, relative to 1800–1900 CE): the median of the CPS ensemble for the 0°–30°N band, a zonal mean over all longitudes (Section 1.2);</li>
 <li><strong>(c)</strong> the centennial rate of change of the temperature anomaly (δT, <sup>o</sup>C per century; <code>dT_raw</code>), the change from the preceding (older) century into each bin; positive values (orange) denote warming forward in time;</li>
 <li><strong>(d)</strong> the smoothed centennial tropical-cyclone frequency (<code>Hur100_av</code>, events per century, centred 200-year smoothing) as bars (dark grey where &gt; 10) and the centennial tropical-cyclone frequency (<code>Hur100_fqcy</code>) as a step line;</li>
 <li><strong>(e)</strong> local hurricane activity in Florida (<code>FL_pact</code>): proportion of the Florida-proximal paleotempestological records that report an active interval in each bin, as bars (dark blue where ≥ 0.5, the threshold that defines the “active” regime); bins older than 3.5 ka rest on a single record (Toomey et al.&nbsp;2013);</li>
 <li><strong>(f)</strong> the nominal thermal, hydroclimatic (Yucatán and Florida series) and hurricane (Yucatán and Florida series) regimes, drawn as contiguous time segments over the full span of each bin.</li>
 </ul>
-<p><strong>Figure 3</strong> (<code>Figure_3.pdf</code>). Relative frequency of dated <em>A. palmata</em> colonies and paleoclimate over the last 6 ka. The climate panels (b–f) are drawn from the 60-bin climate table, so they cover the full 0–6 ka interval, including bins without fossil records.</p>
+<p><strong>Figure 3</strong> (<code>Figure_3.pdf</code>). Relative frequency of dated <em>A. palmata</em> colonies and paleoclimate over the last 6 ka. The climate panels (b–f) are drawn from the 60-bin climate table, so they cover the full 0–6 ka interval, including bins without fossil records. Panels b–c and f come from different kinds of record. Panels b–c show a zonal mean for 0°–30°N (Kaufman et al.&nbsp;2020), with no Medieval warm interval and a minimum at about 1450–1550 CE. Panel f shows regimes taken from regional Caribbean and Yucatán chronologies (Supplementary Material 2), in which the CWP&amp;MWA is warm and the Little Ice Age lasts until about 1850 CE (Section 1.2).</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -3833,7 +3834,7 @@ Thermal   active quiet
 </div>
 </div>
 </div>
-<p>In Punta Maroma, M_the dominates (weight &gt; 0.99); M_hav follows at ΔAIC 19.8 and all other models at ΔAIC &gt; 22. In the regional composite, M_hur ranks first (weight 0.73), followed by M_the at ΔAIC 2.0 (weight 0.27); all models with a continuous predictor lie at ΔAIC &gt; 11. In Belize, M_temp (weight 0.49) and M_hur (ΔAIC 0.59, weight 0.37) are competitive, and all other models lie at ΔAIC &gt; 4. In Florida, M_hf ranks first (weight 0.67) and the other six models lie at ΔAIC 3.8–8.7, but s(Hur100_fqcy) is not significant (Section 3.2.4). In Saint Croix, M_hav ranks first (weight 0.62), followed by M_hf at ΔAIC 2.8; with <em>n</em> = 19 bins whose response takes essentially two values (Section 3.1.3), this ranking is not interpreted (Section 3.3.5).</p>
+<p>In Punta Maroma, M_the ranks first (weight 0.86), followed by M_dt at ΔAIC 3.6 (weight 0.14); all other models lie at ΔAIC &gt; 19. In the regional composite, M_hur ranks first (weight 0.68) and M_the follows at ΔAIC 2.0 (weight 0.25); the best model with a continuous predictor, M_dt, lies at ΔAIC 4.8. In Belize, M_hur (weight 0.41) and M_temp (ΔAIC 0.10, weight 0.39) are competitive, and all other models lie at ΔAIC &gt; 3.7. In Florida, M_hf ranks first (weight 0.63) and the other six models lie at ΔAIC 3.7–8.7, but s(Hur100_fqcy) is not significant (Section 3.2.4). In Saint Croix, M_hav ranks first (weight 0.61), followed by M_hf at ΔAIC 2.8; with <em>n</em> = 19 bins whose response takes essentially two values (Section 3.1.3), this ranking is not interpreted (Section 3.3.5).</p>
 </section>
 <section id="best-supported-marginal-gams" class="level4">
 <h4 class="anchored" data-anchor-id="best-supported-marginal-gams">3.2.4 Best-supported marginal GAMs</h4>
@@ -5261,12 +5262,12 @@ R-sq.(adj) =  0.332   Deviance explained = 45.5%
 </div>
 <p>Climate terms reach <em>p</em> &lt; 0.05 (term-level test) in the best marginal models of three panels:</p>
 <ul>
-<li><strong>Punta Maroma:</strong> Thermal (<em>p</em> &lt; 10⁻⁴; deviance explained 89.4 %), driven by lower frequency under LIA (−3.79, <em>p</em> &lt; 10⁻⁴) and, less so, under the “cooler” regime (−1.48, <em>p</em> = 0.031) than under the “warmer” reference. The best continuous model, with s(Hur100_av) (EDF 3.00, <em>p</em> = 0.0017; deviance explained 84.5 %), is also significant but lies 19.8 AIC units behind the thermal-regime model (Section 3.2.3).</li>
-<li><strong>Regional composite:</strong> Hurricane (<em>p</em> = 2.3 × 10⁻⁴; deviance explained 50.8 %), with lower frequency under the “calm” regime (−2.41, <em>p</em> = 0.043) than under the “low” reference. The best continuous model, with s(GMHT_CPS0_30N) (EDF 2.31, <em>p</em> = 0.0048; deviance explained 33.9 %), lies 11.8 AIC units behind.</li>
-<li><strong>Belize:</strong> s(GMHT_CPS0_30N) (EDF 1.0, i.e.&nbsp;linear; <em>p</em> = 0.0097; deviance explained 48.9 %). The hurricane regime is not significant at term level (<em>p</em> = 0.057), although the “high” contrast is (+4.22, <em>p</em> = 0.019; the two youngest bins, 0–0.2 ka).</li>
+<li><strong>Punta Maroma:</strong> Thermal (<em>p</em> &lt; 10⁻⁴; deviance explained 89.4 %), driven by lower frequency under LIA (−3.79, <em>p</em> &lt; 10⁻⁴) and, less so, under the “cooler” regime (−1.48, <em>p</em> = 0.031) than under the “warmer” reference. The best continuous model, with s(dT_raw) (EDF 7.52, <em>p</em> &lt; 10⁻⁴; deviance explained 90.5 %), is also significant and lies 3.6 AIC units behind. Its smooth uses almost all of its basis dimension on 31 bins; its behaviour is examined in Sections 3.3.3 and 4.6.</li>
+<li><strong>Regional composite:</strong> Hurricane (<em>p</em> = 2.3 × 10⁻⁴; deviance explained 50.8 %), with lower frequency under the “calm” regime (−2.41, <em>p</em> = 0.043) than under the “low” reference. The best continuous model, with s(dT_raw) (EDF 5.85, <em>p</em> = 0.0027; deviance explained 45.5 %), lies 4.8 AIC units behind.</li>
+<li><strong>Belize:</strong> s(GMHT_CPS0_30N) (EDF 1.0, i.e.&nbsp;linear; <em>p</em> = 0.029; deviance explained 49.3 %), 0.10 AIC units behind the hurricane-regime model. The hurricane regime is not significant at term level (<em>p</em> = 0.057), although the “high” contrast is (+4.22, <em>p</em> = 0.019; the two youngest bins, 0–0.2 ka).</li>
 </ul>
 <p>No climate term reaches <em>p</em> &lt; 0.05 in Florida (Hydro, <em>p</em> = 0.66; s(Hur100_fqcy), <em>p</em> = 0.056) or Saint Croix (Hurricane, <em>p</em> = 0.29; s(Hur100_av), <em>p</em> = 0.076).</p>
-<p>In the marginal models, therefore, the best-supported single predictor is the thermal regime in Punta Maroma and the hurricane regime in the regional composite. In Punta Maroma the TC-frequency smooth s(Hur100_av) is also significant, but far behind in AIC. Belize is associated with the temperature anomaly, and neither Florida nor Saint Croix supports any climate predictor at <em>p</em> &lt; 0.05.</p>
+<p>In the marginal models, therefore, the best-supported single predictor is the thermal regime in Punta Maroma and the hurricane regime in the regional composite. In both panels the δT smooth is also significant but ranks second, 3.6 and 4.8 AIC units behind. In Belize the hurricane regime and the temperature anomaly are equally supported, and only the latter is significant; neither Florida nor Saint Croix supports any climate predictor at <em>p</em> &lt; 0.05. Table 1 reports nominal significance only; the robustness of these terms is assessed in Section 4.</p>
 </section>
 </section>
 <section id="combined-gam-effects-analysis" class="level3">
@@ -5860,11 +5861,11 @@ R-sq.(adj) =  0.332   Deviance explained = 45.5%
 </div>
 <p><strong>Table 2. Best-supported combined GAM per panel</strong> (lowest AIC): model, AIC, Akaike weight, deviance explained, adjusted R², climate terms with term-level <em>p</em> &lt; 0.05 (<code>s(age)</code> excluded), factor contrasts with <em>p</em>-value &lt; 0.05 versus reference level, and EDF of every smooth.</p>
 <ul>
-<li><strong>Punta Maroma — M6_av</strong> (Akaike weight 0.56; deviance explained 91.1 %; adjusted R² 0.865). The thermal regime is the only significant climate term (<em>p</em> &lt; 10⁻⁴), with lower frequency under LIA (−3.50, <em>p</em> &lt; 10⁻⁴) and under the “cooler” regime (−1.49, <em>p</em> = 0.022) than under the “warmer” reference. s(Hur100_av) (EDF 1.32, <em>p</em> = 0.12) and s(GMHT_CPS0_30N) (EDF 0.38, <em>p</em> = 0.19) are not significant, s(dT_raw) is shrunk to EDF ≈ 0, and s(age) is retained (EDF 4.31, <em>p</em> &lt; 10⁻⁴).</li>
-<li><strong>Florida — M6_fqcy</strong> (weight 0.20; 36.0 %; adjusted R² 0.226). s(Hur100_fqcy) is the only significant term (EDF 2.08, <em>p</em> = 0.0023). Hydro (<em>p</em> = 0.62) and Thermal (<em>p</em> = 0.084) are not significant and no contrast reaches <em>p</em> &lt; 0.05; s(GMHT_CPS0_30N) and s(dT_raw) are shrunk to EDF ≈ 0, and s(age) to EDF 0.44.</li>
-<li><strong>Belize — M7_fqcy</strong> (weight 0.28; 79.9 %; adjusted R² 0.610). Significant terms: s(dT_raw) (EDF 0.90, <em>p</em> = 0.0015), Hurricane (<em>p</em> = 0.017), s(GMHT_CPS0_30N) (EDF 0.80, <em>p</em> = 0.022) and Thermal (<em>p</em> = 0.049). Frequency is lower under CWP&amp;MWA (−2.10, <em>p</em> = 0.049) and the “cooler” regime (−1.15, <em>p</em> = 0.024) than under “warmer”, and higher under the “moderate” hurricane regime (+1.01, <em>p</em> = 0.032) than under “low”. s(Hur100_fqcy) is not significant (EDF 1.07, <em>p</em> = 0.14), and s(age) is shrunk to EDF ≈ 0.</li>
-<li><strong>Saint Croix — M4_av</strong> (weight 0.55; 70.4 %; adjusted R² 0.507). s(age) (EDF 1.58, <em>p</em> = 0.006), s(Hur100_av) (EDF 1.31, <em>p</em> = 0.036) and s(dT_raw) (EDF 1.16, <em>p</em> = 0.042) are significant; s(GMHT_CPS0_30N) is not (<em>p</em> = 0.068). This panel is not interpreted (Section 3.3.5).</li>
-<li><strong>Regional composite — M7_av</strong> (weight 0.39; 48.9 %; adjusted R² 0.325). The hurricane regime is the only significant term (<em>p</em> = 2.4 × 10⁻⁴), with higher frequency under the “high” regime (+2.88, <em>p</em> = 1.8 × 10⁻⁴; the two youngest bins, 0–0.2 ka) than under the “low” reference. Thermal is not significant (<em>p</em> = 0.08), and all four smooths, s(Hur100_av) included, are shrunk to EDF ≈ 0.</li>
+<li><strong>Punta Maroma — M3</strong> (Akaike weight 0.43; deviance explained 90.2 %; adjusted R² 0.857). s(dT_raw) is the only significant term (EDF 6.90, <em>p</em> &lt; 10⁻⁴); s(GMHT_CPS0_30N) and s(age) are shrunk to EDF ≈ 0, so s(dT_raw) carries the whole temporal pattern of the series. The two models with the thermal regime follow at ΔAIC 1.66 (M6_av and M6_fqcy, weight 0.19 each). In them the thermal regime is significant (<em>p</em> &lt; 10⁻⁴; LIA −3.18 relative to “warmer”, <em>p</em> &lt; 10⁻⁴), together with s(age) (<em>p</em> &lt; 10⁻⁴) and s(GMHT_CPS0_30N) (<em>p</em> = 0.0087), whereas s(dT_raw) is not (<em>p</em> = 0.16).</li>
+<li><strong>Florida — M4_fqcy</strong> (weight 0.21; 23.9 %; adjusted R² 0.173). s(GMHT_CPS0_30N) (EDF 1.19, <em>p</em> = 0.016) and s(Hur100_fqcy) (EDF 1.38, <em>p</em> = 0.035) are significant; s(age) and s(dT_raw) are shrunk to EDF ≈ 0.</li>
+<li><strong>Belize — M4_av</strong> (weight 0.21; 48.3 %; adjusted R² 0.402). s(GMHT_CPS0_30N) (EDF 0.80, <em>p</em> = 0.010) and s(age) (EDF 1.72, <em>p</em> = 0.0011) are significant; s(dT_raw) and s(Hur100_av) are shrunk to EDF ≈ 0, so M4_fqcy has the same fit (ΔAIC &lt; 10⁻⁵).</li>
+<li><strong>Saint Croix — M4_av</strong> (weight 0.38; 57.4 %; adjusted R² 0.371). Only s(age) is significant (EDF 1.62, <em>p</em> = 0.0087); no climate term reaches <em>p</em> &lt; 0.05 (s(Hur100_av), <em>p</em> = 0.054). This panel is not interpreted (Section 3.3.5).</li>
+<li><strong>Regional composite — M7_av</strong> (weight 0.29; 48.9 %; adjusted R² 0.325). The hurricane regime is the only significant term (<em>p</em> = 2.4 × 10⁻⁴), with higher frequency under the “high” regime (+2.88, <em>p</em> = 1.8 × 10⁻⁴; the two youngest bins, 0–0.2 ka) than under the “low” reference. Thermal is not significant (<em>p</em> = 0.080), and all four smooths, s(Hur100_av) included, are shrunk to EDF ≈ 0.</li>
 </ul>
 <p>Models with categorical regimes are selected in four panels: M6 (thermal regime) in Punta Maroma and Florida, and M7 (thermal and hurricane regimes) in Belize and the regional composite. Only in Saint Croix does the selected model (M4_av) contain no categorical term.</p>
 <div class="cell">
@@ -6344,7 +6345,7 @@ R-sq.(adj) =  0.332   Deviance explained = 45.5%
 <tr class="odd">
 <td class="gt_row gt_left" headers="Panel">Punta Maroma</td>
 <td class="gt_row gt_left" headers="Model">M3</td>
-<td class="gt_row gt_left" headers="Model_Label">Thermal forcing model</td>
+<td class="gt_row gt_left" headers="Model_Label">Temperature anomaly + rate of change (δT)</td>
 <td class="gt_row gt_right" headers="AIC">−82.158</td>
 <td class="gt_row gt_right" headers="Weight">0.43</td>
 <td class="gt_row gt_right" headers="DevianceExplained">0.902</td>
@@ -6356,7 +6357,7 @@ R-sq.(adj) =  0.332   Deviance explained = 45.5%
 <tr class="even">
 <td class="gt_row gt_left gt_striped" headers="Panel">Florida</td>
 <td class="gt_row gt_left gt_striped" headers="Model">M4_fqcy</td>
-<td class="gt_row gt_left gt_striped" headers="Model_Label">Thermal–disturbance model (frequency)</td>
+<td class="gt_row gt_left gt_striped" headers="Model_Label">Temperature + TC frequency</td>
 <td class="gt_row gt_right gt_striped" headers="AIC">−7.676</td>
 <td class="gt_row gt_right gt_striped" headers="Weight">0.21</td>
 <td class="gt_row gt_right gt_striped" headers="DevianceExplained">0.239</td>
@@ -6368,7 +6369,7 @@ R-sq.(adj) =  0.332   Deviance explained = 45.5%
 <tr class="odd">
 <td class="gt_row gt_left" headers="Panel">Belize</td>
 <td class="gt_row gt_left" headers="Model">M4_av</td>
-<td class="gt_row gt_left" headers="Model_Label">Thermal–disturbance model (smoothed frequency)</td>
+<td class="gt_row gt_left" headers="Model_Label">Temperature + smoothed TC frequency</td>
 <td class="gt_row gt_right" headers="AIC">−5.846</td>
 <td class="gt_row gt_right" headers="Weight">0.21</td>
 <td class="gt_row gt_right" headers="DevianceExplained">0.483</td>
@@ -6380,7 +6381,7 @@ R-sq.(adj) =  0.332   Deviance explained = 45.5%
 <tr class="even">
 <td class="gt_row gt_left gt_striped" headers="Panel">Saint Croix</td>
 <td class="gt_row gt_left gt_striped" headers="Model">M4_av</td>
-<td class="gt_row gt_left gt_striped" headers="Model_Label">Thermal–disturbance model (smoothed frequency)</td>
+<td class="gt_row gt_left gt_striped" headers="Model_Label">Temperature + smoothed TC frequency</td>
 <td class="gt_row gt_right gt_striped" headers="AIC">−8.446</td>
 <td class="gt_row gt_right gt_striped" headers="Weight">0.38</td>
 <td class="gt_row gt_right gt_striped" headers="DevianceExplained">0.574</td>
@@ -6392,7 +6393,7 @@ R-sq.(adj) =  0.332   Deviance explained = 45.5%
 <tr class="odd">
 <td class="gt_row gt_left" headers="Panel">Regional</td>
 <td class="gt_row gt_left" headers="Model">M7_av</td>
-<td class="gt_row gt_left" headers="Model_Label">Full climate-regime model (smoothed frequency)</td>
+<td class="gt_row gt_left" headers="Model_Label">Temperature + smoothed TC frequency + thermal and hurricane regimes</td>
 <td class="gt_row gt_right" headers="AIC">−57.817</td>
 <td class="gt_row gt_right" headers="Weight">0.29</td>
 <td class="gt_row gt_right" headers="DevianceExplained">0.489</td>
@@ -6428,7 +6429,7 @@ $Regional
 character(0)</code></pre>
 </div>
 </div>
-<p>No selected model is clearly separated from all alternatives. In Punta Maroma (Akaike weight 0.56) the competitive set (ΔAIC ≤ 2; Supplementary Fig. S6) comprises the two M6 models, which differ only in the hurricane metric (M6_av and M6_fqcy, ΔAIC 0.63; combined weight 0.97), and in the regional composite (0.39) the two M7 models (M7_av and M7_fqcy, ΔAIC 0.14; combined weight 0.75). In Belize (0.28) it comprises five models (M7_fqcy, M4_fqcy, M3, M4_av and M7_av; ΔAIC ≤ 1.60; combined weight 0.91). In Saint Croix the selected model is the only one within ΔAIC ≤ 2 (weight 0.55). In Florida (0.20) it comprises eight models (combined weight 0.95) and includes the model with <code>s(age)</code> alone (ΔAIC 1.41), so in this panel the data do not distinguish models with climate terms from the temporal trend alone (Supplementary Table S8).</p>
+<p>No selected model is clearly separated from all alternatives (Supplementary Fig. S6). In Punta Maroma (Akaike weight 0.43) the competitive set (ΔAIC ≤ 2) comprises M3 and the two M6 models (ΔAIC 1.66; combined weight 0.80), so a model with the δT smooth and models with the thermal regime are about equally supported. In the regional composite (0.29) it comprises the two M7 and the two M6 models (ΔAIC ≤ 0.72; combined weight 0.98). In Belize (0.21) it comprises six models (M4_av, M4_fqcy, M3, M2, M7_av and M7_fqcy; ΔAIC ≤ 1.83; combined weight 0.89). In Saint Croix (0.38) it comprises the two M4 models (ΔAIC 1.44; combined weight 0.56). In Florida (0.21) it comprises seven models (ΔAIC ≤ 1.86; combined weight 0.90); the model with <code>s(age)</code> alone lies just outside (ΔAIC 2.55), so in this panel the data barely distinguish models with climate terms from the temporal trend alone (Supplementary Table S8).</p>
 <div class="cell">
 <div class="cell-output-display">
 <div id="aqkjhixmbi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
@@ -7214,7 +7215,7 @@ character(0)</code></pre>
 </div>
 </div>
 <p><strong>Supplementary Table S8. Term-level <em>p</em>-values across the competitive set.</strong> For each panel, every combined GAM within ΔAIC ≤ 2 of the best model, with its ΔAIC, Akaike weight and the term-level <em>p</em>-value of each term (joint Wald test for factors; * <em>p</em> &lt; 0.05; – term not in the model).</p>
-<p>In Punta Maroma the thermal regime is significant in both competitive models (<em>p</em> &lt; 10⁻⁴), and neither hurricane smooth is (<em>p</em> = 0.12 and 0.77). In the regional composite the hurricane regime is significant in both (<em>p</em> = 2.4 × 10⁻⁴ and 3.0 × 10⁻⁴), and neither the thermal regime nor any smooth is. In Belize s(dT_raw) is significant in all five competitive models, s(GMHT_CPS0_30N) in four, and the thermal and hurricane regimes in both M7 models; neither hurricane smooth is significant in any of them. In Florida s(Hur100_fqcy) is significant in M6_fqcy, M4_fqcy and M7_fqcy (<em>p</em> = 0.0023, 0.04 and 0.00075) but not in M5_fqcy (<em>p</em> = 0.051), s(Hur100_av) is not significant in M4_av (<em>p</em> = 0.52), and Hydro, Thermal and the local hurricane regime (M7_fqcy, <em>p</em> = 0.34) are not significant in any competitive model. In Saint Croix s(Hur100_av) (<em>p</em> = 0.036) and s(dT_raw) (<em>p</em> = 0.042) are significant in the only competitive model. Across panels, the climate terms that are both selected and significant are the categorical regimes in Punta Maroma (thermal), Belize (thermal and hurricane) and the regional composite (hurricane), the two temperature smooths in Belize, and s(Hur100_fqcy) in Florida.</p>
+<p>In Punta Maroma s(dT_raw) is significant only in M3, and the thermal regime is significant in both M6 models (<em>p</em> &lt; 10⁻⁴), in which s(dT_raw) is not (<em>p</em> = 0.16) and neither hurricane smooth is (<em>p</em> = 0.54 and 0.96). The δT smooth and the thermal regime therefore substitute for one another; when the regime is added to M3, the regime remains significant and the smooth does not (Section 4.5). In the regional composite the hurricane regime is significant in both M7 models (<em>p</em> = 2.4 × 10⁻⁴ and 3.0 × 10⁻⁴). The thermal regime is significant in the two M6 models (<em>p</em> = 0.012 and 0.013), which lack the hurricane regime, but not in the M7 models (<em>p</em> = 0.080 and 0.098). In Belize s(GMHT_CPS0_30N) is significant in M2, M3 and both M4 models (<em>p</em> = 0.010–0.012) but not in the M7 models (<em>p</em> = 0.79–0.80), in which neither regime is significant (thermal <em>p</em> = 0.051; hurricane <em>p</em> = 0.11). In Florida s(Hur100_fqcy) is significant in the four competitive models that contain it (<em>p</em> = 0.0013–0.039), s(GMHT_CPS0_30N) in three of the seven (<em>p</em> = 0.016–0.032), and Hydro, Thermal and the local hurricane regime in none. In Saint Croix no climate term is significant in either competitive model. Across panels, the climate terms that are both selected and significant are s(dT_raw) in Punta Maroma, the hurricane regime in the regional composite, s(GMHT_CPS0_30N) in Belize and Florida, and s(Hur100_fqcy) in Florida.</p>
 </section>
 <section id="full-summaries-of-the-selected-combined-models" class="level4">
 <h4 class="anchored" data-anchor-id="full-summaries-of-the-selected-combined-models">3.3.4 Full summaries of the selected combined models</h4>
@@ -7235,7 +7236,7 @@ Link function: logit
 Formula:
 counts_norm_sv ~ s(age, k = 10) + s(GMHT_CPS0_30N, k = 10) + 
     s(dT_raw, k = 10)
-&lt;environment: 0x000001dba922f738&gt;
+&lt;environment: 0x0000021d64b475f0&gt;
 
 Parametric coefficients:
             Estimate Std. Error z value Pr(&gt;|z|)    
@@ -7269,7 +7270,7 @@ Link function: logit
 Formula:
 counts_norm_sv ~ s(age, k = 10) + s(GMHT_CPS0_30N, k = 10) + 
     s(dT_raw, k = 10) + s(Hur100_fqcy, k = 10)
-&lt;environment: 0x000001dbadf243c0&gt;
+&lt;environment: 0x0000021d67226fc8&gt;
 
 Parametric coefficients:
             Estimate Std. Error z value Pr(&gt;|z|)   
@@ -7304,7 +7305,7 @@ Link function: logit
 Formula:
 counts_norm_sv ~ s(age, k = 5) + s(GMHT_CPS0_30N, k = 5) + s(dT_raw, 
     k = 5) + s(Hur100_av, k = 5)
-&lt;environment: 0x000001dbb0b8aba0&gt;
+&lt;environment: 0x0000021d6878fb98&gt;
 
 Parametric coefficients:
             Estimate Std. Error z value Pr(&gt;|z|)
@@ -7337,7 +7338,7 @@ Link function: logit
 Formula:
 counts_norm_sv ~ s(age, k = 4) + s(GMHT_CPS0_30N, k = 4) + s(dT_raw, 
     k = 4) + s(Hur100_av, k = 4)
-&lt;environment: 0x000001dbb37b2938&gt;
+&lt;environment: 0x0000021d68c3be70&gt;
 
 Parametric coefficients:
             Estimate Std. Error z value Pr(&gt;|z|)  
@@ -7372,7 +7373,7 @@ Link function: logit
 Formula:
 counts_norm_sv ~ s(age, k = 10) + s(GMHT_CPS0_30N, k = 10) + 
     s(dT_raw, k = 10) + s(Hur100_av, k = 10) + Thermal + Hurricane
-&lt;environment: 0x000001dbafa7fd60&gt;
+&lt;environment: 0x0000021d4c9338f8&gt;
 
 Parametric coefficients:
                   Estimate Std. Error z value Pr(&gt;|z|)    
@@ -7405,9 +7406,9 @@ R-sq.(adj) =  0.325   Deviance explained = 48.9%
 <ol type="1">
 <li><strong>Dating.</strong> All 22 ages are radiocarbon. The 95 % calibrated range of each spans 3–5 centennial bins (Section 1.4), so the bin of an individual record is uncertain: in 1,000 Monte Carlo draws of the ages, a Saint Croix age stays in its central bin in 37 % of draws on average (Punta Maroma, dated by U-Th: 87 %).</li>
 <li><strong>Response.</strong> 16 of the 19 occupied bins hold a single record, so <code>counts_norm_sv</code> takes essentially two values (0.50 and 0.97; Section 3.1.3). The beta model then contrasts a handful of bins with two records against the rest.</li>
-<li><strong>Marginal models.</strong> The best model (M_hav, weight 0.62) contains no significant climate term (s(Hur100_av), <em>p</em> = 0.076; Section 3.2.4), and neither does the best categorical model. Before Hydro was removed, the top-ranked model owed its rank only to the “no data” level of the hydroclimate series.</li>
-<li><strong>Combined models.</strong> The selected model (M4_av) contains two significant climate terms (s(Hur100_av), <em>p</em> = 0.036; s(dT_raw), <em>p</em> = 0.042), but neither is significant when the response is modelled as one versus two records per bin (Section 4.5), and AICc selects the simpler M2 (Section 4.5.2).</li>
-<li><strong>Age and sampling uncertainty.</strong> Across replicates of the ages and of the records, the best of the models without categorical regimes changes from replicate to replicate (the most frequent is chosen in 33–35 %), the climate models improve on <code>s(age)</code> in 41–62 % of the replicates and no climate term is significant in more than 32 % of them (Section 4.5.2).</li>
+<li><strong>Marginal models.</strong> The best model (M_hav, weight 0.61) contains no significant climate term (s(Hur100_av), <em>p</em> = 0.076; Section 3.2.4), and neither does the best categorical model. Before Hydro was removed, the top-ranked model owed its rank only to the “no data” level of the hydroclimate series.</li>
+<li><strong>Combined models.</strong> The selected model (M4_av) contains no significant climate term (s(Hur100_av), <em>p</em> = 0.054), none is significant when the response is modelled as one versus two records per bin (Section 4.5), and AICc selects M4_fqcy (Section 4.5.2).</li>
+<li><strong>Age and sampling uncertainty.</strong> Across replicates of the ages and of the records, the best of the models without categorical regimes changes from replicate to replicate (the most frequent is chosen in 29–36 %), the climate models improve on <code>s(age)</code> in 43–53 % of the replicates and no climate term is significant in more than 28 % of them (Section 4.5.2).</li>
 <li><strong>Density.</strong> At the narrowest bandwidth (0.05 ka) the age envelope of the Saint Croix density is as wide as its sampling envelope (Supplementary Fig. S1).</li>
 </ol>
 <p>Saint Croix is kept in the regional composite, because removing a site after examining its results would be a post hoc selection and because it is the only eastern Caribbean record. Its weight in the composite (26 % of the weight with 9 % of the records; Section 1.4) is examined directly: the regional models are refitted without Saint Croix in Section 4.5.</p>
@@ -7419,7 +7420,7 @@ R-sq.(adj) =  0.325   Deviance explained = 48.9%
 <p>To check the five selected combined models, we examine their residual diagnostics from gam.check() (Q–Q plot, residuals vs.&nbsp;linear predictor, residual histogram, response vs.&nbsp;fitted values), plots of all fitted terms, concurvity and the temporal autocorrelation of the residuals. The basis-dimension check (k-index) is reported with <code>k.check()</code> below each set of diagnostic plots.</p>
 <section id="partial-effects-of-the-selected-models" class="level3">
 <h3 class="anchored" data-anchor-id="partial-effects-of-the-selected-models">4.1 Partial effects of the selected models</h3>
-<p>The five selected models are collected in <code>best_models</code> and their summaries are printed again. Smooth estimates with 95 % confidence intervals are extracted with <code>gratia::smooth_estimates()</code>, pooled across panels and plotted by predictor (one panel per smooth). Saint Croix is not shown, because it is not interpreted (Section 3.3.5); its terms are plotted with its diagnostics (Supplementary Fig. S7). The effects of the categorical regimes retained in the selected models are added as one extra panel per regime: thermal regime (Punta Maroma, Florida, Belize and the regional composite), hydroclimate (Florida) and hurricane regime (Belize and the regional composite). To put these effects on the same baseline as the smooths, which mgcv constrains to sum to zero over the fitted observations, the factor effects are centred in the same way: each regime’s coefficient minus their mean weighted by the number of bins in each regime. Centring shifts all regimes by the same amount, so differences between regimes (the contrasts reported in Table 2) are unchanged; 95 % confidence intervals are computed from the full coefficient covariance matrix.</p>
+<p>The five selected models are collected in <code>best_models</code> and their summaries are printed again. Smooth estimates with 95 % confidence intervals are extracted with <code>gratia::smooth_estimates()</code>, pooled across panels and plotted by predictor (one panel per smooth). Saint Croix is not shown, because it is not interpreted (Section 3.3.5); its terms are plotted with its diagnostics (Supplementary Fig. S7). The effects of the categorical regimes retained in the selected models are added as one extra panel per regime. With the v5 climate table only the regional composite retains regimes (thermal and hurricane), so the regime panels show that panel alone. To put these effects on the same baseline as the smooths, which mgcv constrains to sum to zero over the fitted observations, the factor effects are centred in the same way: each regime’s coefficient minus their mean weighted by the number of bins in each regime. Centring shifts all regimes by the same amount, so differences between regimes (the contrasts reported in Table 2) are unchanged; 95 % confidence intervals are computed from the full coefficient covariance matrix.</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>
@@ -7429,7 +7430,7 @@ Link function: logit
 Formula:
 counts_norm_sv ~ s(age, k = 10) + s(GMHT_CPS0_30N, k = 10) + 
     s(dT_raw, k = 10)
-&lt;environment: 0x000001dba922f738&gt;
+&lt;environment: 0x0000021d64b475f0&gt;
 
 Parametric coefficients:
             Estimate Std. Error z value Pr(&gt;|z|)    
@@ -7456,7 +7457,7 @@ Link function: logit
 Formula:
 counts_norm_sv ~ s(age, k = 10) + s(GMHT_CPS0_30N, k = 10) + 
     s(dT_raw, k = 10) + s(Hur100_fqcy, k = 10)
-&lt;environment: 0x000001dbadf243c0&gt;
+&lt;environment: 0x0000021d67226fc8&gt;
 
 Parametric coefficients:
             Estimate Std. Error z value Pr(&gt;|z|)   
@@ -7484,7 +7485,7 @@ Link function: logit
 Formula:
 counts_norm_sv ~ s(age, k = 5) + s(GMHT_CPS0_30N, k = 5) + s(dT_raw, 
     k = 5) + s(Hur100_av, k = 5)
-&lt;environment: 0x000001dbb0b8aba0&gt;
+&lt;environment: 0x0000021d6878fb98&gt;
 
 Parametric coefficients:
             Estimate Std. Error z value Pr(&gt;|z|)
@@ -7510,7 +7511,7 @@ Link function: logit
 Formula:
 counts_norm_sv ~ s(age, k = 4) + s(GMHT_CPS0_30N, k = 4) + s(dT_raw, 
     k = 4) + s(Hur100_av, k = 4)
-&lt;environment: 0x000001dbb37b2938&gt;
+&lt;environment: 0x0000021d68c3be70&gt;
 
 Parametric coefficients:
             Estimate Std. Error z value Pr(&gt;|z|)  
@@ -7538,7 +7539,7 @@ Link function: logit
 Formula:
 counts_norm_sv ~ s(age, k = 10) + s(GMHT_CPS0_30N, k = 10) + 
     s(dT_raw, k = 10) + s(Hur100_av, k = 10) + Thermal + Hurricane
-&lt;environment: 0x000001dbafa7fd60&gt;
+&lt;environment: 0x0000021d4c9338f8&gt;
 
 Parametric coefficients:
                   Estimate Std. Error z value Pr(&gt;|z|)    
@@ -7571,7 +7572,7 @@ R-sq.(adj) =  0.325   Deviance explained = 48.9%
 </div>
 </div>
 </div>
-<p><strong>Figure 4</strong> (<code>Figure_4.pdf</code>). Partial effects of the selected combined GAMs on the logit scale, coloured by panel (Punta Maroma, Florida, Belize and the regional composite; Saint Croix is not interpreted, Section 3.3.5). Smooth panels show each smooth term with its 95 % confidence band. Terms shrunk to EDF ≈ 0 plot as flat lines at zero: s(age) in Belize and the regional composite, s(GMHT_CPS0_30N) in Florida and the regional composite, s(dT_raw) in Punta Maroma, Florida and the regional composite, and s(Hur100_av) in the regional composite. Smooths are centred to a mean of zero over the fitted bins, so zero denotes the model’s average contribution of that term and a curve below zero is associated with a lower frequency than average. Factor panels (thermal regime, hydroclimate and hurricane regime) show the effect of each regime level with its 95 % confidence interval, centred in the same way (Section 4.1).</p>
+<p><strong>Figure 4</strong> (<code>Figure_4.pdf</code>). Partial effects of the selected combined GAMs on the logit scale, coloured by panel (Punta Maroma, Florida, Belize and the regional composite; Saint Croix is not interpreted, Section 3.3.5). Smooth panels show each smooth term with its 95 % confidence band. Terms shrunk to EDF ≈ 0 plot as flat lines at zero: s(age) in Punta Maroma, Florida and the regional composite; s(GMHT_CPS0_30N) in Punta Maroma and the regional composite; s(dT_raw) in Florida, Belize and the regional composite; and s(Hur100_av) in Belize and the regional composite. Smooths are centred to a mean of zero over the fitted bins, so zero denotes the model’s average contribution of that term and a curve below zero is associated with a lower frequency than average. Factor panels show the effect of each regime level with its 95 % confidence interval, centred in the same way (Section 4.1); they show only the regimes of the selected models, here those of the regional composite. The hurricane-regime contrasts reported for Punta Maroma and Belize in Section 4.7.2 come from a different model, <code>s(age)</code> + hurricane regime refitted across bin phases, and therefore do not appear in this figure.</p>
 </section>
 <section id="concurvity-analysis" class="level3">
 <h3 class="anchored" data-anchor-id="concurvity-analysis">4.2 Concurvity analysis</h3>
@@ -8218,20 +8219,20 @@ Attaching package: 'reshape2'</code></pre>
 </div>
 </div>
 </div>
-<p><strong>Supplementary Table S9. Concurvity of the selected combined GAMs</strong> (output above). In the four models with categorical regimes, the parametric terms are almost completely approximated by the smooths (observed concurvity 0.995–1.000); the Saint Croix model has no parametric term other than the intercept. Observed concurvity is high for s(age) (0.84–0.98) and for s(GMHT_CPS0_30N) (0.81–0.95, except 0.74 in Saint Croix), ranges from 0.64 to 0.96 for s(dT_raw), and ranges from 0.43 to 0.98 for the hurricane smooth (0.98 in Belize, 0.74–0.78 in Florida and the regional composite, 0.54 in Punta Maroma and 0.43 in Saint Croix).</p>
-<p>The temporal trend, background temperature, hurricane activity and the categorical regimes are therefore partly interchangeable in these data, because the regimes are defined on the same chronology (Section 2.1) and the continuous climate series have a temporal structure of their own (Fig. 3). With <code>select = TRUE</code>, the term that carries this shared temporal pattern differs among panels: s(age) is retained in Punta Maroma (EDF 4.31) and Saint Croix (EDF 1.58), reduced to EDF 0.44 in Florida and shrunk to EDF ≈ 0 in Belize and the regional composite, where all four smooths are shrunk to EDF ≈ 0 and the hurricane regime carries the temporal pattern. Which term <code>select = TRUE</code> retains is not uniquely determined, and the effects in Table 2 and Fig. 4 should be read as conditional on the other terms rather than as independent contributions. The dependence of the selected models on the youngest bin, which holds the frequency maximum in Punta Maroma and the regional composite and is one of the two bins of the “high” hurricane regime, is examined in Section 4.5.2.</p>
+<p><strong>Supplementary Table S9. Concurvity of the selected combined GAMs</strong> (output above). Only the regional model contains categorical regimes, and its parametric terms are almost completely approximated by the smooths (observed concurvity 0.998). Observed concurvity is high for s(age) (0.93–0.996) and for s(GMHT_CPS0_30N) (0.985–0.999), ranges from 0.80 to 0.99 for s(dT_raw) (0.99 in Punta Maroma, where it is the only significant term), and ranges from 0.44 to 0.85 for the hurricane smooth.</p>
+<p>The temporal trend, background temperature, hurricane activity and the categorical regimes are therefore partly interchangeable in these data, because the regimes are defined on the same chronology (Section 2.1) and the continuous climate series have a temporal structure of their own (Fig. 3). With <code>select = TRUE</code>, the term that carries this shared temporal pattern differs among panels. s(age) is retained in Belize (EDF 1.72) and Saint Croix (EDF 1.62) and shrunk to EDF ≈ 0 in Punta Maroma, Florida and the regional composite. In Punta Maroma s(dT_raw) carries the pattern (EDF 6.90), and in the regional composite the hurricane regime does. Which term <code>select = TRUE</code> retains is not uniquely determined, and the effects in Table 2 and Fig. 4 should be read as conditional on the other terms rather than as independent contributions. In Punta Maroma, in particular, the selected s(dT_raw) and the thermal regime of the competitive M6 models cannot be separated from the temporal trend of the record. The dependence of the selected models on the youngest bin, which holds the frequency maximum in Punta Maroma and the regional composite and is one of the two bins of the “high” hurricane regime, is examined in Section 4.5.2.</p>
 </section>
 <section id="gam-diagnostic-plots" class="level3">
 <h3 class="anchored" data-anchor-id="gam-diagnostic-plots">4.3 GAM diagnostic plots</h3>
 <p>For each panel we show the four <code>gam.check()</code> residual plots and all model terms (<code>plot(..., all.terms = TRUE)</code>, one page: smooths with 95 % bands and rug plots, plus factor effects).</p>
 <p><strong>Supplementary Figure S7.</strong> Residual diagnostics and fitted terms of the selected combined GAMs: (a) Punta Maroma, (b) Florida, (c) Belize, (d) regional composite and (e) Saint Croix.</p>
-<p>In all panels the response takes few distinct values, because each bin holds only a few records and the frequency is normalized to the panel maximum: 2 distinct values in Saint Croix, 4 in Belize, 5 in Punta Maroma, 14 in Florida and 46 in the regional composite. This discreteness produces the diagonal bands in the plots of residuals against the linear predictor and should not be read as a missing covariate; for the same reason, departures of the deviance residuals from normality (Shapiro–Wilk <em>p</em> = 0.02–0.04 in Belize, Saint Croix and the regional composite; 0.055 in Florida and 0.29 in Punta Maroma) are expected and do not by themselves indicate misspecification. The basis dimension is adequate for every smooth (EDF well below <em>k′</em>); the only k-index below 1 with <em>p</em> &lt; 0.05 is s(age) in Florida (0.77, <em>p</em> = 0.048), whose EDF is 0.44 of 9, so increasing <em>k</em> would not help; it reflects residual pattern along age, consistent with the positive lag-1 autocorrelation in this panel (Section 4.4). Panel by panel:</p>
+<p>In all panels the response takes few distinct values, because each bin holds only a few records and the frequency is normalized to the panel maximum: 2 distinct values in Saint Croix, 4 in Belize, 5 in Punta Maroma, 14 in Florida and 46 in the regional composite. This discreteness produces the diagonal bands in the plots of residuals against the linear predictor and should not be read as a missing covariate; for the same reason, departures of the deviance residuals from normality (Shapiro–Wilk <em>p</em> = 0.002–0.034 in Florida, Belize, Saint Croix and the regional composite; 0.075 in Punta Maroma) are expected and do not by themselves indicate misspecification. The basis dimension is adequate for every smooth (EDF well below <em>k′</em>); the only k-index below 1 with <em>p</em> &lt; 0.05 is s(age) in Florida (0.68, <em>p</em> = 0.002), which is shrunk to EDF ≈ 0, so increasing <em>k</em> would not help; it reflects residual pattern along age, consistent with the positive lag-1 autocorrelation in this panel (Section 4.4). Panel by panel:</p>
 <ul>
-<li><strong>Punta Maroma:</strong> the fitted values span 0.07–0.96 against observed values of 0.08–0.98; the maximum bin (0–0.1 ka; response 0.98, fitted 0.955) determines the upper end of the response–fitted relationship.</li>
-<li><strong>Florida:</strong> fitted values span 0.12–0.74 against observed values of 0.08–0.99, so the model does not reproduce the extremes, consistent with its low deviance explained (36.0 %).</li>
-<li><strong>Belize:</strong> strong banding, because most bins hold a single record (response 0.25); fitted values span 0.17–0.94 against 0.25–0.98.</li>
+<li><strong>Punta Maroma:</strong> the fitted values span 0.07–0.94 against observed values of 0.08–0.98; the maximum bin (0–0.1 ka; response 0.98) determines the upper end of the response–fitted relationship, and the δT smooth reaches it through a narrow peak at the δT of that bin (Section 3.3.3).</li>
+<li><strong>Florida:</strong> fitted values span 0.25–0.60 against observed values of 0.08–0.99, so the model does not reproduce the extremes, consistent with its low deviance explained (23.9 %).</li>
+<li><strong>Belize:</strong> strong banding, because most bins hold a single record (response 0.25); fitted values span 0.29–0.79 against 0.25–0.98.</li>
 <li><strong>Regional composite:</strong> fitted values span 0.07–0.89 against 0.03–0.99 and cluster at a few values, because all smooths are shrunk to EDF ≈ 0 and the fit is set by the regime levels; the youngest bin (response 0.99, fitted 0.89) determines the upper end of the response–fitted relationship.</li>
-<li><strong>Saint Croix:</strong> with 19 bins and two distinct response values (one or two records per bin), the residuals fall on two bands. The response effectively records whether a bin holds a second colony; this panel is not interpreted (Section 3.3.5).</li>
+<li><strong>Saint Croix:</strong> with 19 bins and two distinct response values (one or two records per bin), the residuals fall on two bands (fitted values 0.42–0.85). The response effectively records whether a bin holds a second colony; this panel is not interpreted (Section 3.3.5).</li>
 </ul>
 <section id="punta-maroma" class="level5">
 <h5 class="anchored" data-anchor-id="punta-maroma">4.3.1 Punta Maroma</h5>
@@ -8913,9 +8914,9 @@ Using model: M7_av for segment: Regional </code></pre>
 </div>
 <p><strong>Supplementary Table S10. Residual independence of the selected combined GAMs</strong> (output above).</p>
 <ul>
-<li><strong>Ljung–Box:</strong> significant autocorrelation up to lag 10 is detected only in Punta Maroma (<em>p</em> = 0.001); the other panels show none (<em>p</em> = 0.095–0.59).</li>
-<li><strong>Durbin–Watson:</strong> positive lag-1 autocorrelation is detected only in Florida (φ = 0.33, DW = 1.27, <em>p</em> = 0.006); the regional composite (φ = 0.01) and the other panels show none.</li>
-<li><strong>Negative autocorrelation:</strong> Saint Croix (φ = −0.50), Belize (φ = −0.15) and Punta Maroma (φ = −0.10) show negative lag-1 correlation, which the one-sided Durbin–Watson test does not detect. In Saint Croix it reflects the alternation of one- and two-record bins of a near-binary response.</li>
+<li><strong>Ljung–Box:</strong> no panel shows significant autocorrelation up to lag 10 (<em>p</em> = 0.20–0.39).</li>
+<li><strong>Durbin–Watson:</strong> positive lag-1 autocorrelation is detected only in Florida (φ = 0.40, DW = 1.16, <em>p</em> = 0.0017); the regional composite (φ = 0.01), Punta Maroma (φ = 0.03) and the other panels show none.</li>
+<li><strong>Negative autocorrelation:</strong> Saint Croix (φ = −0.54) and Belize (φ = −0.17) show negative lag-1 correlation, which the one-sided Durbin–Watson test does not detect. In Saint Croix it reflects the alternation of one- and two-record bins of a near-binary response.</li>
 </ul>
 <p>Two caveats apply. Bins without records are absent, so lag 1 does not always correspond to 100 years; this matters most for Saint Croix (19 of 60 bins) and Belize (24 of 60). With <em>n</em> = 19–57, both tests have limited power, especially Ljung–Box at lag 10 with <em>n</em> = 19.</p>
 <p><strong>Supplementary Figure S8.</strong> ACF and PACF of the residuals of the selected combined GAMs, by panel. Dashed lines mark the approximate 95 % limits for white noise (±1.96/√<em>n</em>), from ±0.26 in the regional composite (<em>n</em> = 57) to ±0.45 in Saint Croix (<em>n</em> = 19). Lags are counted in bins, which are not always consecutive centuries (see text).</p>
@@ -8924,10 +8925,10 @@ Using model: M7_av for segment: Regional </code></pre>
 <h3 class="anchored" data-anchor-id="sensitivity-analyses">4.5 Sensitivity analyses</h3>
 <p>We test the main results of the selected combined models against four alternative analyses:</p>
 <ol type="1">
-<li><strong>Residual autocorrelation (Florida, Punta Maroma).</strong> Florida, the panel with positive lag-1 autocorrelation (Section 4.4), and Punta Maroma, the panel with the strongest climate effect and the only significant Ljung–Box statistic, are refitted as Gaussian GAMMs on the logit of the response, with the same terms and basis dimensions, first with independent errors and then with a continuous-time AR(1) structure (<code>corCAR1</code> on age, because bins are not always consecutive). mgcv does not provide a beta family with correlated errors, so this is an approximation used as a check, not a replacement for the beta models.</li>
+<li><strong>Residual autocorrelation (Florida, Punta Maroma).</strong> Florida, the panel with positive lag-1 autocorrelation (Section 4.4), and Punta Maroma, the panel with the strongest climate effect, are refitted as Gaussian GAMMs on the logit of the response, with the same terms and basis dimensions. Each is fitted first with independent errors and then with a continuous-time AR(1) structure (<code>corCAR1</code> on age, because bins are not always consecutive). mgcv does not provide a beta family with correlated errors, so this is an approximation used as a check, not a replacement for the beta models. The terms tested are the significant climate smooths of each selected model.</li>
 <li><strong>Florida source standardization.</strong> The combined and marginal candidate sets are refitted to the Florida series pooled across sources (<code>datos_fl_norm</code>, Section 3.1.1).</li>
 <li><strong>Saint Croix response.</strong> Because the response takes only two values, the selected model is refitted as a binomial GAM of one versus two records per bin.</li>
-<li><strong>Thermal regime in Punta Maroma.</strong> The thermal regime is significant in the marginal model of this panel (Section 3.2.4), and it is added to the selected combined model to test whether its effect persists alongside the hurricane smooth. Because the selected model (M6_av) already contains the thermal regime, this check reproduces the selected model.</li>
+<li><strong>Thermal regime in Punta Maroma.</strong> The thermal regime is significant in the marginal model of this panel (Section 3.2.4), whereas the selected combined model (M3) contains s(dT_raw) instead. The regime is added to M3 to test which of the two terms remains significant when both are present.</li>
 </ol>
 <div class="cell">
 <div class="cell-output-display">
@@ -9400,16 +9401,16 @@ Using model: M7_av for segment: Regional </code></pre>
 </tr>
 <tr class="gt_row_group_first even">
 <td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Panel">Florida</td>
-<td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Term">s(Hur100_fqcy)</td>
-<td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Reference">0.035</td>
-<td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Sensitivity">0.04 (independent); 0.031 (AR(1))</td>
+<td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Term">s(GMHT_CPS0_30N); s(Hur100_fqcy)</td>
+<td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Reference">0.016; 0.035</td>
+<td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Sensitivity">0.22; 0.04 (independent); 0.2; 0.031 (AR(1))</td>
 <td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Note">phi = 0.37 per 0.1 ka; LRT p = 0.086; dAIC(AR1 - indep) = -0.9</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Panel">Punta Maroma</td>
-<td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Term">NA</td>
-<td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Reference">NA</td>
-<td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Sensitivity">NA (independent); NA (AR(1))</td>
+<td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Term">s(dT_raw)</td>
+<td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Reference">&lt;1e-04</td>
+<td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Sensitivity">0.3 (independent); 0.76 (AR(1))</td>
 <td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Note">phi = 0.85 per 0.1 ka; LRT p = 0.31; dAIC(AR1 - indep) = 3.0</td>
 </tr>
 <tr class="gt_group_heading_row even">
@@ -9457,14 +9458,14 @@ Using model: M7_av for segment: Regional </code></pre>
 <td class="gt_row gt_left" headers="Binomial GAM, one vs two records per bin  Note">same terms as the selected model</td>
 </tr>
 <tr class="gt_group_heading_row even">
-<th colspan="5" id="Thermal regime added to the selected hurricane model" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">Thermal regime added to the selected hurricane model</th>
+<th colspan="5" id="Thermal regime added to the selected model" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">Thermal regime added to the selected model</th>
 </tr>
 <tr class="gt_row_group_first odd">
-<td class="gt_row gt_left" headers="Thermal regime added to the selected hurricane model  Panel">Punta Maroma</td>
-<td class="gt_row gt_left" headers="Thermal regime added to the selected hurricane model  Term">Thermal</td>
-<td class="gt_row gt_left" headers="Thermal regime added to the selected hurricane model  Reference">&lt;1e-04</td>
-<td class="gt_row gt_left" headers="Thermal regime added to the selected hurricane model  Sensitivity">&lt;1e-04</td>
-<td class="gt_row gt_left" headers="Thermal regime added to the selected hurricane model  Note">reference = marginal thermal-regime model; NA in the extended model: p = NA</td>
+<td class="gt_row gt_left" headers="Thermal regime added to the selected model  Panel">Punta Maroma</td>
+<td class="gt_row gt_left" headers="Thermal regime added to the selected model  Term">Thermal</td>
+<td class="gt_row gt_left" headers="Thermal regime added to the selected model  Reference">&lt;1e-04</td>
+<td class="gt_row gt_left" headers="Thermal regime added to the selected model  Sensitivity">&lt;1e-04</td>
+<td class="gt_row gt_left" headers="Thermal regime added to the selected model  Note">reference = marginal thermal-regime model; s(dT_raw) in the extended model: p = 0.15</td>
 </tr>
 </tbody>
 </table>
@@ -9474,10 +9475,10 @@ Using model: M7_av for segment: Regional </code></pre>
 </div>
 <p><strong>Supplementary Table S11. Sensitivity analyses of the selected combined GAMs.</strong> For each check, the term tested, its <em>p</em>-value in the reference analysis and in the sensitivity analysis, and the relevant model statistics.</p>
 <ul>
-<li><strong>Residual autocorrelation.</strong> The AR(1) parameter is 0.34 per century in Florida and 0.02 in Punta Maroma, and in neither panel does it improve the fit (likelihood-ratio <em>p</em> = 0.17 and 0.95; AIC of the AR(1) model 0.1 and 2.0 units higher). In Florida s(Hur100_fqcy), significant in the beta model (<em>p</em> = 0.0023), remains significant with independent and with AR(1) errors (<em>p</em> = 0.011 and 0.014). In Punta Maroma s(Hur100_av), not significant in the beta model (<em>p</em> = 0.12), is not significant in either Gaussian model (<em>p</em> = 0.22 in both).</li>
-<li><strong>Florida source standardization.</strong> The Florida result depends on how the sources are scaled. With the pooled series the selected model is M5_av (weight 0.37; deviance explained 29.3 % vs 36.0 %), in which the only significant climate term is the Florida hydroclimate (<em>p</em> = 0.00099); the best marginal model is also the hydroclimate model (weight 0.81; <em>p</em> = 0.0025, against 0.66 on the source-standardized series). On the source-standardized series the only significant climate term is instead s(Hur100_fqcy) (<em>p</em> = 0.0023). Pooling lets the largest source dominate the series, so we retain the source-standardized series; because the significant climate term changes with the scaling of the sources, the Florida result is not considered resolved.</li>
-<li><strong>Saint Croix.</strong> In the binomial model of one versus two records per bin, none of the climate smooths of the selected model is significant (<em>p</em> ≈ 1 for s(GMHT_CPS0_30N), s(dT_raw) and s(Hur100_av)), whereas s(dT_raw) and s(Hur100_av) are significant in the beta model (<em>p</em> = 0.042 and 0.036). The beta-model result therefore depends on how the near-binary response is modelled, consistent with not interpreting this panel (Section 3.3.5).</li>
-<li><strong>Punta Maroma.</strong> Because the selected model already contains the thermal regime, the check reproduces it: the thermal regime remains significant (<em>p</em> &lt; 10⁻⁴, as in the marginal thermal-regime model), whereas s(Hur100_av) is not (<em>p</em> = 0.12). The thermal-regime effect is therefore not absorbed by the hurricane smooth in this panel.</li>
+<li><strong>Residual autocorrelation.</strong> The AR(1) parameter is 0.37 per century in Florida and 0.85 in Punta Maroma, but in neither panel does it improve the fit (likelihood-ratio <em>p</em> = 0.086 and 0.31; AIC of the AR(1) model 0.9 units lower and 3.0 units higher). In Florida s(Hur100_fqcy) remains significant with independent and with AR(1) errors (<em>p</em> = 0.040 and 0.031), whereas s(GMHT_CPS0_30N) does not (<em>p</em> = 0.22 and 0.20). In Punta Maroma s(dT_raw), significant in the beta model (<em>p</em> &lt; 10⁻⁴), is not significant in either Gaussian model (<em>p</em> = 0.30 and 0.76).</li>
+<li><strong>Florida source standardization.</strong> The Florida result depends on how the sources are scaled. With the pooled series the selected model is M5_fqcy (weight 0.27), in which the only significant climate term is the Florida hydroclimate (<em>p</em> = 0.0016); the best marginal model is also the hydroclimate model (weight 0.68; <em>p</em> = 0.0025, against 0.66 on the source-standardized series). On the source-standardized series the significant climate terms are instead s(GMHT_CPS0_30N) and s(Hur100_fqcy) (<em>p</em> = 0.016 and 0.035). Pooling lets the largest source dominate the series, so we retain the source-standardized series; because the significant climate terms change with the scaling of the sources, the Florida result is not considered resolved.</li>
+<li><strong>Saint Croix.</strong> No climate smooth of the selected model is significant in the beta model (<em>p</em> = 0.054–0.38) or in the binomial model of one versus two records per bin (<em>p</em> ≈ 1), consistent with not interpreting this panel (Section 3.3.5).</li>
+<li><strong>Punta Maroma.</strong> When the thermal regime is added to M3, the regime remains significant (<em>p</em> &lt; 10⁻⁴, as in the marginal thermal-regime model) and s(dT_raw) does not (<em>p</em> = 0.15). The two terms carry the same temporal signal; when both are present, the data retain the regime.</li>
 </ul>
 <section id="local-climate-records-in-florida" class="level4">
 <h4 class="anchored" data-anchor-id="local-climate-records-in-florida">4.5.1 Local climate records in Florida</h4>
@@ -10259,23 +10260,23 @@ $minutes
 #   `s(dT_raw) p &lt; 0.05 (%)` &lt;dbl&gt;, `s(Hur100_fqcy) p &lt; 0.05 (%)` &lt;dbl&gt;</code></pre>
 </div>
 <div class="cell-output-display">
-<div id="ucngdpsick" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#ucngdpsick table {
+<div id="idpjkcfone" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#idpjkcfone table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#ucngdpsick thead, #ucngdpsick tbody, #ucngdpsick tfoot, #ucngdpsick tr, #ucngdpsick td, #ucngdpsick th {
+#idpjkcfone thead, #idpjkcfone tbody, #idpjkcfone tfoot, #idpjkcfone tr, #idpjkcfone td, #idpjkcfone th {
   border-style: none;
 }
 
-#ucngdpsick p {
+#idpjkcfone p {
   margin: 0;
   padding: 0;
 }
 
-#ucngdpsick .gt_table {
+#idpjkcfone .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -10301,12 +10302,12 @@ $minutes
   border-left-color: #D3D3D3;
 }
 
-#ucngdpsick .gt_caption {
+#idpjkcfone .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#ucngdpsick .gt_title {
+#idpjkcfone .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -10318,7 +10319,7 @@ $minutes
   border-bottom-width: 0;
 }
 
-#ucngdpsick .gt_subtitle {
+#idpjkcfone .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -10330,7 +10331,7 @@ $minutes
   border-top-width: 0;
 }
 
-#ucngdpsick .gt_heading {
+#idpjkcfone .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -10342,13 +10343,13 @@ $minutes
   border-right-color: #D3D3D3;
 }
 
-#ucngdpsick .gt_bottom_border {
+#idpjkcfone .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#ucngdpsick .gt_col_headings {
+#idpjkcfone .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -10363,7 +10364,7 @@ $minutes
   border-right-color: #D3D3D3;
 }
 
-#ucngdpsick .gt_col_heading {
+#idpjkcfone .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -10383,7 +10384,7 @@ $minutes
   overflow-x: hidden;
 }
 
-#ucngdpsick .gt_column_spanner_outer {
+#idpjkcfone .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -10395,15 +10396,15 @@ $minutes
   padding-right: 4px;
 }
 
-#ucngdpsick .gt_column_spanner_outer:first-child {
+#idpjkcfone .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#ucngdpsick .gt_column_spanner_outer:last-child {
+#idpjkcfone .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#ucngdpsick .gt_column_spanner {
+#idpjkcfone .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -10415,11 +10416,11 @@ $minutes
   width: 100%;
 }
 
-#ucngdpsick .gt_spanner_row {
+#idpjkcfone .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#ucngdpsick .gt_group_heading {
+#idpjkcfone .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -10445,7 +10446,7 @@ $minutes
   text-align: left;
 }
 
-#ucngdpsick .gt_empty_group_heading {
+#idpjkcfone .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -10460,15 +10461,15 @@ $minutes
   vertical-align: middle;
 }
 
-#ucngdpsick .gt_from_md > :first-child {
+#idpjkcfone .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#ucngdpsick .gt_from_md > :last-child {
+#idpjkcfone .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#ucngdpsick .gt_row {
+#idpjkcfone .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -10487,7 +10488,7 @@ $minutes
   overflow-x: hidden;
 }
 
-#ucngdpsick .gt_stub {
+#idpjkcfone .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -10500,7 +10501,7 @@ $minutes
   padding-right: 5px;
 }
 
-#ucngdpsick .gt_stub_row_group {
+#idpjkcfone .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -10514,15 +10515,15 @@ $minutes
   vertical-align: top;
 }
 
-#ucngdpsick .gt_row_group_first td {
+#idpjkcfone .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#ucngdpsick .gt_row_group_first th {
+#idpjkcfone .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#ucngdpsick .gt_summary_row {
+#idpjkcfone .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -10532,16 +10533,16 @@ $minutes
   padding-right: 5px;
 }
 
-#ucngdpsick .gt_first_summary_row {
+#idpjkcfone .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#ucngdpsick .gt_first_summary_row.thick {
+#idpjkcfone .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#ucngdpsick .gt_last_summary_row {
+#idpjkcfone .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -10551,7 +10552,7 @@ $minutes
   border-bottom-color: #D3D3D3;
 }
 
-#ucngdpsick .gt_grand_summary_row {
+#idpjkcfone .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -10561,7 +10562,7 @@ $minutes
   padding-right: 5px;
 }
 
-#ucngdpsick .gt_first_grand_summary_row {
+#idpjkcfone .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -10571,7 +10572,7 @@ $minutes
   border-top-color: #D3D3D3;
 }
 
-#ucngdpsick .gt_last_grand_summary_row_top {
+#idpjkcfone .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -10581,11 +10582,11 @@ $minutes
   border-bottom-color: #D3D3D3;
 }
 
-#ucngdpsick .gt_striped {
+#idpjkcfone .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#ucngdpsick .gt_table_body {
+#idpjkcfone .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -10594,7 +10595,7 @@ $minutes
   border-bottom-color: #D3D3D3;
 }
 
-#ucngdpsick .gt_footnotes {
+#idpjkcfone .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -10608,7 +10609,7 @@ $minutes
   border-right-color: #D3D3D3;
 }
 
-#ucngdpsick .gt_footnote {
+#idpjkcfone .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -10617,7 +10618,7 @@ $minutes
   padding-right: 5px;
 }
 
-#ucngdpsick .gt_sourcenotes {
+#idpjkcfone .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -10631,7 +10632,7 @@ $minutes
   border-right-color: #D3D3D3;
 }
 
-#ucngdpsick .gt_sourcenote {
+#idpjkcfone .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -10639,72 +10640,72 @@ $minutes
   padding-right: 5px;
 }
 
-#ucngdpsick .gt_left {
+#idpjkcfone .gt_left {
   text-align: left;
 }
 
-#ucngdpsick .gt_center {
+#idpjkcfone .gt_center {
   text-align: center;
 }
 
-#ucngdpsick .gt_right {
+#idpjkcfone .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#ucngdpsick .gt_font_normal {
+#idpjkcfone .gt_font_normal {
   font-weight: normal;
 }
 
-#ucngdpsick .gt_font_bold {
+#idpjkcfone .gt_font_bold {
   font-weight: bold;
 }
 
-#ucngdpsick .gt_font_italic {
+#idpjkcfone .gt_font_italic {
   font-style: italic;
 }
 
-#ucngdpsick .gt_super {
+#idpjkcfone .gt_super {
   font-size: 65%;
 }
 
-#ucngdpsick .gt_footnote_marks {
+#idpjkcfone .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#ucngdpsick .gt_asterisk {
+#idpjkcfone .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#ucngdpsick .gt_indent_1 {
+#idpjkcfone .gt_indent_1 {
   text-indent: 5px;
 }
 
-#ucngdpsick .gt_indent_2 {
+#idpjkcfone .gt_indent_2 {
   text-indent: 10px;
 }
 
-#ucngdpsick .gt_indent_3 {
+#idpjkcfone .gt_indent_3 {
   text-indent: 15px;
 }
 
-#ucngdpsick .gt_indent_4 {
+#idpjkcfone .gt_indent_4 {
   text-indent: 20px;
 }
 
-#ucngdpsick .gt_indent_5 {
+#idpjkcfone .gt_indent_5 {
   text-indent: 25px;
 }
 
-#ucngdpsick .katex-display {
+#idpjkcfone .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#ucngdpsick div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#idpjkcfone div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -10918,11 +10919,11 @@ $minutes
 </div>
 <p><strong>Supplementary Table S12. Propagation of age and sampling uncertainty to the combined GAMs</strong> (output above). For each panel and scenario: number of replicates, model selected most often among M1–M4 (the candidates without categorical regimes; the selected M6 and M7 models are not refitted) and its share, percentage of replicates in which that model improves on <code>s(age)</code> by more than 2 AIC units, median and 95 % range of that improvement, and percentage of replicates in which each climate smooth is significant (<em>p</em> &lt; 0.05) in its M4 model.</p>
 <ul>
-<li><strong>The modern peak (a).</strong> Removing the youngest bin (0–0.1 ka) removes the AIC advantage of the selected model over <code>s(age)</code> in Punta Maroma (from 48.2 to −3.5 AIC units) and in the regional composite (from 20.1 to −1.9). In these two panels, therefore, the support for the selected models (thermal regime in Punta Maroma, hurricane regime in the regional composite) depends on the last century, which holds the frequency maximum of both series and is one of the two bins of the “high” hurricane regime. In Belize the advantage is unchanged (8.4 → 8.2), but of the two temperature smooths only s(dT_raw) remains significant. In Florida the advantage increases (1.4 → 4.5) and s(Hur100_fqcy) remains significant. In Saint Croix it decreases (4.3 → 1.2) and neither s(dT_raw) nor s(Hur100_av) remains significant. The table reports the significance of smooth terms only, and both models are fitted with <code>select = TRUE</code>, so the improvements differ from the ΔAIC vs <code>s(age)</code> of Section 4.6.</li>
-<li><strong>Information criterion (c).</strong> AICc, which penalizes complexity more strongly in small samples, selects the same model as AIC only in the regional composite (M7_av). In Punta Maroma it selects the other M6 model (M6_fqcy; the AIC-selected M6_av is 5.4 AICc units behind), so the thermal regime is retained under either criterion. In Belize it selects M3 (the AIC-selected M7_fqcy is 26.6 units behind), in Florida <code>s(age)</code> alone (M1; M6_fqcy is 3.8 units behind) and in Saint Croix M2 (M4_av is 6.3 units behind). Under AICc, therefore, the categorical regimes of the Belize model and the climate terms of the Florida and Saint Croix models are not supported.</li>
-<li><strong>Bin width and phase (d).</strong> This analysis compares only the candidates without categorical regimes (M1–M4), because the regimes are not rebuilt for other bin widths. With 0.2-ka bins, starting at 0 or at 0.1 ka, s(GMHT_CPS0_30N) in M4_av remains significant in both phases in Punta Maroma (<em>p</em> ≤ 1.5 × 10⁻⁴), Belize (<em>p</em> ≤ 1.2 × 10⁻³) and the regional composite (<em>p</em> ≤ 2.9 × 10⁻⁵), and the best model improves on <code>s(age)</code> by 20–22 AIC units in Punta Maroma, 16–24 in Belize and 13–24 in the regional composite. The hurricane smooths are not stable: s(Hur100_av) is significant only in the regional composite with the 0.1-ka phase (<em>p</em> = 0.0045), and s(Hur100_fqcy) only in Punta Maroma with the same phase (<em>p</em> = 0.0053). Florida and Saint Croix show no consistent climate effect at either bin width.</li>
-<li><strong>Regional composite without Saint Croix (b).</strong> Without Saint Croix the composite has 55 bins instead of 57, and the results are unchanged: the best marginal model is again the hurricane-regime model (M_hur), and the selected combined model is again M7_av (deviance explained 56.5 % vs 48.9 %). The regional conclusions therefore do not depend on Saint Croix or on its large weight in the composite.</li>
-<li><strong>Age and sampling uncertainty (e).</strong> Of 300 replicates per scenario, two age replicates failed to fit and were dropped (298 retained). Because only M1–M4 are refitted, this analysis tests the continuous predictors, not the categorical regimes selected in Punta Maroma, Belize and the regional composite. In Punta Maroma and the regional composite the best of M1–M4 improves on <code>s(age)</code> by more than 2 AIC units in 85–100 % of the replicates in every scenario; s(GMHT_CPS0_30N) is the most consistently significant smooth (77–100 %), and s(Hur100_av) is significant in 69–99 % of the replicates in Punta Maroma and in 43–60 % in the regional composite. Age uncertainty alone moves these results less than resampling of the records (Punta Maroma: improvement 28.6 [18.0, 56.8] AIC units, against 10.5 [0.0, 33.2] under resampling), because their chronology is dominated by U-Th ages or, in the composite, averaged over four sites; sampling is the larger source of uncertainty. In Belize the improvement exceeds 2 AIC units in 95 % of the age replicates (s(GMHT_CPS0_30N) significant in 98 %), but in 54–59 % when the records are resampled (s(GMHT_CPS0_30N) significant in 42–49 %): with 39 records, the Belize result depends on which fossils were dated. In Florida the improvement exceeds 2 units in 65 % of the age replicates (s(Hur100_fqcy) significant in 65 %), but in 26–36 % under resampling (s(Hur100_fqcy) significant in 18–32 %). In Saint Croix the climate models improve on <code>s(age)</code> in 41–62 % of the replicates and no climate term is significant in more than 32 % of them.</li>
+<li><strong>The modern peak (a).</strong> Removing the youngest bin (0–0.1 ka) removes most of the AIC advantage of the selected model over <code>s(age)</code> in Punta Maroma (from 49.8 to 3.0 AIC units) and all of it in the regional composite (from 20.1 to −1.9). In these two panels, therefore, the support for the selected models (s(dT_raw) in Punta Maroma, hurricane regime in the regional composite) depends on the last century, which holds the frequency maximum of both series and is one of the two bins of the “high” hurricane regime. In Belize the advantage is unchanged (4.0 → 5.3) and s(GMHT_CPS0_30N) remains significant. In Florida the advantage increases (2.6 → 4.6) and both climate smooths remain significant. In Saint Croix it disappears (2.6 → 0.0). The table reports the significance of smooth terms only, and both models are fitted with <code>select = TRUE</code>, so the improvements differ from the ΔAIC vs <code>s(age)</code> of Section 4.6.</li>
+<li><strong>Information criterion (c).</strong> AICc, which penalizes complexity more strongly in small samples, selects the same model as AIC in four panels. In Saint Croix it selects M4_fqcy, with the AIC-selected M4_av 1.56 AICc units behind.</li>
+<li><strong>Bin width and phase (d).</strong> This analysis compares only the candidates without categorical regimes (M1–M4), because the regimes are not rebuilt for other bin widths. With 0.2-ka bins, starting at 0 or at 0.1 ka, s(dT_raw) is significant in M4_av in both phases in Punta Maroma (<em>p</em> &lt; 10⁻⁴), Belize (<em>p</em> ≤ 0.010) and the regional composite (<em>p</em> ≤ 0.026), whereas s(GMHT_CPS0_30N) is significant in only one phase in Punta Maroma (<em>p</em> = 0.032) and in Belize (<em>p</em> = 4.0 × 10⁻⁵), and in neither phase in the regional composite. The best model improves on <code>s(age)</code> by 32–35 AIC units in Punta Maroma, 14–24 in Belize and 4–22 in the regional composite. No hurricane smooth is significant in any panel or phase. Florida shows no consistent climate effect, and in Saint Croix the result changes with the phase. With 0.2-ka bins the two modern centuries form a single bin, so these fits do not separate the δT smooth from the modern maximum either.</li>
+<li><strong>Regional composite without Saint Croix (b).</strong> Without Saint Croix the composite has 55 bins instead of 57. The best marginal model is again the hurricane-regime model (M_hur, weight 0.77). The selected combined model changes from M7_av to M6_av (weight 0.24; deviance explained 47.3 % vs 48.9 %), with M7_av 0.79 AIC units behind. In M6_av s(age) and s(GMHT_CPS0_30N) are significant (<em>p</em> &lt; 10⁻⁴), whereas the thermal regime is not (<em>p</em> = 0.084). The marginal hurricane-regime association of the composite therefore does not depend on Saint Croix, but the choice between the combined models with and without the hurricane regime does.</li>
+<li><strong>Age and sampling uncertainty (e).</strong> Of 300 replicates per scenario, two age replicates failed to fit and were dropped (298 retained). Because only M1–M4 are refitted, this analysis tests the continuous predictors, not the categorical regimes. In Punta Maroma and the regional composite the best of M1–M4 improves on <code>s(age)</code> by more than 2 AIC units in 87–100 % of the replicates. s(GMHT_CPS0_30N) is the most consistently significant smooth (53–81 %), s(dT_raw) is significant in 22–41 % and s(Hur100_av) in 30–79 %. Age uncertainty alone moves these results less than resampling of the records (Punta Maroma: improvement 45.8 [21.3, 60.5] AIC units, against 13.4 [0.3, 45.4] under resampling), because their chronology is dominated by U-Th ages or, in the composite, averaged over four sites; sampling is the larger source of uncertainty. In Belize the improvement exceeds 2 AIC units in 90 % of the age replicates (s(GMHT_CPS0_30N) significant in 70 %), but in 42–44 % when the records are resampled (s(GMHT_CPS0_30N) significant in 18–19 %): with 39 records, the Belize result depends on which fossils were dated. In Florida the improvement exceeds 2 units in 77 % of the age replicates (s(Hur100_fqcy) significant in 75 %), but in 27–36 % under resampling (s(Hur100_fqcy) significant in 19–32 %). In Saint Croix the climate models improve on <code>s(age)</code> in 43–53 % of the replicates and no climate term is significant in more than 28 % of them.</li>
 </ul>
 </section>
 </section>
@@ -10936,27 +10937,27 @@ $minutes
 <li><strong>Drop-one influence.</strong> Each century is removed in turn and the model refitted. For every climatic term we report its <em>p</em>-value with all data, the largest <em>p</em>-value across the drop-one fits, the century whose removal gives that largest value and the percentage of drop-one fits in which the term stays significant (<em>p</em> &lt; 0.05).</li>
 <li><strong>Former cross-validation (withdrawn).</strong> The five-fold cross-validation of the first revision is re-run to document why it was withdrawn (see below).</li>
 </ol>
-<p>During refitting the basis dimension of each smooth is capped with <code>safe_k_for()</code> from the number of fitting observations, and further reduced if the total number of coefficients would reach that number. A refit is skipped, and the left-out century counted as not predicted, when the fitting data do not contain every level of a categorical predictor or the categorical design is rank-deficient. For panels with at least 21 observations the full-data fits are identical to those of Sections 3.2–3.3, except the Belize combined model (M7_fqcy), whose 24 coefficients reach the number of bins (<em>n</em> = 24), so its basis dimension is reduced and its term-level <em>p</em>-values differ slightly from Table 2 (e.g.&nbsp;hurricane regime, <em>p</em> = 0.015 vs 0.017; Supplementary Table S14). In Saint Croix (n = 19) the marginal smooths use k = 9 instead of the default 10, which changes the AIC of the marginal model by 0.01.</p>
+<p>During refitting the basis dimension of each smooth is capped with <code>safe_k_for()</code> from the number of fitting observations, and further reduced if the total number of coefficients would reach that number. A refit is skipped, and the left-out century counted as not predicted, when the fitting data do not contain every level of a categorical predictor or the categorical design is rank-deficient. With the v5 climate table the full-data fits of the selected combined models are identical to those of Section 3.3 in every panel (same AIC). In Saint Croix (n = 19) the marginal smooths use k = 9 instead of the default 10, which changes the AIC of the marginal model by 0.01.</p>
 <p><strong>Supplementary Table S13. Cross-validation and circular-shift test of the selected GAMs.</strong> For each panel, the best marginal model and the selected combined model are compared with the reference model <code>counts_norm_sv ~ s(age)</code>. ΔAIC vs s(age): AIC improvement over the reference model with all data. ΔELPD: summed difference in out-of-sample log-likelihood relative to the reference model (positive = better), with its standard error, for leave-one-out (LOO) and leave-one-out with a ±200-year buffer (h-block). Centuries better: percentage of left-out centuries predicted better than by the reference model (LOO). Worst century: the century with the largest loss relative to the reference model (LOO). Shift-test <em>p</em>: circular-shift test with 49 shifts of 600–5,400 years (minimum attainable <em>p</em> = 0.02).</p>
 <div class="cell">
 <div class="cell-output-display">
-<div id="ttksbxegly" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#ttksbxegly table {
+<div id="gmjstptdip" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#gmjstptdip table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#ttksbxegly thead, #ttksbxegly tbody, #ttksbxegly tfoot, #ttksbxegly tr, #ttksbxegly td, #ttksbxegly th {
+#gmjstptdip thead, #gmjstptdip tbody, #gmjstptdip tfoot, #gmjstptdip tr, #gmjstptdip td, #gmjstptdip th {
   border-style: none;
 }
 
-#ttksbxegly p {
+#gmjstptdip p {
   margin: 0;
   padding: 0;
 }
 
-#ttksbxegly .gt_table {
+#gmjstptdip .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -10982,12 +10983,12 @@ $minutes
   border-left-color: #D3D3D3;
 }
 
-#ttksbxegly .gt_caption {
+#gmjstptdip .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#ttksbxegly .gt_title {
+#gmjstptdip .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -10999,7 +11000,7 @@ $minutes
   border-bottom-width: 0;
 }
 
-#ttksbxegly .gt_subtitle {
+#gmjstptdip .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -11011,7 +11012,7 @@ $minutes
   border-top-width: 0;
 }
 
-#ttksbxegly .gt_heading {
+#gmjstptdip .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -11023,13 +11024,13 @@ $minutes
   border-right-color: #D3D3D3;
 }
 
-#ttksbxegly .gt_bottom_border {
+#gmjstptdip .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#ttksbxegly .gt_col_headings {
+#gmjstptdip .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -11044,7 +11045,7 @@ $minutes
   border-right-color: #D3D3D3;
 }
 
-#ttksbxegly .gt_col_heading {
+#gmjstptdip .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -11064,7 +11065,7 @@ $minutes
   overflow-x: hidden;
 }
 
-#ttksbxegly .gt_column_spanner_outer {
+#gmjstptdip .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -11076,15 +11077,15 @@ $minutes
   padding-right: 4px;
 }
 
-#ttksbxegly .gt_column_spanner_outer:first-child {
+#gmjstptdip .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#ttksbxegly .gt_column_spanner_outer:last-child {
+#gmjstptdip .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#ttksbxegly .gt_column_spanner {
+#gmjstptdip .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -11096,11 +11097,11 @@ $minutes
   width: 100%;
 }
 
-#ttksbxegly .gt_spanner_row {
+#gmjstptdip .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#ttksbxegly .gt_group_heading {
+#gmjstptdip .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -11126,7 +11127,7 @@ $minutes
   text-align: left;
 }
 
-#ttksbxegly .gt_empty_group_heading {
+#gmjstptdip .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -11141,15 +11142,15 @@ $minutes
   vertical-align: middle;
 }
 
-#ttksbxegly .gt_from_md > :first-child {
+#gmjstptdip .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#ttksbxegly .gt_from_md > :last-child {
+#gmjstptdip .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#ttksbxegly .gt_row {
+#gmjstptdip .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -11168,7 +11169,7 @@ $minutes
   overflow-x: hidden;
 }
 
-#ttksbxegly .gt_stub {
+#gmjstptdip .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -11181,7 +11182,7 @@ $minutes
   padding-right: 5px;
 }
 
-#ttksbxegly .gt_stub_row_group {
+#gmjstptdip .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -11195,15 +11196,15 @@ $minutes
   vertical-align: top;
 }
 
-#ttksbxegly .gt_row_group_first td {
+#gmjstptdip .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#ttksbxegly .gt_row_group_first th {
+#gmjstptdip .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#ttksbxegly .gt_summary_row {
+#gmjstptdip .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -11213,16 +11214,16 @@ $minutes
   padding-right: 5px;
 }
 
-#ttksbxegly .gt_first_summary_row {
+#gmjstptdip .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#ttksbxegly .gt_first_summary_row.thick {
+#gmjstptdip .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#ttksbxegly .gt_last_summary_row {
+#gmjstptdip .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -11232,7 +11233,7 @@ $minutes
   border-bottom-color: #D3D3D3;
 }
 
-#ttksbxegly .gt_grand_summary_row {
+#gmjstptdip .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -11242,7 +11243,7 @@ $minutes
   padding-right: 5px;
 }
 
-#ttksbxegly .gt_first_grand_summary_row {
+#gmjstptdip .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -11252,7 +11253,7 @@ $minutes
   border-top-color: #D3D3D3;
 }
 
-#ttksbxegly .gt_last_grand_summary_row_top {
+#gmjstptdip .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -11262,11 +11263,11 @@ $minutes
   border-bottom-color: #D3D3D3;
 }
 
-#ttksbxegly .gt_striped {
+#gmjstptdip .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#ttksbxegly .gt_table_body {
+#gmjstptdip .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -11275,7 +11276,7 @@ $minutes
   border-bottom-color: #D3D3D3;
 }
 
-#ttksbxegly .gt_footnotes {
+#gmjstptdip .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -11289,7 +11290,7 @@ $minutes
   border-right-color: #D3D3D3;
 }
 
-#ttksbxegly .gt_footnote {
+#gmjstptdip .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -11298,7 +11299,7 @@ $minutes
   padding-right: 5px;
 }
 
-#ttksbxegly .gt_sourcenotes {
+#gmjstptdip .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -11312,7 +11313,7 @@ $minutes
   border-right-color: #D3D3D3;
 }
 
-#ttksbxegly .gt_sourcenote {
+#gmjstptdip .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -11320,72 +11321,72 @@ $minutes
   padding-right: 5px;
 }
 
-#ttksbxegly .gt_left {
+#gmjstptdip .gt_left {
   text-align: left;
 }
 
-#ttksbxegly .gt_center {
+#gmjstptdip .gt_center {
   text-align: center;
 }
 
-#ttksbxegly .gt_right {
+#gmjstptdip .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#ttksbxegly .gt_font_normal {
+#gmjstptdip .gt_font_normal {
   font-weight: normal;
 }
 
-#ttksbxegly .gt_font_bold {
+#gmjstptdip .gt_font_bold {
   font-weight: bold;
 }
 
-#ttksbxegly .gt_font_italic {
+#gmjstptdip .gt_font_italic {
   font-style: italic;
 }
 
-#ttksbxegly .gt_super {
+#gmjstptdip .gt_super {
   font-size: 65%;
 }
 
-#ttksbxegly .gt_footnote_marks {
+#gmjstptdip .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#ttksbxegly .gt_asterisk {
+#gmjstptdip .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#ttksbxegly .gt_indent_1 {
+#gmjstptdip .gt_indent_1 {
   text-indent: 5px;
 }
 
-#ttksbxegly .gt_indent_2 {
+#gmjstptdip .gt_indent_2 {
   text-indent: 10px;
 }
 
-#ttksbxegly .gt_indent_3 {
+#gmjstptdip .gt_indent_3 {
   text-indent: 15px;
 }
 
-#ttksbxegly .gt_indent_4 {
+#gmjstptdip .gt_indent_4 {
   text-indent: 20px;
 }
 
-#ttksbxegly .gt_indent_5 {
+#gmjstptdip .gt_indent_5 {
   text-indent: 25px;
 }
 
-#ttksbxegly .katex-display {
+#gmjstptdip .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#ttksbxegly div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#gmjstptdip div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -11555,23 +11556,23 @@ $minutes
 <p><strong>Supplementary Table S14. Drop-one influence of individual centuries.</strong> For each climatic term of the evaluated models: <em>p</em>-value with all data, largest <em>p</em>-value when one century is removed, the century whose removal gives that value, and the percentage of drop-one fits in which the term remains significant.</p>
 <div class="cell">
 <div class="cell-output-display">
-<div id="dlkqtnoscs" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#dlkqtnoscs table {
+<div id="pmongxmknp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#pmongxmknp table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#dlkqtnoscs thead, #dlkqtnoscs tbody, #dlkqtnoscs tfoot, #dlkqtnoscs tr, #dlkqtnoscs td, #dlkqtnoscs th {
+#pmongxmknp thead, #pmongxmknp tbody, #pmongxmknp tfoot, #pmongxmknp tr, #pmongxmknp td, #pmongxmknp th {
   border-style: none;
 }
 
-#dlkqtnoscs p {
+#pmongxmknp p {
   margin: 0;
   padding: 0;
 }
 
-#dlkqtnoscs .gt_table {
+#pmongxmknp .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -11597,12 +11598,12 @@ $minutes
   border-left-color: #D3D3D3;
 }
 
-#dlkqtnoscs .gt_caption {
+#pmongxmknp .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#dlkqtnoscs .gt_title {
+#pmongxmknp .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -11614,7 +11615,7 @@ $minutes
   border-bottom-width: 0;
 }
 
-#dlkqtnoscs .gt_subtitle {
+#pmongxmknp .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -11626,7 +11627,7 @@ $minutes
   border-top-width: 0;
 }
 
-#dlkqtnoscs .gt_heading {
+#pmongxmknp .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -11638,13 +11639,13 @@ $minutes
   border-right-color: #D3D3D3;
 }
 
-#dlkqtnoscs .gt_bottom_border {
+#pmongxmknp .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#dlkqtnoscs .gt_col_headings {
+#pmongxmknp .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -11659,7 +11660,7 @@ $minutes
   border-right-color: #D3D3D3;
 }
 
-#dlkqtnoscs .gt_col_heading {
+#pmongxmknp .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -11679,7 +11680,7 @@ $minutes
   overflow-x: hidden;
 }
 
-#dlkqtnoscs .gt_column_spanner_outer {
+#pmongxmknp .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -11691,15 +11692,15 @@ $minutes
   padding-right: 4px;
 }
 
-#dlkqtnoscs .gt_column_spanner_outer:first-child {
+#pmongxmknp .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#dlkqtnoscs .gt_column_spanner_outer:last-child {
+#pmongxmknp .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#dlkqtnoscs .gt_column_spanner {
+#pmongxmknp .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -11711,11 +11712,11 @@ $minutes
   width: 100%;
 }
 
-#dlkqtnoscs .gt_spanner_row {
+#pmongxmknp .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#dlkqtnoscs .gt_group_heading {
+#pmongxmknp .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -11741,7 +11742,7 @@ $minutes
   text-align: left;
 }
 
-#dlkqtnoscs .gt_empty_group_heading {
+#pmongxmknp .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -11756,15 +11757,15 @@ $minutes
   vertical-align: middle;
 }
 
-#dlkqtnoscs .gt_from_md > :first-child {
+#pmongxmknp .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#dlkqtnoscs .gt_from_md > :last-child {
+#pmongxmknp .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#dlkqtnoscs .gt_row {
+#pmongxmknp .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -11783,7 +11784,7 @@ $minutes
   overflow-x: hidden;
 }
 
-#dlkqtnoscs .gt_stub {
+#pmongxmknp .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -11796,7 +11797,7 @@ $minutes
   padding-right: 5px;
 }
 
-#dlkqtnoscs .gt_stub_row_group {
+#pmongxmknp .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -11810,15 +11811,15 @@ $minutes
   vertical-align: top;
 }
 
-#dlkqtnoscs .gt_row_group_first td {
+#pmongxmknp .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#dlkqtnoscs .gt_row_group_first th {
+#pmongxmknp .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#dlkqtnoscs .gt_summary_row {
+#pmongxmknp .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -11828,16 +11829,16 @@ $minutes
   padding-right: 5px;
 }
 
-#dlkqtnoscs .gt_first_summary_row {
+#pmongxmknp .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#dlkqtnoscs .gt_first_summary_row.thick {
+#pmongxmknp .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#dlkqtnoscs .gt_last_summary_row {
+#pmongxmknp .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -11847,7 +11848,7 @@ $minutes
   border-bottom-color: #D3D3D3;
 }
 
-#dlkqtnoscs .gt_grand_summary_row {
+#pmongxmknp .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -11857,7 +11858,7 @@ $minutes
   padding-right: 5px;
 }
 
-#dlkqtnoscs .gt_first_grand_summary_row {
+#pmongxmknp .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -11867,7 +11868,7 @@ $minutes
   border-top-color: #D3D3D3;
 }
 
-#dlkqtnoscs .gt_last_grand_summary_row_top {
+#pmongxmknp .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -11877,11 +11878,11 @@ $minutes
   border-bottom-color: #D3D3D3;
 }
 
-#dlkqtnoscs .gt_striped {
+#pmongxmknp .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#dlkqtnoscs .gt_table_body {
+#pmongxmknp .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -11890,7 +11891,7 @@ $minutes
   border-bottom-color: #D3D3D3;
 }
 
-#dlkqtnoscs .gt_footnotes {
+#pmongxmknp .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -11904,7 +11905,7 @@ $minutes
   border-right-color: #D3D3D3;
 }
 
-#dlkqtnoscs .gt_footnote {
+#pmongxmknp .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -11913,7 +11914,7 @@ $minutes
   padding-right: 5px;
 }
 
-#dlkqtnoscs .gt_sourcenotes {
+#pmongxmknp .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -11927,7 +11928,7 @@ $minutes
   border-right-color: #D3D3D3;
 }
 
-#dlkqtnoscs .gt_sourcenote {
+#pmongxmknp .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -11935,72 +11936,72 @@ $minutes
   padding-right: 5px;
 }
 
-#dlkqtnoscs .gt_left {
+#pmongxmknp .gt_left {
   text-align: left;
 }
 
-#dlkqtnoscs .gt_center {
+#pmongxmknp .gt_center {
   text-align: center;
 }
 
-#dlkqtnoscs .gt_right {
+#pmongxmknp .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#dlkqtnoscs .gt_font_normal {
+#pmongxmknp .gt_font_normal {
   font-weight: normal;
 }
 
-#dlkqtnoscs .gt_font_bold {
+#pmongxmknp .gt_font_bold {
   font-weight: bold;
 }
 
-#dlkqtnoscs .gt_font_italic {
+#pmongxmknp .gt_font_italic {
   font-style: italic;
 }
 
-#dlkqtnoscs .gt_super {
+#pmongxmknp .gt_super {
   font-size: 65%;
 }
 
-#dlkqtnoscs .gt_footnote_marks {
+#pmongxmknp .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#dlkqtnoscs .gt_asterisk {
+#pmongxmknp .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#dlkqtnoscs .gt_indent_1 {
+#pmongxmknp .gt_indent_1 {
   text-indent: 5px;
 }
 
-#dlkqtnoscs .gt_indent_2 {
+#pmongxmknp .gt_indent_2 {
   text-indent: 10px;
 }
 
-#dlkqtnoscs .gt_indent_3 {
+#pmongxmknp .gt_indent_3 {
   text-indent: 15px;
 }
 
-#dlkqtnoscs .gt_indent_4 {
+#pmongxmknp .gt_indent_4 {
   text-indent: 20px;
 }
 
-#dlkqtnoscs .gt_indent_5 {
+#pmongxmknp .gt_indent_5 {
   text-indent: 25px;
 }
 
-#dlkqtnoscs .katex-display {
+#pmongxmknp .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#dlkqtnoscs div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#pmongxmknp div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -12232,9 +12233,9 @@ $minutes
 </div>
 </div>
 <ul>
-<li><strong>Cross-validation.</strong> Only the marginal thermal-regime model of Punta Maroma predicts better than the reference model in both versions (ΔELPD = 31.1 ± 23.0 in LOO, 26.3 ± 19.6 in h-block; 71 % of the centuries predicted better), and its summed differences are of the same order as their standard errors. The marginal hurricane-regime model of the regional composite is better in LOO (13.5 ± 12.8) but not in h-block (−9.6 ± 4.3). All selected combined models have negative summed differences in LOO and h-block (e.g.&nbsp;Punta Maroma: −41.9 ± 39.5 and −10.6 ± 44.8; regional composite: −3.0 ± 9.0 and −40.3 ± 20.5), although they predict 58–65 % of the left-out centuries better than the reference model; the losses are concentrated in a few centuries (worst: 5.0 ka in Punta Maroma, 5.2 ka in Belize, 0.2 ka in the regional composite). In Florida and Saint Croix no climate model is better than the reference model. With 19–57 centuries per panel, cross-validation does not discriminate firmly among models; the fitted models describe the sampled record and have limited predictive transferability beyond its climatic range.</li>
-<li><strong>Circular-shift test.</strong> The marginal models of Punta Maroma (thermal regime, <em>p</em> = 0.04) and of the regional composite (hurricane regime, <em>p</em> = 0.02, the smallest attainable) exceed nearly all or all shifted alignments, whereas the selected combined models of both panels do not reach α = 0.05 (<em>p</em> = 0.06 and 0.08). In Belize <em>p</em> = 0.12 (marginal) and 0.26 (combined) (not all 49 shifted fits converge for this model, so its <em>p</em>-value is not a multiple of 1/50), in Florida 0.08 and 0.64, and in Saint Croix 0.16 and 0.26: in these panels the observed alignment is not distinguishable from a shifted one at α = 0.05.</li>
-<li><strong>Drop-one influence.</strong> In Punta Maroma the thermal regime remains significant in 97 % of the drop-one fits of both models; its largest <em>p</em> (0.66 marginal, 0.44 combined) occurs on removing 0.1 ka. In the regional composite the hurricane regime remains significant in 98 % of the fits of both models (largest <em>p</em> = 0.065 and 0.083, again on removing 0.1 ka). In Florida s(Hur100_fqcy) remains significant in every drop-one fit of the combined model (largest <em>p</em> = 0.009, on removing 5.9 ka) and in 25 % of the marginal fits. In Belize s(dT_raw) and the hurricane regime remain significant in 95 % and 90 % of the combined fits, s(GMHT_CPS0_30N) in 57 % and the thermal regime in 38 %; the marginal s(GMHT_CPS0_30N) remains significant in 96 % (largest <em>p</em> = 0.096, on removing 0.2 ka). The century with most influence on the selected regime terms of Punta Maroma and the regional composite is the youngest (0–0.1 ka), which is examined further in Section 4.5.2.</li>
+<li><strong>Cross-validation.</strong> Only the marginal thermal-regime model of Punta Maroma predicts better than the reference model in both versions (ΔELPD = 31.1 ± 23.0 in LOO, 26.3 ± 19.6 in h-block; 71 % of the centuries predicted better), and its summed differences are of the same order as their standard errors. The marginal hurricane-regime model of the regional composite is better in LOO (13.5 ± 12.8) but not in h-block (−9.6 ± 4.3). No selected combined model predicts better than the reference model (Punta Maroma, M3: −64.1 ± 35.5 and −83.2 ± 70.8; regional composite: −3.0 ± 9.0 and −40.3 ± 20.5; Belize: −7.6 ± 10.6 and −10.2 ± 9.7; Florida: 0.1 ± 2.4 and −2.2 ± 4.0), although they predict 58–71 % of the left-out centuries better; the losses are concentrated in a few centuries (worst: 0.2 ka in Punta Maroma and the regional composite, 5.2 ka in Belize). The competitive M6 models of Punta Maroma, which contain the thermal regime, do not predict better either (M6_av: −24.2 ± 20.4 and −87.3 ± 69.0). In Saint Croix no climate model is better than the reference model. With 19–57 centuries per panel, cross-validation does not discriminate firmly among models; the fitted models describe the sampled record and have limited predictive transferability beyond its climatic range.</li>
+<li><strong>Circular-shift test.</strong> The marginal models of Punta Maroma (thermal regime, <em>p</em> = 0.04) and of the regional composite (hurricane regime, <em>p</em> = 0.02, the smallest attainable) exceed nearly all or all shifted alignments, and so does the selected M3 of Punta Maroma (<em>p</em> = 0.02). The selected model of the regional composite does not reach α = 0.05 (<em>p</em> = 0.10). In Belize <em>p</em> = 0.16 (marginal) and 0.30 (combined), in Florida 0.08 and 0.40, and in Saint Croix 0.16 and 0.28: in these panels the observed alignment is not distinguishable from a shifted one at α = 0.05. The M3 of Punta Maroma thus aligns with the coral record better than shifted series do, but does not predict left-out centuries: its alignment rests on the youngest century (Section 4.5.2).</li>
+<li><strong>Drop-one influence.</strong> In Punta Maroma the marginal thermal regime remains significant in 97 % of the drop-one fits (largest <em>p</em> = 0.66, on removing 0.1 ka), whereas s(dT_raw) in M3 remains significant in only 42 % (largest <em>p</em> = 0.94). In the regional composite the hurricane regime remains significant in 98 % of the fits of both models (largest <em>p</em> = 0.065 and 0.083, on removing 0.1 ka). In Florida s(GMHT_CPS0_30N) remains significant in every drop-one fit of the combined model (largest <em>p</em> = 0.037) and s(Hur100_fqcy) in 84 % (largest <em>p</em> = 0.13, on removing 3.2 ka); the marginal s(Hur100_fqcy) in 25 %. In Belize s(GMHT_CPS0_30N) remains significant in 96 % of the combined fits (largest <em>p</em> = 0.050, on removing 0.2 ka), and the marginal hurricane regime in 13 %. The century with most influence on the regime terms of Punta Maroma and the regional composite is the youngest (0–0.1 ka), which is examined further in Section 4.5.2.</li>
 <li><strong>Former cross-validation.</strong> Because the Regional panel contains the site records, every observation entered the training data twice, and the score was computed against the mean of 4–6 test values per panel and fold. When those values are nearly identical, as is common with 2–6 distinct response values per site, the denominator approaches zero and the score becomes very negative or undefined (median of fold means −13.6 in Punta Maroma; undefined folds in 11 and 20 of the 20 fold assignments in Belize and Saint Croix). Its results therefore do not measure the predictive performance of the site models, and the analysis is replaced by the cross-validation above.</li>
 </ul>
 <div class="cell">
@@ -12758,7 +12759,7 @@ Caused by warning in `min()`:
 </section>
 <section id="time-reference-bin-phase-regime-models-and-the-little-ice-age-contrast" class="level3">
 <h3 class="anchored" data-anchor-id="time-reference-bin-phase-regime-models-and-the-little-ice-age-contrast">4.7 Time reference, bin phase, regime models and the Little Ice Age contrast</h3>
-<p>These analyses were added in the third round of revision, after the hurricane metrics were recounted in BP bins (Section 1.2). They test four questions that the analyses of Sections 4.5 and 4.6 leave open: whether the results depend on (i) how the youngest bin is closed and on the time reference of the bins, (ii) where the century boundaries fall (bin phase), (iii) age and sampling uncertainty in the models that are now selected, which contain categorical regimes (M6, M7), and (iv) the modern century, for the Little Ice Age contrast of Punta Maroma. All four were specified before they were run. Each chunk reads the stored results; <code>rerun_round3 &lt;- TRUE</code> recomputes them (about 3 h). The functions are in <code>sensitivity_round3/round3_functions.R</code>.</p>
+<p>These analyses were added in the third round of revision, after the hurricane metrics were recounted in BP bins (Section 1.2). They test five questions that the analyses of Sections 4.5 and 4.6 leave open: whether the results depend on (i) how the youngest bin is closed and on the time reference of the bins, (ii) where the century boundaries fall (bin phase), (iii) age and sampling uncertainty in all combined candidates, including those with categorical regimes (M6, M7), (iv) the modern century, for the Little Ice Age contrast of Punta Maroma, and (v) the choice of temperature reconstruction. Questions (i)–(iv) were specified before they were run; (v) was added after the temperature predictor was rebuilt from the CPS ensemble median (Section 1.2). Each chunk reads the stored results; <code>rerun_round3 &lt;- TRUE</code> recomputes them (about 4–5 h). The functions are in <code>sensitivity_round3/round3_functions.R</code>.</p>
 <section id="youngest-bin-and-time-reference" class="level4">
 <h4 class="anchored" data-anchor-id="youngest-bin-and-time-reference">4.7.1 Youngest bin and time reference</h4>
 <p>The main analysis closes the youngest bin at the youngest dated colony (1956 CE), as for the coral ages. Two alternatives were run through the complete pipeline: the youngest bin extended to 2022 CE as a rate per century (climate table <code>df_GAM130326_regimes_v5c.xlsx</code>), and every series expressed in years before 2021 CE, the reference of the U-Th ages of Punta Maroma (coral ages + 0.071 ka; TC events re-counted from the individual event layers of Schmitt et al.&nbsp;2025, table S4a; temperature interpolated at the bin centres from the CPS median and regimes re-assigned by overlap; climate table <code>sensitivity_round3/df_GAM130326_regimes_2021frame_v5.xlsx</code>). The table below reports the selected combined model of each run and the AIC advantage over <code>s(age)</code> with and without the youngest bin.</p>
@@ -13900,11 +13901,11 @@ Caused by warning in `min()`:
 </div>
 </div>
 </div>
-<p>Extending the youngest bin to 2022 CE keeps the main terms of Punta Maroma (thermal regime), the regional composite (hurricane regime) and Belize (temperature and δT, although the regimes drop out of the Belize model), and changes the results of Florida and Saint Croix. Expressing every series in years before 2021 CE changes the picture: s(Hur100_fqcy) becomes significant in every panel, together with the thermal regime, and the support no longer depends on the youngest bin (Punta Maroma 24.5 → 45.0 AIC units without it). Out-of-sample prediction does not improve, however: the combined models of Punta Maroma and the regional composite predict left-out centuries worse than <code>s(age)</code> (ΔELPD −77.8 and −12.3). Corals and storms are aligned identically in the two frames; only the century boundaries move, by 71 years. A result that changes with that shift depends on the bin phase, which is tested directly in Section 4.7.2.</p>
+<p>Extending the youngest bin to 2022 CE keeps the hurricane regime of the regional composite (now in M7_fqcy; “high” +2.55) and the temperature smooth of Belize. In Punta Maroma the selected model changes to M4_av, in which s(dT_raw) and s(Hur100_av) are significant. Expressing every series in years before 2021 CE changes the selected model in every panel. The hurricane regime remains in the regional composite and enters the Punta Maroma model; the thermal regime enters the Belize model; and s(Hur100_fqcy) becomes significant in Florida, Belize and Saint Croix. In this frame the support no longer depends on the youngest bin (Punta Maroma 37.2 → 33.6 AIC units without it; regional composite 21.7 → 22.8). Corals and storms are aligned identically in the two frames; only the century boundaries move, by 71 years. A result that changes with that shift depends on the bin phase, which is tested directly in Section 4.7.2.</p>
 </section>
 <section id="bin-phase" class="level4">
 <h4 class="anchored" data-anchor-id="bin-phase">4.7.2 Bin phase</h4>
-<p>The bin origin is shifted by 0, 10, …, 90 years. Coral ages and TC event layers are re-binned exactly; the temperature anomaly is interpolated at the bin centers, and each regime is taken from the BP bin that holds the bin center. With no shift the ensemble reproduces the selected models of Table 2 in four panels; in Florida it selects M4_fqcy instead of M6_fqcy (Akaike weights 0.20 and 0.22 in Table 2), because counts from individual layers differ by one event from the window counts in two bins.</p>
+<p>The bin origin is shifted by 0, 10, …, 90 years. Coral ages and TC event layers are re-binned exactly; the temperature anomaly is interpolated at the bin centers, and each regime is taken from the BP bin that holds the bin center. With no shift the ensemble reproduces the selected models of Table 2 in all five panels.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div id="chuzqrfasj" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
@@ -15062,30 +15063,31 @@ Caused by warning in `min()`:
 </div>
 </div>
 </div>
-<p>The continuous TC metrics are significant in few phases: in the marginal models in 3 of 10 phases at Punta Maroma, 2 in the regional composite, 0 at Belize and 3 in Florida, and in the selected combined model in 1–3 phases (7 in Saint Croix, a panel that is not interpreted). The categorical regimes, by contrast, are significant in the selected combined model in most phases: the hurricane regime in 9 phases at Punta Maroma and 7 in the regional composite and at Belize, the thermal regime in 7 at Punta Maroma. The contrasts show which level carries the hurricane regime. Only “high” (0–0.2 ka, the rise after 1800 CE) has a consistent effect: positive in every phase and panel (Punta Maroma +2.5 to +5.2, significant in 10 of 10; regional composite +1.9 to +3.2, 9 of 10; Belize +1.4 to +2.9, 5 of 10). “Enhanced” (0.6–1.4 ka) and “calm” (0.2–0.6 ka) have no consistent effect. The association with the hurricane regime therefore rests on the two most recent centuries. These are “high” in the regime classification of Schmitt et al.&nbsp;(2025), which refers to the rise after 1800 CE including the 20th and 21st centuries; in the counts that fall within our bins, which end at the youngest dated colony (1956 CE), they hold 15 and 11 events, close to the late-Holocene median of 11 events per century. The regime contrast therefore identifies the two centuries, not an excess of storms within them.</p>
+<p>The continuous TC metrics are significant in few phases: in the marginal models in 1–3 of 10 phases at Punta Maroma, 0–2 in the regional composite, 0 at Belize and 0–3 in Florida, and in the selected combined model of each phase in 1–3 phases (6 in Saint Croix, a panel that is not interpreted). The categorical regimes, by contrast, are significant in the selected combined model in most phases: at Punta Maroma the hurricane regime in 6 and the thermal regime in 5, in the regional composite each in 6, and at Belize the thermal regime in 8. The model selected without shift is itself selected in few phases (M3 in 2 of 10 at Punta Maroma, where models with regimes are selected in 7).</p>
+<p>The contrasts below come from a separate model, <code>s(age)</code> + hurricane regime, refitted in each phase; they are not the effects of the selected combined models shown in Fig. 4, where the hurricane regime appears only for the regional composite. Only “high” (0–0.2 ka, the rise after 1800 CE) has a consistent effect: positive in every phase and panel (Punta Maroma +2.5 to +5.2, significant in 10 of 10; regional composite +1.0 to +3.2, 9 of 10; Belize +1.4 to +2.9, 5 of 10). “Enhanced” (0.6–1.1 and 1.2–1.4 ka) and “calm” (0.2–0.6 ka) have no consistent effect. The association with the hurricane regime therefore rests on the two most recent centuries. These are “high” in the regime classification of Schmitt et al.&nbsp;(2025), which refers to the rise after 1800 CE including the 20th and 21st centuries; in the counts that fall within our bins, which end at the youngest dated colony (1956 CE), they hold 15 and 11 events, close to the late-Holocene median of 11 events per century. The regime contrast therefore identifies the two centuries, not an excess of storms within them.</p>
 </section>
 <section id="age-and-sampling-uncertainty-in-all-combined-candidates" class="level4">
 <h4 class="anchored" data-anchor-id="age-and-sampling-uncertainty-in-all-combined-candidates">4.7.3 Age and sampling uncertainty in all combined candidates</h4>
 <p>Section 4.5.2(e) refits only M1–M4. Here every combined candidate (M1–M7, after <code>drop_hydro()</code>) is refitted in each of about 300 replicates per scenario (two halves, replicates 1–150 and 151–300, seeds 20261006 and 20261007), and the term-level <em>p</em>-values of the model selected with the audited ages are recorded.</p>
 <div class="cell">
 <div class="cell-output-display">
-<div id="vamruwedyr" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#vamruwedyr table {
+<div id="glbnlkxozd" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#glbnlkxozd table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#vamruwedyr thead, #vamruwedyr tbody, #vamruwedyr tfoot, #vamruwedyr tr, #vamruwedyr td, #vamruwedyr th {
+#glbnlkxozd thead, #glbnlkxozd tbody, #glbnlkxozd tfoot, #glbnlkxozd tr, #glbnlkxozd td, #glbnlkxozd th {
   border-style: none;
 }
 
-#vamruwedyr p {
+#glbnlkxozd p {
   margin: 0;
   padding: 0;
 }
 
-#vamruwedyr .gt_table {
+#glbnlkxozd .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -15111,12 +15113,12 @@ Caused by warning in `min()`:
   border-left-color: #D3D3D3;
 }
 
-#vamruwedyr .gt_caption {
+#glbnlkxozd .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#vamruwedyr .gt_title {
+#glbnlkxozd .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -15128,7 +15130,7 @@ Caused by warning in `min()`:
   border-bottom-width: 0;
 }
 
-#vamruwedyr .gt_subtitle {
+#glbnlkxozd .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -15140,7 +15142,7 @@ Caused by warning in `min()`:
   border-top-width: 0;
 }
 
-#vamruwedyr .gt_heading {
+#glbnlkxozd .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -15152,13 +15154,13 @@ Caused by warning in `min()`:
   border-right-color: #D3D3D3;
 }
 
-#vamruwedyr .gt_bottom_border {
+#glbnlkxozd .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#vamruwedyr .gt_col_headings {
+#glbnlkxozd .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -15173,7 +15175,7 @@ Caused by warning in `min()`:
   border-right-color: #D3D3D3;
 }
 
-#vamruwedyr .gt_col_heading {
+#glbnlkxozd .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -15193,7 +15195,7 @@ Caused by warning in `min()`:
   overflow-x: hidden;
 }
 
-#vamruwedyr .gt_column_spanner_outer {
+#glbnlkxozd .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -15205,15 +15207,15 @@ Caused by warning in `min()`:
   padding-right: 4px;
 }
 
-#vamruwedyr .gt_column_spanner_outer:first-child {
+#glbnlkxozd .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#vamruwedyr .gt_column_spanner_outer:last-child {
+#glbnlkxozd .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#vamruwedyr .gt_column_spanner {
+#glbnlkxozd .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -15225,11 +15227,11 @@ Caused by warning in `min()`:
   width: 100%;
 }
 
-#vamruwedyr .gt_spanner_row {
+#glbnlkxozd .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#vamruwedyr .gt_group_heading {
+#glbnlkxozd .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -15255,7 +15257,7 @@ Caused by warning in `min()`:
   text-align: left;
 }
 
-#vamruwedyr .gt_empty_group_heading {
+#glbnlkxozd .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -15270,15 +15272,15 @@ Caused by warning in `min()`:
   vertical-align: middle;
 }
 
-#vamruwedyr .gt_from_md > :first-child {
+#glbnlkxozd .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#vamruwedyr .gt_from_md > :last-child {
+#glbnlkxozd .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#vamruwedyr .gt_row {
+#glbnlkxozd .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -15297,7 +15299,7 @@ Caused by warning in `min()`:
   overflow-x: hidden;
 }
 
-#vamruwedyr .gt_stub {
+#glbnlkxozd .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -15310,7 +15312,7 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#vamruwedyr .gt_stub_row_group {
+#glbnlkxozd .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -15324,15 +15326,15 @@ Caused by warning in `min()`:
   vertical-align: top;
 }
 
-#vamruwedyr .gt_row_group_first td {
+#glbnlkxozd .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#vamruwedyr .gt_row_group_first th {
+#glbnlkxozd .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#vamruwedyr .gt_summary_row {
+#glbnlkxozd .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -15342,16 +15344,16 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#vamruwedyr .gt_first_summary_row {
+#glbnlkxozd .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#vamruwedyr .gt_first_summary_row.thick {
+#glbnlkxozd .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#vamruwedyr .gt_last_summary_row {
+#glbnlkxozd .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -15361,7 +15363,7 @@ Caused by warning in `min()`:
   border-bottom-color: #D3D3D3;
 }
 
-#vamruwedyr .gt_grand_summary_row {
+#glbnlkxozd .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -15371,7 +15373,7 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#vamruwedyr .gt_first_grand_summary_row {
+#glbnlkxozd .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -15381,7 +15383,7 @@ Caused by warning in `min()`:
   border-top-color: #D3D3D3;
 }
 
-#vamruwedyr .gt_last_grand_summary_row_top {
+#glbnlkxozd .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -15391,11 +15393,11 @@ Caused by warning in `min()`:
   border-bottom-color: #D3D3D3;
 }
 
-#vamruwedyr .gt_striped {
+#glbnlkxozd .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#vamruwedyr .gt_table_body {
+#glbnlkxozd .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -15404,7 +15406,7 @@ Caused by warning in `min()`:
   border-bottom-color: #D3D3D3;
 }
 
-#vamruwedyr .gt_footnotes {
+#glbnlkxozd .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -15418,7 +15420,7 @@ Caused by warning in `min()`:
   border-right-color: #D3D3D3;
 }
 
-#vamruwedyr .gt_footnote {
+#glbnlkxozd .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -15427,7 +15429,7 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#vamruwedyr .gt_sourcenotes {
+#glbnlkxozd .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -15441,7 +15443,7 @@ Caused by warning in `min()`:
   border-right-color: #D3D3D3;
 }
 
-#vamruwedyr .gt_sourcenote {
+#glbnlkxozd .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -15449,72 +15451,72 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#vamruwedyr .gt_left {
+#glbnlkxozd .gt_left {
   text-align: left;
 }
 
-#vamruwedyr .gt_center {
+#glbnlkxozd .gt_center {
   text-align: center;
 }
 
-#vamruwedyr .gt_right {
+#glbnlkxozd .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#vamruwedyr .gt_font_normal {
+#glbnlkxozd .gt_font_normal {
   font-weight: normal;
 }
 
-#vamruwedyr .gt_font_bold {
+#glbnlkxozd .gt_font_bold {
   font-weight: bold;
 }
 
-#vamruwedyr .gt_font_italic {
+#glbnlkxozd .gt_font_italic {
   font-style: italic;
 }
 
-#vamruwedyr .gt_super {
+#glbnlkxozd .gt_super {
   font-size: 65%;
 }
 
-#vamruwedyr .gt_footnote_marks {
+#glbnlkxozd .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#vamruwedyr .gt_asterisk {
+#glbnlkxozd .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#vamruwedyr .gt_indent_1 {
+#glbnlkxozd .gt_indent_1 {
   text-indent: 5px;
 }
 
-#vamruwedyr .gt_indent_2 {
+#glbnlkxozd .gt_indent_2 {
   text-indent: 10px;
 }
 
-#vamruwedyr .gt_indent_3 {
+#glbnlkxozd .gt_indent_3 {
   text-indent: 15px;
 }
 
-#vamruwedyr .gt_indent_4 {
+#glbnlkxozd .gt_indent_4 {
   text-indent: 20px;
 }
 
-#vamruwedyr .gt_indent_5 {
+#glbnlkxozd .gt_indent_5 {
   text-indent: 25px;
 }
 
-#vamruwedyr .katex-display {
+#glbnlkxozd .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#vamruwedyr div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#glbnlkxozd div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -15787,30 +15789,30 @@ Caused by warning in `min()`:
 </div>
 </div>
 </div>
-<p>In Punta Maroma the best model contains a regime in 95–96 % of the replicates, and the thermal regime of the selected model is significant in 88–100 %; s(Hur100_av) is significant in 19–29 %. In the regional composite the hurricane regime is significant in 81–98 % of the replicates and s(Hur100_av) in 19–22 %. At Belize, s(GMHT_CPS0_30N) is significant in 23–36 % of the replicates, s(dT_raw) in 34–42 % and the regimes in 44–93 %. The model selected with the audited ages is itself the best model in only 4–42 % of the replicates, so the identity of the selected model is uncertain, whereas the presence of a regime term in Punta Maroma and the regional composite is not.</p>
+<p>In Punta Maroma the model selected with the audited ages (M3) is the best model in only 33 % of the age replicates and in 2–4 % of those that resample the records, whereas a model with a regime is the best in 62–89 %. s(dT_raw) is significant within M3 in 35–63 % of the replicates. Because the recorded <em>p</em>-values are those of the selected model, which does not contain the thermal regime, the significance of that regime in the replicates is not recorded here (Section 4.7.5 gives a comparable test across temperature reconstructions). In the regional composite the hurricane regime is significant in 79–100 % of the replicates, a regime is in the best model in 77–90 % and s(Hur100_av) is significant in 15–19 %. At Belize, s(GMHT_CPS0_30N) is significant in 70 % of the age replicates but in 14–16 % of those that resample the records, and M4_av is the best model in 9–16 %. In Florida, s(Hur100_fqcy) is significant in 75 % of the age replicates and in 21–30 % under resampling. The model selected with the audited ages is itself the best model in only 2–39 % of the replicates, so the identity of the selected model is uncertain, whereas the presence of a regime term in the best models of Punta Maroma and the regional composite is not.</p>
 </section>
 <section id="the-little-ice-age-contrast-of-punta-maroma" class="level4">
 <h4 class="anchored" data-anchor-id="the-little-ice-age-contrast-of-punta-maroma">4.7.4 The Little Ice Age contrast of Punta Maroma</h4>
-<p>The thermal-regime contrast of Punta Maroma (LIA −3.50, reference “warmer”; Table 2) compares the LIA bins with the “warmer” bins, and at this site “warmer” consists of the modern century (normalized frequency 0.98, the maximum) and three mid-Holocene bins. To test whether the LIA differs from the other cool or warm intervals, independently of the modern century, the two youngest bins (0–0.2 ka) are removed and the reference is set to the Caribbean Warm Period–Medieval Warm Anomaly (CWP&amp;MWA) or, where that regime has no bins, to “cooler”. Four specifications are fitted in each of the 10 phases: with <code>s(age)</code>, with <code>s(age, k = 4)</code>, without <code>s(age)</code>, and with the regime lagged by one century.</p>
+<p>The thermal-regime contrast of Punta Maroma (LIA −3.79 in the marginal model, Table 1; −3.18 in the competitive M6 models, Section 3.3.3; reference “warmer”) compares the LIA bins with the “warmer” bins, and at this site “warmer” consists of the modern century (normalized frequency 0.98, the maximum) and three mid-Holocene bins. To test whether the LIA differs from the other cool or warm intervals, independently of the modern century, the two youngest bins (0–0.2 ka) are removed and the reference is set to the Caribbean Warm Period–Medieval Warm Anomaly (CWP&amp;MWA) or, where that regime has no bins, to “cooler”. Four specifications are fitted in each of the 10 phases: with <code>s(age)</code>, with <code>s(age, k = 4)</code>, without <code>s(age)</code>, and with the regime lagged by one century.</p>
 <div class="cell">
 <div class="cell-output-display">
-<div id="larkaqbcoj" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#larkaqbcoj table {
+<div id="oimewoxitx" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#oimewoxitx table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#larkaqbcoj thead, #larkaqbcoj tbody, #larkaqbcoj tfoot, #larkaqbcoj tr, #larkaqbcoj td, #larkaqbcoj th {
+#oimewoxitx thead, #oimewoxitx tbody, #oimewoxitx tfoot, #oimewoxitx tr, #oimewoxitx td, #oimewoxitx th {
   border-style: none;
 }
 
-#larkaqbcoj p {
+#oimewoxitx p {
   margin: 0;
   padding: 0;
 }
 
-#larkaqbcoj .gt_table {
+#oimewoxitx .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -15836,12 +15838,12 @@ Caused by warning in `min()`:
   border-left-color: #D3D3D3;
 }
 
-#larkaqbcoj .gt_caption {
+#oimewoxitx .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#larkaqbcoj .gt_title {
+#oimewoxitx .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -15853,7 +15855,7 @@ Caused by warning in `min()`:
   border-bottom-width: 0;
 }
 
-#larkaqbcoj .gt_subtitle {
+#oimewoxitx .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -15865,7 +15867,7 @@ Caused by warning in `min()`:
   border-top-width: 0;
 }
 
-#larkaqbcoj .gt_heading {
+#oimewoxitx .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -15877,13 +15879,13 @@ Caused by warning in `min()`:
   border-right-color: #D3D3D3;
 }
 
-#larkaqbcoj .gt_bottom_border {
+#oimewoxitx .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#larkaqbcoj .gt_col_headings {
+#oimewoxitx .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -15898,7 +15900,7 @@ Caused by warning in `min()`:
   border-right-color: #D3D3D3;
 }
 
-#larkaqbcoj .gt_col_heading {
+#oimewoxitx .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -15918,7 +15920,7 @@ Caused by warning in `min()`:
   overflow-x: hidden;
 }
 
-#larkaqbcoj .gt_column_spanner_outer {
+#oimewoxitx .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -15930,15 +15932,15 @@ Caused by warning in `min()`:
   padding-right: 4px;
 }
 
-#larkaqbcoj .gt_column_spanner_outer:first-child {
+#oimewoxitx .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#larkaqbcoj .gt_column_spanner_outer:last-child {
+#oimewoxitx .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#larkaqbcoj .gt_column_spanner {
+#oimewoxitx .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -15950,11 +15952,11 @@ Caused by warning in `min()`:
   width: 100%;
 }
 
-#larkaqbcoj .gt_spanner_row {
+#oimewoxitx .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#larkaqbcoj .gt_group_heading {
+#oimewoxitx .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -15980,7 +15982,7 @@ Caused by warning in `min()`:
   text-align: left;
 }
 
-#larkaqbcoj .gt_empty_group_heading {
+#oimewoxitx .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -15995,15 +15997,15 @@ Caused by warning in `min()`:
   vertical-align: middle;
 }
 
-#larkaqbcoj .gt_from_md > :first-child {
+#oimewoxitx .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#larkaqbcoj .gt_from_md > :last-child {
+#oimewoxitx .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#larkaqbcoj .gt_row {
+#oimewoxitx .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -16022,7 +16024,7 @@ Caused by warning in `min()`:
   overflow-x: hidden;
 }
 
-#larkaqbcoj .gt_stub {
+#oimewoxitx .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -16035,7 +16037,7 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#larkaqbcoj .gt_stub_row_group {
+#oimewoxitx .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -16049,15 +16051,15 @@ Caused by warning in `min()`:
   vertical-align: top;
 }
 
-#larkaqbcoj .gt_row_group_first td {
+#oimewoxitx .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#larkaqbcoj .gt_row_group_first th {
+#oimewoxitx .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#larkaqbcoj .gt_summary_row {
+#oimewoxitx .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -16067,16 +16069,16 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#larkaqbcoj .gt_first_summary_row {
+#oimewoxitx .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#larkaqbcoj .gt_first_summary_row.thick {
+#oimewoxitx .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#larkaqbcoj .gt_last_summary_row {
+#oimewoxitx .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -16086,7 +16088,7 @@ Caused by warning in `min()`:
   border-bottom-color: #D3D3D3;
 }
 
-#larkaqbcoj .gt_grand_summary_row {
+#oimewoxitx .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -16096,7 +16098,7 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#larkaqbcoj .gt_first_grand_summary_row {
+#oimewoxitx .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -16106,7 +16108,7 @@ Caused by warning in `min()`:
   border-top-color: #D3D3D3;
 }
 
-#larkaqbcoj .gt_last_grand_summary_row_top {
+#oimewoxitx .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -16116,11 +16118,11 @@ Caused by warning in `min()`:
   border-bottom-color: #D3D3D3;
 }
 
-#larkaqbcoj .gt_striped {
+#oimewoxitx .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#larkaqbcoj .gt_table_body {
+#oimewoxitx .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -16129,7 +16131,7 @@ Caused by warning in `min()`:
   border-bottom-color: #D3D3D3;
 }
 
-#larkaqbcoj .gt_footnotes {
+#oimewoxitx .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -16143,7 +16145,7 @@ Caused by warning in `min()`:
   border-right-color: #D3D3D3;
 }
 
-#larkaqbcoj .gt_footnote {
+#oimewoxitx .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -16152,7 +16154,7 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#larkaqbcoj .gt_sourcenotes {
+#oimewoxitx .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -16166,7 +16168,7 @@ Caused by warning in `min()`:
   border-right-color: #D3D3D3;
 }
 
-#larkaqbcoj .gt_sourcenote {
+#oimewoxitx .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -16174,72 +16176,72 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#larkaqbcoj .gt_left {
+#oimewoxitx .gt_left {
   text-align: left;
 }
 
-#larkaqbcoj .gt_center {
+#oimewoxitx .gt_center {
   text-align: center;
 }
 
-#larkaqbcoj .gt_right {
+#oimewoxitx .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#larkaqbcoj .gt_font_normal {
+#oimewoxitx .gt_font_normal {
   font-weight: normal;
 }
 
-#larkaqbcoj .gt_font_bold {
+#oimewoxitx .gt_font_bold {
   font-weight: bold;
 }
 
-#larkaqbcoj .gt_font_italic {
+#oimewoxitx .gt_font_italic {
   font-style: italic;
 }
 
-#larkaqbcoj .gt_super {
+#oimewoxitx .gt_super {
   font-size: 65%;
 }
 
-#larkaqbcoj .gt_footnote_marks {
+#oimewoxitx .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#larkaqbcoj .gt_asterisk {
+#oimewoxitx .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#larkaqbcoj .gt_indent_1 {
+#oimewoxitx .gt_indent_1 {
   text-indent: 5px;
 }
 
-#larkaqbcoj .gt_indent_2 {
+#oimewoxitx .gt_indent_2 {
   text-indent: 10px;
 }
 
-#larkaqbcoj .gt_indent_3 {
+#oimewoxitx .gt_indent_3 {
   text-indent: 15px;
 }
 
-#larkaqbcoj .gt_indent_4 {
+#oimewoxitx .gt_indent_4 {
   text-indent: 20px;
 }
 
-#larkaqbcoj .gt_indent_5 {
+#oimewoxitx .gt_indent_5 {
   text-indent: 25px;
 }
 
-#larkaqbcoj .katex-display {
+#oimewoxitx .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#larkaqbcoj div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#oimewoxitx div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -16338,23 +16340,23 @@ Caused by warning in `min()`:
 </div>
 </div>
 <div class="cell-output-display">
-<div id="zvfhvigrew" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#zvfhvigrew table {
+<div id="mlvacxnkqi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#mlvacxnkqi table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#zvfhvigrew thead, #zvfhvigrew tbody, #zvfhvigrew tfoot, #zvfhvigrew tr, #zvfhvigrew td, #zvfhvigrew th {
+#mlvacxnkqi thead, #mlvacxnkqi tbody, #mlvacxnkqi tfoot, #mlvacxnkqi tr, #mlvacxnkqi td, #mlvacxnkqi th {
   border-style: none;
 }
 
-#zvfhvigrew p {
+#mlvacxnkqi p {
   margin: 0;
   padding: 0;
 }
 
-#zvfhvigrew .gt_table {
+#mlvacxnkqi .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -16380,12 +16382,12 @@ Caused by warning in `min()`:
   border-left-color: #D3D3D3;
 }
 
-#zvfhvigrew .gt_caption {
+#mlvacxnkqi .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#zvfhvigrew .gt_title {
+#mlvacxnkqi .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -16397,7 +16399,7 @@ Caused by warning in `min()`:
   border-bottom-width: 0;
 }
 
-#zvfhvigrew .gt_subtitle {
+#mlvacxnkqi .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -16409,7 +16411,7 @@ Caused by warning in `min()`:
   border-top-width: 0;
 }
 
-#zvfhvigrew .gt_heading {
+#mlvacxnkqi .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -16421,13 +16423,13 @@ Caused by warning in `min()`:
   border-right-color: #D3D3D3;
 }
 
-#zvfhvigrew .gt_bottom_border {
+#mlvacxnkqi .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#zvfhvigrew .gt_col_headings {
+#mlvacxnkqi .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -16442,7 +16444,7 @@ Caused by warning in `min()`:
   border-right-color: #D3D3D3;
 }
 
-#zvfhvigrew .gt_col_heading {
+#mlvacxnkqi .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -16462,7 +16464,7 @@ Caused by warning in `min()`:
   overflow-x: hidden;
 }
 
-#zvfhvigrew .gt_column_spanner_outer {
+#mlvacxnkqi .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -16474,15 +16476,15 @@ Caused by warning in `min()`:
   padding-right: 4px;
 }
 
-#zvfhvigrew .gt_column_spanner_outer:first-child {
+#mlvacxnkqi .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#zvfhvigrew .gt_column_spanner_outer:last-child {
+#mlvacxnkqi .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#zvfhvigrew .gt_column_spanner {
+#mlvacxnkqi .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -16494,11 +16496,11 @@ Caused by warning in `min()`:
   width: 100%;
 }
 
-#zvfhvigrew .gt_spanner_row {
+#mlvacxnkqi .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#zvfhvigrew .gt_group_heading {
+#mlvacxnkqi .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -16524,7 +16526,7 @@ Caused by warning in `min()`:
   text-align: left;
 }
 
-#zvfhvigrew .gt_empty_group_heading {
+#mlvacxnkqi .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -16539,15 +16541,15 @@ Caused by warning in `min()`:
   vertical-align: middle;
 }
 
-#zvfhvigrew .gt_from_md > :first-child {
+#mlvacxnkqi .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#zvfhvigrew .gt_from_md > :last-child {
+#mlvacxnkqi .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#zvfhvigrew .gt_row {
+#mlvacxnkqi .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -16566,7 +16568,7 @@ Caused by warning in `min()`:
   overflow-x: hidden;
 }
 
-#zvfhvigrew .gt_stub {
+#mlvacxnkqi .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -16579,7 +16581,7 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#zvfhvigrew .gt_stub_row_group {
+#mlvacxnkqi .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -16593,15 +16595,15 @@ Caused by warning in `min()`:
   vertical-align: top;
 }
 
-#zvfhvigrew .gt_row_group_first td {
+#mlvacxnkqi .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#zvfhvigrew .gt_row_group_first th {
+#mlvacxnkqi .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#zvfhvigrew .gt_summary_row {
+#mlvacxnkqi .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -16611,16 +16613,16 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#zvfhvigrew .gt_first_summary_row {
+#mlvacxnkqi .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#zvfhvigrew .gt_first_summary_row.thick {
+#mlvacxnkqi .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#zvfhvigrew .gt_last_summary_row {
+#mlvacxnkqi .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -16630,7 +16632,7 @@ Caused by warning in `min()`:
   border-bottom-color: #D3D3D3;
 }
 
-#zvfhvigrew .gt_grand_summary_row {
+#mlvacxnkqi .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -16640,7 +16642,7 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#zvfhvigrew .gt_first_grand_summary_row {
+#mlvacxnkqi .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -16650,7 +16652,7 @@ Caused by warning in `min()`:
   border-top-color: #D3D3D3;
 }
 
-#zvfhvigrew .gt_last_grand_summary_row_top {
+#mlvacxnkqi .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -16660,11 +16662,11 @@ Caused by warning in `min()`:
   border-bottom-color: #D3D3D3;
 }
 
-#zvfhvigrew .gt_striped {
+#mlvacxnkqi .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#zvfhvigrew .gt_table_body {
+#mlvacxnkqi .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -16673,7 +16675,7 @@ Caused by warning in `min()`:
   border-bottom-color: #D3D3D3;
 }
 
-#zvfhvigrew .gt_footnotes {
+#mlvacxnkqi .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -16687,7 +16689,7 @@ Caused by warning in `min()`:
   border-right-color: #D3D3D3;
 }
 
-#zvfhvigrew .gt_footnote {
+#mlvacxnkqi .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -16696,7 +16698,7 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#zvfhvigrew .gt_sourcenotes {
+#mlvacxnkqi .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -16710,7 +16712,7 @@ Caused by warning in `min()`:
   border-right-color: #D3D3D3;
 }
 
-#zvfhvigrew .gt_sourcenote {
+#mlvacxnkqi .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -16718,72 +16720,72 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#zvfhvigrew .gt_left {
+#mlvacxnkqi .gt_left {
   text-align: left;
 }
 
-#zvfhvigrew .gt_center {
+#mlvacxnkqi .gt_center {
   text-align: center;
 }
 
-#zvfhvigrew .gt_right {
+#mlvacxnkqi .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#zvfhvigrew .gt_font_normal {
+#mlvacxnkqi .gt_font_normal {
   font-weight: normal;
 }
 
-#zvfhvigrew .gt_font_bold {
+#mlvacxnkqi .gt_font_bold {
   font-weight: bold;
 }
 
-#zvfhvigrew .gt_font_italic {
+#mlvacxnkqi .gt_font_italic {
   font-style: italic;
 }
 
-#zvfhvigrew .gt_super {
+#mlvacxnkqi .gt_super {
   font-size: 65%;
 }
 
-#zvfhvigrew .gt_footnote_marks {
+#mlvacxnkqi .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#zvfhvigrew .gt_asterisk {
+#mlvacxnkqi .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#zvfhvigrew .gt_indent_1 {
+#mlvacxnkqi .gt_indent_1 {
   text-indent: 5px;
 }
 
-#zvfhvigrew .gt_indent_2 {
+#mlvacxnkqi .gt_indent_2 {
   text-indent: 10px;
 }
 
-#zvfhvigrew .gt_indent_3 {
+#mlvacxnkqi .gt_indent_3 {
   text-indent: 15px;
 }
 
-#zvfhvigrew .gt_indent_4 {
+#mlvacxnkqi .gt_indent_4 {
   text-indent: 20px;
 }
 
-#zvfhvigrew .gt_indent_5 {
+#mlvacxnkqi .gt_indent_5 {
   text-indent: 25px;
 }
 
-#zvfhvigrew .katex-display {
+#mlvacxnkqi .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#zvfhvigrew div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#mlvacxnkqi div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -16875,30 +16877,30 @@ Caused by warning in `min()`:
 </div>
 </div>
 </div>
-<p>In the raw data the LIA bins of Punta Maroma have a mean normalized frequency of 0.154, against 0.127 in the “cooler” bins and 0.405 in the “warmer” bins, which include the modern maximum. Without the two modern centuries the LIA contrast of Punta Maroma ranges from −0.56 to +0.42 across phases and specifications without the lag (−0.35 to +0.28 with <code>s(age)</code>; positive in 9 of 10 phases) and from +0.26 to +1.05 with the lag, and it is not significant in any of the 40 fits. At Belize (−0.79 to +1.00) and in the regional composite (−1.09 to +0.04) the LIA contrast with the CWP&amp;MWA is not significant in any phase or specification. The negative LIA coefficient of Table 2 is therefore a contrast between the LIA and the century that follows it: the low density of the LIA precedes the modern maximum. It does not show lower density during the LIA than during earlier cool intervals. At Punta Maroma the CWP&amp;MWA (0.7–1.3 ka) has no dated colonies; it falls within the 0.64–1.38-ka low-density interval (Section 2), and bins without colonies do not enter the models.</p>
+<p>In the raw data the LIA bins of Punta Maroma have a mean normalized frequency of 0.154, against 0.127 in the “cooler” bins and 0.405 in the “warmer” bins, which include the modern maximum. Without the two modern centuries the LIA contrast of Punta Maroma ranges from −0.56 to +0.42 across phases and specifications without the lag (−0.35 to +0.28 with <code>s(age)</code>; positive in 9 of 10 phases) and from +0.26 to +1.05 with the lag, and it is not significant in any of the 40 fits. At Belize (−0.79 to +1.00) and in the regional composite (−1.09 to +0.04) the LIA contrast with the CWP&amp;MWA is not significant in any phase or specification. The negative LIA coefficient is therefore a contrast between the LIA and the century that follows it: the low frequency of the LIA precedes the modern maximum. It does not show a lower frequency during the LIA than during earlier cool intervals. At Punta Maroma the CWP&amp;MWA (0.7–1.3 ka) has no dated colonies; it falls within the 0.64–1.38-ka low-density interval (Section 2), and bins without colonies do not enter the models.</p>
 </section>
 <section id="choice-of-temperature-reconstruction-cps-ensemble-members" class="level4">
 <h4 class="anchored" data-anchor-id="choice-of-temperature-reconstruction-cps-ensemble-members">4.7.5 Choice of temperature reconstruction (CPS ensemble members)</h4>
 <p>Added in round 3 (reviewer point R1.3). The temperature predictors are built from the median of the 500-member CPS ensemble for 0°–30°N (Section 1.2). The spread among members is large relative to the centennial signal (mean 90 % range ≈ 2.5 °C over 0–6 ka, against a 0–6 ka range of the median of ≈ 1.2 °C), and the previous version of the table used a single member. Here we refit the models with individual members in place of the median. For each member, <code>GMHT_CPS0_30N</code> and <code>dT_raw</code> are rebuilt exactly as for the median (interpolation at the bin centres, change from the preceding century), and the coral series and all other predictors are left unchanged. We fit (i) the two marginal temperature models (M_temp, M_dt) and (ii) all combined candidates, and record for each panel whether the temperature smooths are significant, whether the regime terms of the selected model remain significant, and which model is selected. Member V1 (the series of table v4) is always included; the remaining members are drawn at random (seed 20261030). The test was specified before it was run (2026-10-30).</p>
 <div class="cell">
 <div class="cell-output-display">
-<div id="gwogxyxocl" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#gwogxyxocl table {
+<div id="serpwlfufs" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#serpwlfufs table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#gwogxyxocl thead, #gwogxyxocl tbody, #gwogxyxocl tfoot, #gwogxyxocl tr, #gwogxyxocl td, #gwogxyxocl th {
+#serpwlfufs thead, #serpwlfufs tbody, #serpwlfufs tfoot, #serpwlfufs tr, #serpwlfufs td, #serpwlfufs th {
   border-style: none;
 }
 
-#gwogxyxocl p {
+#serpwlfufs p {
   margin: 0;
   padding: 0;
 }
 
-#gwogxyxocl .gt_table {
+#serpwlfufs .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -16924,12 +16926,12 @@ Caused by warning in `min()`:
   border-left-color: #D3D3D3;
 }
 
-#gwogxyxocl .gt_caption {
+#serpwlfufs .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#gwogxyxocl .gt_title {
+#serpwlfufs .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -16941,7 +16943,7 @@ Caused by warning in `min()`:
   border-bottom-width: 0;
 }
 
-#gwogxyxocl .gt_subtitle {
+#serpwlfufs .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -16953,7 +16955,7 @@ Caused by warning in `min()`:
   border-top-width: 0;
 }
 
-#gwogxyxocl .gt_heading {
+#serpwlfufs .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -16965,13 +16967,13 @@ Caused by warning in `min()`:
   border-right-color: #D3D3D3;
 }
 
-#gwogxyxocl .gt_bottom_border {
+#serpwlfufs .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#gwogxyxocl .gt_col_headings {
+#serpwlfufs .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -16986,7 +16988,7 @@ Caused by warning in `min()`:
   border-right-color: #D3D3D3;
 }
 
-#gwogxyxocl .gt_col_heading {
+#serpwlfufs .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -17006,7 +17008,7 @@ Caused by warning in `min()`:
   overflow-x: hidden;
 }
 
-#gwogxyxocl .gt_column_spanner_outer {
+#serpwlfufs .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -17018,15 +17020,15 @@ Caused by warning in `min()`:
   padding-right: 4px;
 }
 
-#gwogxyxocl .gt_column_spanner_outer:first-child {
+#serpwlfufs .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#gwogxyxocl .gt_column_spanner_outer:last-child {
+#serpwlfufs .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#gwogxyxocl .gt_column_spanner {
+#serpwlfufs .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -17038,11 +17040,11 @@ Caused by warning in `min()`:
   width: 100%;
 }
 
-#gwogxyxocl .gt_spanner_row {
+#serpwlfufs .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#gwogxyxocl .gt_group_heading {
+#serpwlfufs .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -17068,7 +17070,7 @@ Caused by warning in `min()`:
   text-align: left;
 }
 
-#gwogxyxocl .gt_empty_group_heading {
+#serpwlfufs .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -17083,15 +17085,15 @@ Caused by warning in `min()`:
   vertical-align: middle;
 }
 
-#gwogxyxocl .gt_from_md > :first-child {
+#serpwlfufs .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#gwogxyxocl .gt_from_md > :last-child {
+#serpwlfufs .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#gwogxyxocl .gt_row {
+#serpwlfufs .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -17110,7 +17112,7 @@ Caused by warning in `min()`:
   overflow-x: hidden;
 }
 
-#gwogxyxocl .gt_stub {
+#serpwlfufs .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -17123,7 +17125,7 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#gwogxyxocl .gt_stub_row_group {
+#serpwlfufs .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -17137,15 +17139,15 @@ Caused by warning in `min()`:
   vertical-align: top;
 }
 
-#gwogxyxocl .gt_row_group_first td {
+#serpwlfufs .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#gwogxyxocl .gt_row_group_first th {
+#serpwlfufs .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#gwogxyxocl .gt_summary_row {
+#serpwlfufs .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -17155,16 +17157,16 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#gwogxyxocl .gt_first_summary_row {
+#serpwlfufs .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#gwogxyxocl .gt_first_summary_row.thick {
+#serpwlfufs .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#gwogxyxocl .gt_last_summary_row {
+#serpwlfufs .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -17174,7 +17176,7 @@ Caused by warning in `min()`:
   border-bottom-color: #D3D3D3;
 }
 
-#gwogxyxocl .gt_grand_summary_row {
+#serpwlfufs .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -17184,7 +17186,7 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#gwogxyxocl .gt_first_grand_summary_row {
+#serpwlfufs .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -17194,7 +17196,7 @@ Caused by warning in `min()`:
   border-top-color: #D3D3D3;
 }
 
-#gwogxyxocl .gt_last_grand_summary_row_top {
+#serpwlfufs .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -17204,11 +17206,11 @@ Caused by warning in `min()`:
   border-bottom-color: #D3D3D3;
 }
 
-#gwogxyxocl .gt_striped {
+#serpwlfufs .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#gwogxyxocl .gt_table_body {
+#serpwlfufs .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -17217,7 +17219,7 @@ Caused by warning in `min()`:
   border-bottom-color: #D3D3D3;
 }
 
-#gwogxyxocl .gt_footnotes {
+#serpwlfufs .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -17231,7 +17233,7 @@ Caused by warning in `min()`:
   border-right-color: #D3D3D3;
 }
 
-#gwogxyxocl .gt_footnote {
+#serpwlfufs .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -17240,7 +17242,7 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#gwogxyxocl .gt_sourcenotes {
+#serpwlfufs .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -17254,7 +17256,7 @@ Caused by warning in `min()`:
   border-right-color: #D3D3D3;
 }
 
-#gwogxyxocl .gt_sourcenote {
+#serpwlfufs .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -17262,72 +17264,72 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#gwogxyxocl .gt_left {
+#serpwlfufs .gt_left {
   text-align: left;
 }
 
-#gwogxyxocl .gt_center {
+#serpwlfufs .gt_center {
   text-align: center;
 }
 
-#gwogxyxocl .gt_right {
+#serpwlfufs .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#gwogxyxocl .gt_font_normal {
+#serpwlfufs .gt_font_normal {
   font-weight: normal;
 }
 
-#gwogxyxocl .gt_font_bold {
+#serpwlfufs .gt_font_bold {
   font-weight: bold;
 }
 
-#gwogxyxocl .gt_font_italic {
+#serpwlfufs .gt_font_italic {
   font-style: italic;
 }
 
-#gwogxyxocl .gt_super {
+#serpwlfufs .gt_super {
   font-size: 65%;
 }
 
-#gwogxyxocl .gt_footnote_marks {
+#serpwlfufs .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#gwogxyxocl .gt_asterisk {
+#serpwlfufs .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#gwogxyxocl .gt_indent_1 {
+#serpwlfufs .gt_indent_1 {
   text-indent: 5px;
 }
 
-#gwogxyxocl .gt_indent_2 {
+#serpwlfufs .gt_indent_2 {
   text-indent: 10px;
 }
 
-#gwogxyxocl .gt_indent_3 {
+#serpwlfufs .gt_indent_3 {
   text-indent: 15px;
 }
 
-#gwogxyxocl .gt_indent_4 {
+#serpwlfufs .gt_indent_4 {
   text-indent: 20px;
 }
 
-#gwogxyxocl .gt_indent_5 {
+#serpwlfufs .gt_indent_5 {
   text-indent: 25px;
 }
 
-#gwogxyxocl .katex-display {
+#serpwlfufs .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#gwogxyxocl div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#serpwlfufs div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -17441,23 +17443,23 @@ Caused by warning in `min()`:
 </div>
 </div>
 <div class="cell-output-display">
-<div id="ykybhptxvp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#ykybhptxvp table {
+<div id="dtzihbmoxc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#dtzihbmoxc table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#ykybhptxvp thead, #ykybhptxvp tbody, #ykybhptxvp tfoot, #ykybhptxvp tr, #ykybhptxvp td, #ykybhptxvp th {
+#dtzihbmoxc thead, #dtzihbmoxc tbody, #dtzihbmoxc tfoot, #dtzihbmoxc tr, #dtzihbmoxc td, #dtzihbmoxc th {
   border-style: none;
 }
 
-#ykybhptxvp p {
+#dtzihbmoxc p {
   margin: 0;
   padding: 0;
 }
 
-#ykybhptxvp .gt_table {
+#dtzihbmoxc .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -17483,12 +17485,12 @@ Caused by warning in `min()`:
   border-left-color: #D3D3D3;
 }
 
-#ykybhptxvp .gt_caption {
+#dtzihbmoxc .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#ykybhptxvp .gt_title {
+#dtzihbmoxc .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -17500,7 +17502,7 @@ Caused by warning in `min()`:
   border-bottom-width: 0;
 }
 
-#ykybhptxvp .gt_subtitle {
+#dtzihbmoxc .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -17512,7 +17514,7 @@ Caused by warning in `min()`:
   border-top-width: 0;
 }
 
-#ykybhptxvp .gt_heading {
+#dtzihbmoxc .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -17524,13 +17526,13 @@ Caused by warning in `min()`:
   border-right-color: #D3D3D3;
 }
 
-#ykybhptxvp .gt_bottom_border {
+#dtzihbmoxc .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#ykybhptxvp .gt_col_headings {
+#dtzihbmoxc .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -17545,7 +17547,7 @@ Caused by warning in `min()`:
   border-right-color: #D3D3D3;
 }
 
-#ykybhptxvp .gt_col_heading {
+#dtzihbmoxc .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -17565,7 +17567,7 @@ Caused by warning in `min()`:
   overflow-x: hidden;
 }
 
-#ykybhptxvp .gt_column_spanner_outer {
+#dtzihbmoxc .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -17577,15 +17579,15 @@ Caused by warning in `min()`:
   padding-right: 4px;
 }
 
-#ykybhptxvp .gt_column_spanner_outer:first-child {
+#dtzihbmoxc .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#ykybhptxvp .gt_column_spanner_outer:last-child {
+#dtzihbmoxc .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#ykybhptxvp .gt_column_spanner {
+#dtzihbmoxc .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -17597,11 +17599,11 @@ Caused by warning in `min()`:
   width: 100%;
 }
 
-#ykybhptxvp .gt_spanner_row {
+#dtzihbmoxc .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#ykybhptxvp .gt_group_heading {
+#dtzihbmoxc .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -17627,7 +17629,7 @@ Caused by warning in `min()`:
   text-align: left;
 }
 
-#ykybhptxvp .gt_empty_group_heading {
+#dtzihbmoxc .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -17642,15 +17644,15 @@ Caused by warning in `min()`:
   vertical-align: middle;
 }
 
-#ykybhptxvp .gt_from_md > :first-child {
+#dtzihbmoxc .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#ykybhptxvp .gt_from_md > :last-child {
+#dtzihbmoxc .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#ykybhptxvp .gt_row {
+#dtzihbmoxc .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -17669,7 +17671,7 @@ Caused by warning in `min()`:
   overflow-x: hidden;
 }
 
-#ykybhptxvp .gt_stub {
+#dtzihbmoxc .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -17682,7 +17684,7 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#ykybhptxvp .gt_stub_row_group {
+#dtzihbmoxc .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -17696,15 +17698,15 @@ Caused by warning in `min()`:
   vertical-align: top;
 }
 
-#ykybhptxvp .gt_row_group_first td {
+#dtzihbmoxc .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#ykybhptxvp .gt_row_group_first th {
+#dtzihbmoxc .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#ykybhptxvp .gt_summary_row {
+#dtzihbmoxc .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -17714,16 +17716,16 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#ykybhptxvp .gt_first_summary_row {
+#dtzihbmoxc .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#ykybhptxvp .gt_first_summary_row.thick {
+#dtzihbmoxc .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#ykybhptxvp .gt_last_summary_row {
+#dtzihbmoxc .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -17733,7 +17735,7 @@ Caused by warning in `min()`:
   border-bottom-color: #D3D3D3;
 }
 
-#ykybhptxvp .gt_grand_summary_row {
+#dtzihbmoxc .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -17743,7 +17745,7 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#ykybhptxvp .gt_first_grand_summary_row {
+#dtzihbmoxc .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -17753,7 +17755,7 @@ Caused by warning in `min()`:
   border-top-color: #D3D3D3;
 }
 
-#ykybhptxvp .gt_last_grand_summary_row_top {
+#dtzihbmoxc .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -17763,11 +17765,11 @@ Caused by warning in `min()`:
   border-bottom-color: #D3D3D3;
 }
 
-#ykybhptxvp .gt_striped {
+#dtzihbmoxc .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#ykybhptxvp .gt_table_body {
+#dtzihbmoxc .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -17776,7 +17778,7 @@ Caused by warning in `min()`:
   border-bottom-color: #D3D3D3;
 }
 
-#ykybhptxvp .gt_footnotes {
+#dtzihbmoxc .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -17790,7 +17792,7 @@ Caused by warning in `min()`:
   border-right-color: #D3D3D3;
 }
 
-#ykybhptxvp .gt_footnote {
+#dtzihbmoxc .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -17799,7 +17801,7 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#ykybhptxvp .gt_sourcenotes {
+#dtzihbmoxc .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -17813,7 +17815,7 @@ Caused by warning in `min()`:
   border-right-color: #D3D3D3;
 }
 
-#ykybhptxvp .gt_sourcenote {
+#dtzihbmoxc .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -17821,72 +17823,72 @@ Caused by warning in `min()`:
   padding-right: 5px;
 }
 
-#ykybhptxvp .gt_left {
+#dtzihbmoxc .gt_left {
   text-align: left;
 }
 
-#ykybhptxvp .gt_center {
+#dtzihbmoxc .gt_center {
   text-align: center;
 }
 
-#ykybhptxvp .gt_right {
+#dtzihbmoxc .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#ykybhptxvp .gt_font_normal {
+#dtzihbmoxc .gt_font_normal {
   font-weight: normal;
 }
 
-#ykybhptxvp .gt_font_bold {
+#dtzihbmoxc .gt_font_bold {
   font-weight: bold;
 }
 
-#ykybhptxvp .gt_font_italic {
+#dtzihbmoxc .gt_font_italic {
   font-style: italic;
 }
 
-#ykybhptxvp .gt_super {
+#dtzihbmoxc .gt_super {
   font-size: 65%;
 }
 
-#ykybhptxvp .gt_footnote_marks {
+#dtzihbmoxc .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#ykybhptxvp .gt_asterisk {
+#dtzihbmoxc .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#ykybhptxvp .gt_indent_1 {
+#dtzihbmoxc .gt_indent_1 {
   text-indent: 5px;
 }
 
-#ykybhptxvp .gt_indent_2 {
+#dtzihbmoxc .gt_indent_2 {
   text-indent: 10px;
 }
 
-#ykybhptxvp .gt_indent_3 {
+#dtzihbmoxc .gt_indent_3 {
   text-indent: 15px;
 }
 
-#ykybhptxvp .gt_indent_4 {
+#dtzihbmoxc .gt_indent_4 {
   text-indent: 20px;
 }
 
-#ykybhptxvp .gt_indent_5 {
+#dtzihbmoxc .gt_indent_5 {
   text-indent: 25px;
 }
 
-#ykybhptxvp .katex-display {
+#dtzihbmoxc .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#ykybhptxvp div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#dtzihbmoxc div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -17964,11 +17966,11 @@ Caused by warning in `min()`:
 </div>
 </div>
 </div>
-<p>[Text to be written after the run.]</p>
+<p>With the median, the models reproduce the main analysis (Table 2). Across the 100 members the results fall into two groups. The categorical regimes are stable. In Punta Maroma the best combined model contains a regime with 76 % of the members (M6 with 73 %), a model with a regime lies within ΔAIC ≤ 2 of the best with 84 %, and the thermal regime is significant in the best model with 73 %; M3, selected with the median, is selected with only 2 % of the members. In the regional composite a regime is in the best model with 82 % of the members, and the hurricane regime is significant with 69 %. The continuous temperature terms are not stable. Across panels, s(GMHT_CPS0_30N) is significant in the best model with 28–47 % of the members and s(dT_raw) with 19–36 %. In the marginal models s(dT_raw) is significant with 66 % of the members in Punta Maroma and 44 % in the regional composite, and s(GMHT_CPS0_30N) with 79 % and 51 %. With member V1, the series of table v4 with the corrected δT definition, the selected models are M6_fqcy in Punta Maroma and M6_av in the regional composite. The median is smoother than any member, so its δT varies less from century to century and follows the long-term trend more closely; this explains why s(dT_raw) can replace <code>s(age)</code> with the median (Section 4.2) but rarely with individual members. The associations of the categorical regimes therefore do not depend on the temperature reconstruction, whereas those of the continuous temperature predictors do.</p>
 </section>
 <section id="summary" class="level4">
 <h4 class="anchored" data-anchor-id="summary">4.7.6 Summary</h4>
-<p>Across the four tests, two results are stable. First, the frequency of dated colonies is highest in the two most recent centuries, which coincide with the “high” hurricane regime of Schmitt et al.&nbsp;(2025) and with the warm modern regime; this association holds across bin phases, time references and age and sampling uncertainty, but it rests on two bins and cannot be separated from recency bias. Second, at Punta Maroma the LIA bins have lower density than the modern century that follows them, but not lower than earlier cool intervals. The continuous TC metrics (Hur100_fqcy, Hur100_av) are not robust to bin phase or to age and sampling uncertainty, and no climatic predictor shows a consistent association before 0.2 ka.</p>
+<p>Across the five tests, two results are stable. First, the frequency of dated colonies is highest in the two most recent centuries, which coincide with the “high” hurricane regime of Schmitt et al.&nbsp;(2025) and with the warm modern regime. This association holds across bin phases, time references, age and sampling uncertainty and temperature reconstructions, but it rests on two bins and cannot be separated from recency bias. Second, at Punta Maroma the LIA bins have a lower frequency than the modern century that follows them, but not a lower one than earlier cool intervals. In Punta Maroma the δT smooth selected with the CPS median and the thermal regime of the competitive models describe the same modern contrast; the regime is retained when both are present, and the smooth is selected with only 2 % of the ensemble members. The continuous temperature and TC predictors are not robust to bin phase, to age and sampling uncertainty or to the choice of reconstruction, and no climatic predictor shows a consistent association before 0.2 ka.</p>
 </section>
 </section>
 </section>
@@ -18006,21 +18008,21 @@ other attached packages:
 
 loaded via a namespace (and not attached):
  [1] gtable_0.3.6       xfun_0.57          htmlwidgets_1.6.4  websocket_1.4.4   
- [5] processx_3.9.0     lattice_0.22-9     callr_3.7.6        vctrs_0.7.3       
- [9] tools_4.5.3        generics_0.1.4     tibble_3.3.1       pkgconfig_2.0.3   
-[13] Matrix_1.7-4       mirai_2.6.1        RColorBrewer_1.1-3 S7_0.2.1          
-[17] lifecycle_1.0.5    compiler_4.5.3     farver_2.1.2       statmod_1.5.1     
-[21] chromote_0.5.1     litedown_0.9       htmltools_0.5.9    sass_0.4.10       
-[25] yaml_2.3.12        pillar_1.11.1      later_1.4.8        commonmark_2.0.0  
-[29] tidyselect_1.2.1   digest_0.6.39      stringi_1.8.7      labeling_0.4.3    
-[33] splines_4.5.3      rprojroot_2.1.1    fastmap_1.2.0      grid_4.5.3        
-[37] cli_3.6.6          magrittr_2.0.5     base64enc_0.1-6    utf8_1.2.6        
-[41] withr_3.0.2        scales_1.4.0       promises_1.5.0     tweedie_3.0.17    
-[45] rmarkdown_2.31     otel_0.2.0         cellranger_1.1.0   ggokabeito_0.1.0  
-[49] mvnfast_0.2.8      evaluate_1.0.5     knitr_1.51         markdown_2.0      
-[53] rlang_1.2.0        Rcpp_1.1.1         nanonext_1.8.2     glue_1.8.0        
-[57] xml2_1.5.2         rstudioapi_0.18.0  jsonlite_2.0.0     plyr_1.8.9        
-[61] R6_2.6.1           fs_2.0.1          </code></pre>
+ [5] processx_3.9.0     lattice_0.22-9     vctrs_0.7.3        tools_4.5.3       
+ [9] generics_0.1.4     tibble_3.3.1       pkgconfig_2.0.3    Matrix_1.7-4      
+[13] mirai_2.6.1        RColorBrewer_1.1-3 S7_0.2.1           lifecycle_1.0.5   
+[17] compiler_4.5.3     farver_2.1.2       statmod_1.5.1      chromote_0.5.1    
+[21] litedown_0.9       htmltools_0.5.9    sass_0.4.10        yaml_2.3.12       
+[25] pillar_1.11.1      later_1.4.8        commonmark_2.0.0   tidyselect_1.2.1  
+[29] digest_0.6.39      stringi_1.8.7      labeling_0.4.3     splines_4.5.3     
+[33] rprojroot_2.1.1    fastmap_1.2.0      grid_4.5.3         cli_3.6.6         
+[37] magrittr_2.0.5     base64enc_0.1-6    utf8_1.2.6         withr_3.0.2       
+[41] scales_1.4.0       promises_1.5.0     tweedie_3.0.17     rmarkdown_2.31    
+[45] otel_0.2.0         cellranger_1.1.0   ggokabeito_0.1.0   mvnfast_0.2.8     
+[49] evaluate_1.0.5     knitr_1.51         markdown_2.0       rlang_1.2.0       
+[53] Rcpp_1.1.1         nanonext_1.8.2     glue_1.8.0         xml2_1.5.2        
+[57] rstudioapi_0.18.0  jsonlite_2.0.0     plyr_1.8.9         R6_2.6.1          
+[61] fs_2.0.1          </code></pre>
 </div>
 </div>
 </section>
