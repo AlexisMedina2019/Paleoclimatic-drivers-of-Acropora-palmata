@@ -1,16 +1,16 @@
-Frame,Panel,dAIC_vs_s(age)_all_bins,dAIC_vs_s(age)_without_youngest
-"BP, youngest bin to 1956 CE (main)",Punta Maroma,48.2,-3.5
-"BP, youngest bin to 1956 CE (main)",Florida,1.4,4.5
-"BP, youngest bin to 1956 CE (main)",Belize,8.4,8.2
-"BP, youngest bin to 1956 CE (main)",Saint Croix,4.3,1.2
-"BP, youngest bin to 1956 CE (main)",Regional,20.1,-1.9
-"BP, youngest bin to 2022 CE",Punta Maroma,49.0,-3.5
-"BP, youngest bin to 2022 CE",Florida,0.4,1.4
-"BP, youngest bin to 2022 CE",Belize,7.3,7.8
-"BP, youngest bin to 2022 CE",Saint Croix,15.1,1.2
-"BP, youngest bin to 2022 CE",Regional,20.5,-2.2
-Years before 2021 CE,Punta Maroma,24.5,45.0
-Years before 2021 CE,Florida,11.9,11.9
-Years before 2021 CE,Belize,13.1,14.8
-Years before 2021 CE,Saint Croix,15.5,15.5
-Years before 2021 CE,Regional,13.0,28.7
+"Frame","Panel","dAIC_vs_s(age)_all_bins","dAIC_vs_s(age)_without_youngest"
+"BP, youngest bin to 1956 CE (main)","Punta Maroma",49.8,3
+"BP, youngest bin to 1956 CE (main)","Florida",2.6,4.6
+"BP, youngest bin to 1956 CE (main)","Belize",4,5.3
+"BP, youngest bin to 1956 CE (main)","Saint Croix",2.6,0
+"BP, youngest bin to 1956 CE (main)","Regional",20.1,-1.9
+"BP, youngest bin to 2022 CE","Punta Maroma",51.5,3
+"BP, youngest bin to 2022 CE","Florida",1.4,4.6
+"BP, youngest bin to 2022 CE","Belize",4,5.3
+"BP, youngest bin to 2022 CE","Saint Croix",3.2,0
+"BP, youngest bin to 2022 CE","Regional",20.5,-2.2
+"Years before 2021 CE","Punta Maroma",37.2,33.6
+"Years before 2021 CE","Florida",12.1,12.6
+"Years before 2021 CE","Belize",9.3,10.8
+"Years before 2021 CE","Saint Croix",5.7,4.7
+"Years before 2021 CE","Regional",21.7,22.8

@@ -3757,7 +3757,7 @@ old_cv_res %>%
 These analyses were added in the third round of revision, after the hurricane metrics were recounted in BP bins (Section 1.2). They test four questions that the analyses of Sections 4.5 and 4.6 leave open: whether the results depend on (i) how the youngest bin is closed and on the time reference of the bins, (ii) where the century boundaries fall (bin phase), (iii) age and sampling uncertainty in the models that are now selected, which contain categorical regimes (M6, M7), and (iv) the modern century, for the Little Ice Age contrast of Punta Maroma. All four were specified before they were run. Each chunk reads the stored results; `rerun_round3 <- TRUE` recomputes them (about 3 h). The functions are in `sensitivity_round3/round3_functions.R`.
 
 ```{r round3-setup, warning=FALSE, message=FALSE}
-rerun_round3 <- TRUE   # 2026-10-30: v5 climate table (CPS median, forward dT); set back to FALSE after the run
+rerun_round3 <- FALSE   # 2026-10-30: v5 climate table (CPS median, forward dT); 
 r3 <- function(...) here("sensitivity_round3", ...)
 source(r3("round3_functions.R"))
 ```
