@@ -106,8 +106,8 @@ ul.task-list li input[type="checkbox"] {
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>          used (Mb) gc trigger (Mb) max used (Mb)
-Ncells  614920 32.9    1323625 70.7   782633 41.8
-Vcells 1227699  9.4    8388608 64.0  1927684 14.8</code></pre>
+Ncells  614951 32.9    1323834 70.8   784174 41.9
+Vcells 1228767  9.4    8388608 64.0  1927684 14.8</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code>here() starts at C:/Users/alexi/Downloads/Paleoclimatic-drivers-of-Acropora-palmata</code></pre>
@@ -679,7 +679,7 @@ Please cite as: </code></pre>
 <section id="climatic-predictor-import-alignment" class="level3">
 <h3 class="anchored" data-anchor-id="climatic-predictor-import-alignment">1.2 Climatic predictor: import &amp; alignment</h3>
 <p>We import the centennial climate table (<code>df_GAM130326_regimes_v5.xlsx</code>) and assign each row the upper bound of its 0.1-ka bin. Ages are in ka BP (before 1950 CE), the convention of the two continuous climate sources (Kaufman et al.&nbsp;2020; Schmitt et al.&nbsp;2025).</p>
-<p><strong>Variables of the climate table.</strong> Temperature anomaly, 0-30°N (°C, relative to 1800-1900 CE; column <code>GMHT_CPS0_30N</code>): the median of the Composite Plus Scale (CPS) reconstruction for the 0-30°N latitude band of Kaufman et al.&nbsp;(2020). In the text, tables and figures this predictor is always called the temperature anomaly, 0-30°N (the temperature anomaly for short); the column name <code>GMHT_CPS0_30N</code> is kept only in the code and in raw R output (model summaries and diagnostic plots). The band is a zonal composite of proxy records at all longitudes between the equator and 30°N, not a reconstruction restricted to the Atlantic-Caribbean. Of the 54 records of the Temperature 12k database in this band, 14 are from the Caribbean Sea, the Gulf of Mexico and South Florida; the others are from the eastern Atlantic and West Africa (5), the Indian Ocean, East Africa and the Arabian Sea (16), the western Pacific and East Asia (15) and the eastern Pacific (4) (files in <code>ScientificDataAnalysis/lipdFilesWithEnsembles</code> of the same repository). The anomaly therefore describes the tropical Northern Hemisphere as a whole, and its timing need not match that of the Caribbean. We use the median of its 500-member ensemble (file <code>0to30500-6bands-100yr2kwindow.csv</code> of the authors’ code repository, deposited in <code>kaufman2020_CPS/</code>), whose 100-year bins are centred on 0, 100, … yr BP; the median is re-referenced to zero at 100 yr BP and linearly interpolated at the centres of our bins (50, 150, … yr BP). <code>dT_raw</code>: the centennial rate of change of that anomaly (δT), defined as the change from the preceding (older) century into each bin, δT<sub>j</sub> = T<sub>j</sub> − T<sub>j+1</sub> (°C per century; positive values denote warming forward in time). For the oldest bin (5.9-6.0 ka), T<sub>j+1</sub> is the median at 6.05 ka (column <code>GMHT_CPS0_30N_older</code>). <em>Round-3 correction.</em> Table v4 used a single ensemble member (V1, shifted by a constant) assigned to our bins without interpolation (a half-bin offset), and computed <code>dT_raw</code> as T<sub>j</sub> − T<sub>j−1</sub> (bin minus its younger neighbour), so that positive values denoted cooling, the value described the change that followed each century, and the youngest bin was set to 0. Both columns of v4 are kept in v5 (<code>GMHT_CPS0_30N_V1_v4</code>, <code>dT_raw_v4</code>); sheet <code>CPS_traceability</code> documents the rebuild, and Section 4.7.5 tests how the results depend on the choice of ensemble member. <code>Hur100_fqcy</code>: centennial tropical-cyclone (TC) frequency, the number of TC event layers in each 0.1-ka bin of the Great Blue Hole record (Schmitt et al.&nbsp;2025). <code>Hur100_av</code>: smoothed centennial TC frequency, the mean of the two 100-year counts of the same record that overlap the bin (a centred 200-year smoothing). Both metrics count tropical storms and hurricanes; neither measures intensity. Schmitt et al.&nbsp;(2025, table S9) count events in windows of varve years before 2022 CE, so both metrics were recounted in our BP bins from their 50- and 100-year windows (a BP bin <em>j</em> spans 72 + 100<em>j</em> to 72 + 100(<em>j</em> + 1) years before 2022). As with the coral ages (Section 1.1), the youngest bin closes at the youngest dated colony (1956 CE): <code>Hur100_fqcy</code> counts 1850-1956 CE (15 events, one of them in 1956), and <code>Hur100_av</code> averages the windows 1800-1900 and 1900-2000 CE. Events after 2000 CE, including the 21st-century extrapolation of 45 events per century, are not used. The rebuild is documented bin by bin in sheet <code>Hur_BP_traceability</code> of the climate table; the earlier table (<code>df_GAM130326_regimes_v3.xlsx</code>) took the windows counted from 2022 CE in order, as if they were BP bins, which placed the counts about 150 years from the BP bins, and it had 45 events in the youngest bin. Counts recomputed from the individual event layers (Schmitt et al.&nbsp;2025, table S4a) agree with the rebuilt series (<em>r</em> = 0.99; at most 2 events per bin apart). A sensitivity version that extends the youngest bin to 2022 CE as a rate per century (<code>df_GAM130326_regimes_v5c.xlsx</code>) is described in Section 4.7.1. <code>Thermal</code>, <code>Hydro</code> and <code>Hurricane</code>: categorical regimes (below). <code>Hydro_FL</code>, <code>Hur_FL</code>, <code>FL_pact</code> and <code>FL_nrec</code>: Florida series (below).</p>
+<p><strong>Variables of the climate table.</strong> Temperature anomaly, 0-30°N (°C, relative to 1800-1900 CE; column <code>GMHT_CPS0_30N</code>): the median of the Composite Plus Scale (CPS) reconstruction for the 0-30°N latitude band of Kaufman et al.&nbsp;(2020). In the text, tables and figures this predictor is always called the temperature anomaly, 0-30°N (the temperature anomaly for short); the column name <code>GMHT_CPS0_30N</code> is kept only in the code and in raw R output (model summaries and diagnostic plots). The same applies to the other continuous predictors: <code>dT_raw</code> is δT, the rate of temperature change; <code>Hur100_fqcy</code> is TC frequency; and <code>Hur100_av</code> is smoothed TC frequency. The band is a zonal composite of proxy records at all longitudes between the equator and 30°N, not a reconstruction restricted to the Atlantic-Caribbean. Of the 54 records of the Temperature 12k database in this band, 14 are from the Caribbean Sea, the Gulf of Mexico and South Florida; the others are from the eastern Atlantic and West Africa (5), the Indian Ocean, East Africa and the Arabian Sea (16), the western Pacific and East Asia (15) and the eastern Pacific (4) (files in <code>ScientificDataAnalysis/lipdFilesWithEnsembles</code> of the same repository). The anomaly therefore describes the tropical Northern Hemisphere as a whole, and its timing need not match that of the Caribbean. We use the median of its 500-member ensemble (file <code>0to30500-6bands-100yr2kwindow.csv</code> of the authors’ code repository, deposited in <code>kaufman2020_CPS/</code>), whose 100-year bins are centred on 0, 100, … yr BP; the median is re-referenced to zero at 100 yr BP and linearly interpolated at the centres of our bins (50, 150, … yr BP). <code>dT_raw</code>: the centennial rate of change of that anomaly (δT), defined as the change from the preceding (older) century into each bin, δT<sub>j</sub> = T<sub>j</sub> − T<sub>j+1</sub> (°C per century; positive values denote warming forward in time). For the oldest bin (5.9-6.0 ka), T<sub>j+1</sub> is the median at 6.05 ka (column <code>GMHT_CPS0_30N_older</code>). <em>Round-3 correction.</em> Table v4 used a single ensemble member (V1, shifted by a constant) assigned to our bins without interpolation (a half-bin offset), and computed <code>dT_raw</code> as T<sub>j</sub> − T<sub>j−1</sub> (bin minus its younger neighbour), so that positive values denoted cooling, the value described the change that followed each century, and the youngest bin was set to 0. Both columns of v4 are kept in v5 (<code>GMHT_CPS0_30N_V1_v4</code>, <code>dT_raw_v4</code>); sheet <code>CPS_traceability</code> documents the rebuild, and Section 4.7.5 tests how the results depend on the choice of ensemble member. <code>Hur100_fqcy</code>: centennial tropical-cyclone (TC) frequency, the number of TC event layers in each 0.1-ka bin of the Great Blue Hole record (Schmitt et al.&nbsp;2025). <code>Hur100_av</code>: smoothed centennial TC frequency, the mean of the two 100-year counts of the same record that overlap the bin (a centred 200-year smoothing). Both metrics count tropical storms and hurricanes; neither measures intensity. Schmitt et al.&nbsp;(2025, table S9) count events in windows of varve years before 2022 CE, so both metrics were recounted in our BP bins from their 50- and 100-year windows (a BP bin <em>j</em> spans 72 + 100<em>j</em> to 72 + 100(<em>j</em> + 1) years before 2022). As with the coral ages (Section 1.1), the youngest bin closes at the youngest dated colony (1956 CE): <code>Hur100_fqcy</code> counts 1850-1956 CE (15 events, one of them in 1956), and <code>Hur100_av</code> averages the windows 1800-1900 and 1900-2000 CE. Events after 2000 CE, including the 21st-century extrapolation of 45 events per century, are not used. The rebuild is documented bin by bin in sheet <code>Hur_BP_traceability</code> of the climate table; the earlier table (<code>df_GAM130326_regimes_v3.xlsx</code>) took the windows counted from 2022 CE in order, as if they were BP bins, which placed the counts about 150 years from the BP bins, and it had 45 events in the youngest bin. Counts recomputed from the individual event layers (Schmitt et al.&nbsp;2025, table S4a) agree with the rebuilt series (<em>r</em> = 0.99; at most 2 events per bin apart). A sensitivity version that extends the youngest bin to 2022 CE as a rate per century (<code>df_GAM130326_regimes_v5c.xlsx</code>) is described in Section 4.7.1. <code>Thermal</code>, <code>Hydro</code> and <code>Hurricane</code>: categorical regimes (below). <code>Hydro_FL</code>, <code>Hur_FL</code>, <code>FL_pact</code> and <code>FL_nrec</code>: Florida series (below).</p>
 <p>The three categorical regimes were coded from the published chronologies compiled in Supplementary Material 2, converted to ka BP, assigning each bin to the period that contains its midpoint (a midpoint on a boundary goes to the younger period):</p>
 <ul>
 <li><strong>Thermal</strong> (regional chronologies of the Caribbean and the Yucatán Peninsula compiled in Supplementary Material 2, independent of the temperature anomaly, 0-30°N): warmer 0-0.1 ka (post-1850 CE); LIA 0.1-0.7 ka (~1300-1850 CE); CWP&amp;MWA 0.7-1.3 ka (700-1250 CE); cooler 1.3-4.8 ka; warmer 4.8-6.0 ka (mid-Holocene warmth).</li>
@@ -1390,7 +1390,7 @@ Attaching package: 'nlme'</code></pre>
 <section id="variable-correlation-plot" class="level4">
 <h4 class="anchored" data-anchor-id="variable-correlation-plot">2.1 Variable correlation plot</h4>
 <p>We compute Pearson correlations among the four continuous climate predictors over the 60 centennial bins of the climate table (<code>datos_cli</code>), so that each bin counts once regardless of how many fossil records it contains, and cross-tabulate the three categorical regimes.</p>
-<p>The only strong correlation is between the two hurricane metrics (Hur100_fqcy and Hur100_av, <em>r</em> = 0.90), which is why they are never entered in the same model (Section 3.3). The other correlations are weak to moderate (|<em>r</em>| ≤ 0.46): both hurricane metrics are negatively correlated with the temperature anomaly (<em>r</em> = −0.39 for Hur100_fqcy and −0.46 for Hur100_av), and the temperature anomaly is correlated with dT_raw at <em>r</em> = 0.36.</p>
+<p>The only strong correlation is between the two hurricane metrics (TC frequency and smoothed TC frequency, <em>r</em> = 0.90), which is why they are never entered in the same model (Section 3.3). The other correlations are weak to moderate (|<em>r</em>| ≤ 0.46): both hurricane metrics are negatively correlated with the temperature anomaly (<em>r</em> = −0.39 for TC frequency and −0.46 for smoothed TC frequency), and the temperature anomaly is correlated with δT at <em>r</em> = 0.36.</p>
 <p>The categorical regimes, by contrast, are partly nested, because they are defined on the same chronology (Yucatán hydroclimate and Schmitt et al.&nbsp;2025 hurricane series for the Yucatán, Belize and Saint Croix panels and the regional composite; Florida series for the Florida panel):</p>
 <ul>
 <li><strong>Yucatán hydroclimate.</strong> LIA bins are all wet (6 of 6) and “warmer” bins are never dry (6 wet, 7 without data); CWP&amp;MWA bins are mostly dry (5 of 6). The 20 bins without hydroclimate data all fall in the “cooler” or “warmer” regimes and under low or moderate hurricane activity.</li>
@@ -3110,7 +3110,7 @@ Thermal   active quiet
 <p>In this document, “linear” models are those whose climate term is a categorical factor (a parametric term), and “smooth” models those whose climate term is a continuous predictor fitted as a spline.</p>
 <section id="candidate-models" class="level4">
 <h4 class="anchored" data-anchor-id="candidate-models">3.2.1 Candidate models</h4>
-<p><code>formulas_mg</code> defines seven marginal candidates, each consisting of <code>s(age)</code> plus one of: <code>s(temperature anomaly)</code> (M_temp), <code>s(dT_raw)</code> (M_dt), <code>s(Hur100_fqcy)</code> (M_hf), <code>s(Hur100_av)</code> (M_hav), Thermal (M_the), Hydro (M_hyd) or Hurricane (M_hur). <code>fit_gams_panel()</code> fits all candidates to one panel, and <code>compare_gams()</code> returns AIC, ΔAIC and Akaike weights.</p>
+<p><code>formulas_mg</code> defines seven marginal candidates, each consisting of <code>s(age)</code> plus one of: <code>s(temperature anomaly)</code> (M_temp), <code>s(δT)</code> (M_dt), <code>s(TC frequency)</code> (M_hf), <code>s(smoothed TC frequency)</code> (M_hav), Thermal (M_the), Hydro (M_hyd) or Hurricane (M_hur). <code>fit_gams_panel()</code> fits all candidates to one panel, and <code>compare_gams()</code> returns AIC, ΔAIC and Akaike weights.</p>
 <p><strong>Hydroclimate in panels with gaps in its series.</strong> The Yucatán hydroclimate series, used for Punta Maroma, Belize, Saint Croix and the regional composite, has no data for 20 of the 60 bins (level “no data”). That level is not a climatic state: as a factor level it contrasts periods with and without a hydroclimate record, and in preliminary fits it produced effects that had no climatic meaning (e.g.&nbsp;Saint Croix, where the hydroclimate model ranked first only through the “no data” contrast). In every panel whose series has such bins, the Hydro term is therefore removed from all candidates (<code>drop_hydro()</code>): M_hyd is not fitted, and in the combined sequence (Section 3.3) M5 is dropped and M6 and M7 keep the thermal and hurricane regimes without Hydro. Florida, whose hydroclimate series has no gaps, keeps all candidates. The marginal comparison therefore involves six candidates in Punta Maroma, Belize, Saint Croix and the regional composite, and seven in Florida.</p>
 </section>
 <section id="model-competition-δaic-and-akaike-weights" class="level4">
@@ -3834,7 +3834,7 @@ Thermal   active quiet
 </div>
 </div>
 </div>
-<p>In Punta Maroma, M_the ranks first (weight 0.86), followed by M_dt at ΔAIC 3.6 (weight 0.14); all other models lie at ΔAIC &gt; 19. In the regional composite, M_hur ranks first (weight 0.68) and M_the follows at ΔAIC 2.0 (weight 0.25); the best model with a continuous predictor, M_dt, lies at ΔAIC 4.8. In Belize, M_hur (weight 0.41) and M_temp (ΔAIC 0.10, weight 0.39) are competitive, and all other models lie at ΔAIC &gt; 3.7. In Florida, M_hf ranks first (weight 0.63) and the other six models lie at ΔAIC 3.7-8.7, but s(Hur100_fqcy) is not significant (Section 3.2.4). In Saint Croix, M_hav ranks first (weight 0.61), followed by M_hf at ΔAIC 2.8; with <em>n</em> = 19 bins whose response takes essentially two values (Section 3.1.3), this ranking is not interpreted (Section 3.3.5).</p>
+<p>In Punta Maroma, M_the ranks first (weight 0.86), followed by M_dt at ΔAIC 3.6 (weight 0.14); all other models lie at ΔAIC &gt; 19. In the regional composite, M_hur ranks first (weight 0.68) and M_the follows at ΔAIC 2.0 (weight 0.25); the best model with a continuous predictor, M_dt, lies at ΔAIC 4.8. In Belize, M_hur (weight 0.41) and M_temp (ΔAIC 0.10, weight 0.39) are competitive, and all other models lie at ΔAIC &gt; 3.7. In Florida, M_hf ranks first (weight 0.63) and the other six models lie at ΔAIC 3.7-8.7, but s(TC frequency) is not significant (Section 3.2.4). In Saint Croix, M_hav ranks first (weight 0.61), followed by M_hf at ΔAIC 2.8; with <em>n</em> = 19 bins whose response takes essentially two values (Section 3.1.3), this ranking is not interpreted (Section 3.3.5).</p>
 </section>
 <section id="best-supported-marginal-gams" class="level4">
 <h4 class="anchored" data-anchor-id="best-supported-marginal-gams">3.2.4 Best-supported marginal GAMs</h4>
@@ -5124,10 +5124,10 @@ R-sq.(adj) =  0.332   Deviance explained = 45.5%
 <td class="gt_row gt_right gt_striped" headers="Punta Maroma  AIC">−76.962</td>
 <td class="gt_row gt_right gt_striped" headers="Punta Maroma  DevianceExplained">0.905</td>
 <td class="gt_row gt_right gt_striped" headers="Punta Maroma  R2_Adj">0.848</td>
-<td class="gt_row gt_left gt_striped" headers="Punta Maroma  ClimateTerm">s(dT_raw)</td>
+<td class="gt_row gt_left gt_striped" headers="Punta Maroma  ClimateTerm">s(δT)</td>
 <td class="gt_row gt_left gt_striped" headers="Punta Maroma  Climate_p_label">&lt;1e-04</td>
 <td class="gt_row gt_left gt_striped" headers="Punta Maroma  SignificantContrasts">n/a (no categorical terms)</td>
-<td class="gt_row gt_left gt_striped" headers="Punta Maroma  EDF_Terms">s(age) (EDF=1.46); s(dT_raw) (EDF=7.52)</td>
+<td class="gt_row gt_left gt_striped" headers="Punta Maroma  EDF_Terms">s(age) (EDF=1.46); s(δT) (EDF=7.52)</td>
 <td class="gt_row gt_left gt_striped" headers="Punta Maroma  Nominal_p05">Yes</td>
 </tr>
 <tr class="gt_group_heading_row even">
@@ -5153,10 +5153,10 @@ R-sq.(adj) =  0.332   Deviance explained = 45.5%
 <td class="gt_row gt_right gt_striped" headers="Florida  AIC">−8.743</td>
 <td class="gt_row gt_right gt_striped" headers="Florida  DevianceExplained">0.368</td>
 <td class="gt_row gt_right gt_striped" headers="Florida  R2_Adj">0.273</td>
-<td class="gt_row gt_left gt_striped" headers="Florida  ClimateTerm">s(Hur100_fqcy)</td>
+<td class="gt_row gt_left gt_striped" headers="Florida  ClimateTerm">s(TC frequency)</td>
 <td class="gt_row gt_left gt_striped" headers="Florida  Climate_p_label">0.056</td>
 <td class="gt_row gt_left gt_striped" headers="Florida  SignificantContrasts">n/a (no categorical terms)</td>
-<td class="gt_row gt_left gt_striped" headers="Florida  EDF_Terms">s(age) (EDF=3.16); s(Hur100_fqcy) (EDF=2.04)</td>
+<td class="gt_row gt_left gt_striped" headers="Florida  EDF_Terms">s(age) (EDF=3.16); s(TC frequency) (EDF=2.04)</td>
 <td class="gt_row gt_left gt_striped" headers="Florida  Nominal_p05">No</td>
 </tr>
 <tr class="gt_group_heading_row odd">
@@ -5211,10 +5211,10 @@ R-sq.(adj) =  0.332   Deviance explained = 45.5%
 <td class="gt_row gt_right gt_striped" headers="Saint Croix  AIC">−8.601</td>
 <td class="gt_row gt_right gt_striped" headers="Saint Croix  DevianceExplained">0.714</td>
 <td class="gt_row gt_right gt_striped" headers="Saint Croix  R2_Adj">0.437</td>
-<td class="gt_row gt_left gt_striped" headers="Saint Croix  ClimateTerm">s(Hur100_av)</td>
+<td class="gt_row gt_left gt_striped" headers="Saint Croix  ClimateTerm">s(smoothed TC frequency)</td>
 <td class="gt_row gt_left gt_striped" headers="Saint Croix  Climate_p_label">0.076</td>
 <td class="gt_row gt_left gt_striped" headers="Saint Croix  SignificantContrasts">n/a (no categorical terms)</td>
-<td class="gt_row gt_left gt_striped" headers="Saint Croix  EDF_Terms">s(age) (EDF=2.51); s(Hur100_av) (EDF=3.05)</td>
+<td class="gt_row gt_left gt_striped" headers="Saint Croix  EDF_Terms">s(age) (EDF=2.51); s(smoothed TC frequency) (EDF=3.05)</td>
 <td class="gt_row gt_left gt_striped" headers="Saint Croix  Nominal_p05">No</td>
 </tr>
 <tr class="gt_group_heading_row odd">
@@ -5240,10 +5240,10 @@ R-sq.(adj) =  0.332   Deviance explained = 45.5%
 <td class="gt_row gt_right gt_striped" headers="Regional  AIC">−53.052</td>
 <td class="gt_row gt_right gt_striped" headers="Regional  DevianceExplained">0.455</td>
 <td class="gt_row gt_right gt_striped" headers="Regional  R2_Adj">0.332</td>
-<td class="gt_row gt_left gt_striped" headers="Regional  ClimateTerm">s(dT_raw)</td>
+<td class="gt_row gt_left gt_striped" headers="Regional  ClimateTerm">s(δT)</td>
 <td class="gt_row gt_left gt_striped" headers="Regional  Climate_p_label">0.0027</td>
 <td class="gt_row gt_left gt_striped" headers="Regional  SignificantContrasts">n/a (no categorical terms)</td>
-<td class="gt_row gt_left gt_striped" headers="Regional  EDF_Terms">s(age) (EDF=1); s(dT_raw) (EDF=5.85)</td>
+<td class="gt_row gt_left gt_striped" headers="Regional  EDF_Terms">s(age) (EDF=1); s(δT) (EDF=5.85)</td>
 <td class="gt_row gt_left gt_striped" headers="Regional  Nominal_p05">Yes</td>
 </tr>
 </tbody><tfoot>
@@ -5262,11 +5262,11 @@ R-sq.(adj) =  0.332   Deviance explained = 45.5%
 </div>
 <p>Climate terms reach <em>p</em> &lt; 0.05 (term-level test) in the best marginal models of three panels:</p>
 <ul>
-<li><strong>Punta Maroma:</strong> Thermal (<em>p</em> &lt; 10⁻⁴; deviance explained 89.4 %), driven by lower frequency under LIA (−3.79, <em>p</em> &lt; 10⁻⁴) and, less so, under the “cooler” regime (−1.48, <em>p</em> = 0.031) than under the “warmer” reference. The best continuous model, with s(dT_raw) (EDF 7.52, <em>p</em> &lt; 10⁻⁴; deviance explained 90.5 %), is also significant and lies 3.6 AIC units behind. Its smooth uses almost all of its basis dimension on 31 bins; its behaviour is examined in Sections 3.3.3 and 4.6.</li>
-<li><strong>Regional composite:</strong> Hurricane (<em>p</em> = 2.3 × 10⁻⁴; deviance explained 50.8 %), with lower frequency under the “calm” regime (−2.41, <em>p</em> = 0.043) than under the “low” reference. The best continuous model, with s(dT_raw) (EDF 5.85, <em>p</em> = 0.0027; deviance explained 45.5 %), lies 4.8 AIC units behind.</li>
+<li><strong>Punta Maroma:</strong> Thermal (<em>p</em> &lt; 10⁻⁴; deviance explained 89.4 %), driven by lower frequency under LIA (−3.79, <em>p</em> &lt; 10⁻⁴) and, less so, under the “cooler” regime (−1.48, <em>p</em> = 0.031) than under the “warmer” reference. The best continuous model, with s(δT) (EDF 7.52, <em>p</em> &lt; 10⁻⁴; deviance explained 90.5 %), is also significant and lies 3.6 AIC units behind. Its smooth uses almost all of its basis dimension on 31 bins; its behaviour is examined in Sections 3.3.3 and 4.6.</li>
+<li><strong>Regional composite:</strong> Hurricane (<em>p</em> = 2.3 × 10⁻⁴; deviance explained 50.8 %), with lower frequency under the “calm” regime (−2.41, <em>p</em> = 0.043) than under the “low” reference. The best continuous model, with s(δT) (EDF 5.85, <em>p</em> = 0.0027; deviance explained 45.5 %), lies 4.8 AIC units behind.</li>
 <li><strong>Belize:</strong> s(temperature anomaly) (EDF 1.0, i.e.&nbsp;linear; <em>p</em> = 0.029; deviance explained 49.3 %), 0.10 AIC units behind the hurricane-regime model. The hurricane regime is not significant at term level (<em>p</em> = 0.057), although the “high” contrast is (+4.22, <em>p</em> = 0.019; the two youngest bins, 0-0.2 ka).</li>
 </ul>
-<p>No climate term reaches <em>p</em> &lt; 0.05 in Florida (Hydro, <em>p</em> = 0.66; s(Hur100_fqcy), <em>p</em> = 0.056) or Saint Croix (Hurricane, <em>p</em> = 0.29; s(Hur100_av), <em>p</em> = 0.076).</p>
+<p>No climate term reaches <em>p</em> &lt; 0.05 in Florida (Hydro, <em>p</em> = 0.66; s(TC frequency), <em>p</em> = 0.056) or Saint Croix (Hurricane, <em>p</em> = 0.29; s(smoothed TC frequency), <em>p</em> = 0.076).</p>
 <p>In the marginal models, therefore, the best-supported single predictor is the thermal regime in Punta Maroma and the hurricane regime in the regional composite. In both panels the δT smooth is also significant but ranks second, 3.6 and 4.8 AIC units behind. In Belize the hurricane regime and the temperature anomaly are equally supported, and only the latter is significant; neither Florida nor Saint Croix supports any climate predictor at <em>p</em> &lt; 0.05. Table 1 reports nominal significance only; the robustness of these terms is assessed in Section 4.</p>
 </section>
 </section>
@@ -5275,7 +5275,7 @@ R-sq.(adj) =  0.332   Deviance explained = 45.5%
 <p>To test whether climate predictors act jointly, we fit a nested sequence of additive GAMs, without interaction terms or random effects.</p>
 <section id="candidate-models-1" class="level4">
 <h4 class="anchored" data-anchor-id="candidate-models-1">3.3.1 Candidate models</h4>
-<p><strong>Supplementary Table S7. Nested sequence of combined GAMs.</strong> Eleven candidates. M1 = <code>s(age)</code>; M2 adds <code>s(temperature anomaly)</code>; M3 adds <code>s(dT_raw)</code>. From M3 the sequence splits into two branches, one adding <code>s(Hur100_fqcy)</code> and the other <code>s(Hur100_av)</code> (M4); each branch then adds Hydro (M5), Thermal (M6) and Hurricane regime (M7) in turn. The two hurricane metrics never appear in the same model. In the panels whose hydroclimate series has gaps (all except Florida), Hydro is removed from every candidate (Section 3.2.1): M5 is dropped, M6 becomes M4 + Thermal and M7 becomes M4 + Thermal + Hurricane, so nine candidates are compared.</p>
+<p><strong>Supplementary Table S7. Nested sequence of combined GAMs.</strong> Eleven candidates. M1 = <code>s(age)</code>; M2 adds <code>s(temperature anomaly)</code>; M3 adds <code>s(δT)</code>. From M3 the sequence splits into two branches, one adding <code>s(TC frequency)</code> and the other <code>s(smoothed TC frequency)</code> (M4); each branch then adds Hydro (M5), Thermal (M6) and Hurricane regime (M7) in turn. The two hurricane metrics never appear in the same model. In the panels whose hydroclimate series has gaps (all except Florida), Hydro is removed from every candidate (Section 3.2.1): M5 is dropped, M6 becomes M4 + Thermal and M7 becomes M4 + Thermal + Hurricane, so nine candidates are compared.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div id="ysmhqsywlc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
@@ -5755,57 +5755,57 @@ R-sq.(adj) =  0.332   Deviance explained = 45.5%
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="Model">M3</td>
-<td class="gt_row gt_left" headers="Formula">counts_norm_sv ~ s(age) + s(temperature anomaly) + s(dT_raw)</td>
-<td class="gt_row gt_left" headers="Added_Predictors">dT_raw</td>
+<td class="gt_row gt_left" headers="Formula">counts_norm_sv ~ s(age) + s(temperature anomaly) + s(δT)</td>
+<td class="gt_row gt_left" headers="Added_Predictors">δT</td>
 <td class="gt_row gt_left" headers="Branch">Base</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="Model">M4_fqcy</td>
-<td class="gt_row gt_left" headers="Formula">counts_norm_sv ~ s(age) + s(temperature anomaly) + s(dT_raw) + s(Hur100_fqcy)</td>
-<td class="gt_row gt_left" headers="Added_Predictors">Hur100_fqcy</td>
-<td class="gt_row gt_left" headers="Branch">Hur100_fqcy</td>
+<td class="gt_row gt_left" headers="Formula">counts_norm_sv ~ s(age) + s(temperature anomaly) + s(δT) + s(TC frequency)</td>
+<td class="gt_row gt_left" headers="Added_Predictors">TC frequency</td>
+<td class="gt_row gt_left" headers="Branch">TC frequency</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="Model">M5_fqcy</td>
-<td class="gt_row gt_left" headers="Formula">counts_norm_sv ~ s(age) + s(temperature anomaly) + s(dT_raw) + s(Hur100_fqcy) + Hydro</td>
+<td class="gt_row gt_left" headers="Formula">counts_norm_sv ~ s(age) + s(temperature anomaly) + s(δT) + s(TC frequency) + Hydro</td>
 <td class="gt_row gt_left" headers="Added_Predictors">Hydro</td>
-<td class="gt_row gt_left" headers="Branch">Hur100_fqcy</td>
+<td class="gt_row gt_left" headers="Branch">TC frequency</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="Model">M6_fqcy</td>
-<td class="gt_row gt_left" headers="Formula">counts_norm_sv ~ s(age) + s(temperature anomaly) + s(dT_raw) + s(Hur100_fqcy) + Hydro + Thermal</td>
+<td class="gt_row gt_left" headers="Formula">counts_norm_sv ~ s(age) + s(temperature anomaly) + s(δT) + s(TC frequency) + Hydro + Thermal</td>
 <td class="gt_row gt_left" headers="Added_Predictors">Thermal</td>
-<td class="gt_row gt_left" headers="Branch">Hur100_fqcy</td>
+<td class="gt_row gt_left" headers="Branch">TC frequency</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="Model">M7_fqcy</td>
-<td class="gt_row gt_left" headers="Formula">counts_norm_sv ~ s(age) + s(temperature anomaly) + s(dT_raw) + s(Hur100_fqcy) + Hydro + Thermal + Hurricane</td>
+<td class="gt_row gt_left" headers="Formula">counts_norm_sv ~ s(age) + s(temperature anomaly) + s(δT) + s(TC frequency) + Hydro + Thermal + Hurricane</td>
 <td class="gt_row gt_left" headers="Added_Predictors">Hurricane</td>
-<td class="gt_row gt_left" headers="Branch">Hur100_fqcy</td>
+<td class="gt_row gt_left" headers="Branch">TC frequency</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="Model">M4_av</td>
-<td class="gt_row gt_left" headers="Formula">counts_norm_sv ~ s(age) + s(temperature anomaly) + s(dT_raw) + s(Hur100_av)</td>
-<td class="gt_row gt_left" headers="Added_Predictors">Hur100_av</td>
-<td class="gt_row gt_left" headers="Branch">Hur100_av</td>
+<td class="gt_row gt_left" headers="Formula">counts_norm_sv ~ s(age) + s(temperature anomaly) + s(δT) + s(smoothed TC frequency)</td>
+<td class="gt_row gt_left" headers="Added_Predictors">smoothed TC frequency</td>
+<td class="gt_row gt_left" headers="Branch">smoothed TC frequency</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="Model">M5_av</td>
-<td class="gt_row gt_left" headers="Formula">counts_norm_sv ~ s(age) + s(temperature anomaly) + s(dT_raw) + s(Hur100_av) + Hydro</td>
+<td class="gt_row gt_left" headers="Formula">counts_norm_sv ~ s(age) + s(temperature anomaly) + s(δT) + s(smoothed TC frequency) + Hydro</td>
 <td class="gt_row gt_left" headers="Added_Predictors">Hydro</td>
-<td class="gt_row gt_left" headers="Branch">Hur100_av</td>
+<td class="gt_row gt_left" headers="Branch">smoothed TC frequency</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="Model">M6_av</td>
-<td class="gt_row gt_left" headers="Formula">counts_norm_sv ~ s(age) + s(temperature anomaly) + s(dT_raw) + s(Hur100_av) + Hydro + Thermal</td>
+<td class="gt_row gt_left" headers="Formula">counts_norm_sv ~ s(age) + s(temperature anomaly) + s(δT) + s(smoothed TC frequency) + Hydro + Thermal</td>
 <td class="gt_row gt_left" headers="Added_Predictors">Thermal</td>
-<td class="gt_row gt_left" headers="Branch">Hur100_av</td>
+<td class="gt_row gt_left" headers="Branch">smoothed TC frequency</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="Model">M7_av</td>
-<td class="gt_row gt_left" headers="Formula">counts_norm_sv ~ s(age) + s(temperature anomaly) + s(dT_raw) + s(Hur100_av) + Hydro + Thermal + Hurricane</td>
+<td class="gt_row gt_left" headers="Formula">counts_norm_sv ~ s(age) + s(temperature anomaly) + s(δT) + s(smoothed TC frequency) + Hydro + Thermal + Hurricane</td>
 <td class="gt_row gt_left" headers="Added_Predictors">Hurricane</td>
-<td class="gt_row gt_left" headers="Branch">Hur100_av</td>
+<td class="gt_row gt_left" headers="Branch">smoothed TC frequency</td>
 </tr>
 </tbody>
 </table>
@@ -5861,11 +5861,11 @@ R-sq.(adj) =  0.332   Deviance explained = 45.5%
 </div>
 <p><strong>Table 2. Best-supported combined GAM per panel</strong> (lowest AIC): model, AIC, Akaike weight, deviance explained, adjusted R², climate terms with term-level <em>p</em> &lt; 0.05 (<code>s(age)</code> excluded), factor contrasts with <em>p</em>-value &lt; 0.05 versus reference level, and EDF of every smooth.</p>
 <ul>
-<li><strong>Punta Maroma - M3</strong> (Akaike weight 0.43; deviance explained 90.2 %; adjusted R² 0.857). s(dT_raw) is the only significant term (EDF 6.90, <em>p</em> &lt; 10⁻⁴); s(temperature anomaly) and s(age) are shrunk to EDF ≈ 0, so s(dT_raw) carries the whole temporal pattern of the series. The two models with the thermal regime follow at ΔAIC 1.66 (M6_av and M6_fqcy, weight 0.19 each). In them the thermal regime is significant (<em>p</em> &lt; 10⁻⁴; LIA −3.18 relative to “warmer”, <em>p</em> &lt; 10⁻⁴), together with s(age) (<em>p</em> &lt; 10⁻⁴) and s(temperature anomaly) (<em>p</em> = 0.0087), whereas s(dT_raw) is not (<em>p</em> = 0.16).</li>
-<li><strong>Florida - M4_fqcy</strong> (weight 0.21; 23.9 %; adjusted R² 0.173). s(temperature anomaly) (EDF 1.19, <em>p</em> = 0.016) and s(Hur100_fqcy) (EDF 1.38, <em>p</em> = 0.035) are significant; s(age) and s(dT_raw) are shrunk to EDF ≈ 0.</li>
-<li><strong>Belize - M4_av</strong> (weight 0.21; 48.3 %; adjusted R² 0.402). s(temperature anomaly) (EDF 0.80, <em>p</em> = 0.010) and s(age) (EDF 1.72, <em>p</em> = 0.0011) are significant; s(dT_raw) and s(Hur100_av) are shrunk to EDF ≈ 0, so M4_fqcy has the same fit (ΔAIC &lt; 10⁻⁵).</li>
-<li><strong>Saint Croix - M4_av</strong> (weight 0.38; 57.4 %; adjusted R² 0.371). Only s(age) is significant (EDF 1.62, <em>p</em> = 0.0087); no climate term reaches <em>p</em> &lt; 0.05 (s(Hur100_av), <em>p</em> = 0.054). This panel is not interpreted (Section 3.3.5).</li>
-<li><strong>Regional composite - M7_av</strong> (weight 0.29; 48.9 %; adjusted R² 0.325). The hurricane regime is the only significant term (<em>p</em> = 2.4 × 10⁻⁴), with higher frequency under the “high” regime (+2.88, <em>p</em> = 1.8 × 10⁻⁴; the two youngest bins, 0-0.2 ka) than under the “low” reference. Thermal is not significant (<em>p</em> = 0.080), and all four smooths, s(Hur100_av) included, are shrunk to EDF ≈ 0.</li>
+<li><strong>Punta Maroma - M3</strong> (Akaike weight 0.43; deviance explained 90.2 %; adjusted R² 0.857). s(δT) is the only significant term (EDF 6.90, <em>p</em> &lt; 10⁻⁴); s(temperature anomaly) and s(age) are shrunk to EDF ≈ 0, so s(δT) carries the whole temporal pattern of the series. The two models with the thermal regime follow at ΔAIC 1.66 (M6_av and M6_fqcy, weight 0.19 each). In them the thermal regime is significant (<em>p</em> &lt; 10⁻⁴; LIA −3.18 relative to “warmer”, <em>p</em> &lt; 10⁻⁴), together with s(age) (<em>p</em> &lt; 10⁻⁴) and s(temperature anomaly) (<em>p</em> = 0.0087), whereas s(δT) is not (<em>p</em> = 0.16).</li>
+<li><strong>Florida - M4_fqcy</strong> (weight 0.21; 23.9 %; adjusted R² 0.173). s(temperature anomaly) (EDF 1.19, <em>p</em> = 0.016) and s(TC frequency) (EDF 1.38, <em>p</em> = 0.035) are significant; s(age) and s(δT) are shrunk to EDF ≈ 0.</li>
+<li><strong>Belize - M4_av</strong> (weight 0.21; 48.3 %; adjusted R² 0.402). s(temperature anomaly) (EDF 0.80, <em>p</em> = 0.010) and s(age) (EDF 1.72, <em>p</em> = 0.0011) are significant; s(δT) and s(smoothed TC frequency) are shrunk to EDF ≈ 0, so M4_fqcy has the same fit (ΔAIC &lt; 10⁻⁵).</li>
+<li><strong>Saint Croix - M4_av</strong> (weight 0.38; 57.4 %; adjusted R² 0.371). Only s(age) is significant (EDF 1.62, <em>p</em> = 0.0087); no climate term reaches <em>p</em> &lt; 0.05 (s(smoothed TC frequency), <em>p</em> = 0.054). This panel is not interpreted (Section 3.3.5).</li>
+<li><strong>Regional composite - M7_av</strong> (weight 0.29; 48.9 %; adjusted R² 0.325). The hurricane regime is the only significant term (<em>p</em> = 2.4 × 10⁻⁴), with higher frequency under the “high” regime (+2.88, <em>p</em> = 1.8 × 10⁻⁴; the two youngest bins, 0-0.2 ka) than under the “low” reference. Thermal is not significant (<em>p</em> = 0.080), and all four smooths, s(smoothed TC frequency) included, are shrunk to EDF ≈ 0.</li>
 </ul>
 <p>Models with categorical regimes are selected in four panels: M6 (thermal regime) in Punta Maroma and Florida, and M7 (thermal and hurricane regimes) in Belize and the regional composite. Only in Saint Croix does the selected model (M4_av) contain no categorical term.</p>
 <div class="cell">
@@ -6350,9 +6350,9 @@ R-sq.(adj) =  0.332   Deviance explained = 45.5%
 <td class="gt_row gt_right" headers="Weight">0.43</td>
 <td class="gt_row gt_right" headers="DevianceExplained">0.902</td>
 <td class="gt_row gt_right" headers="R2_Adj">0.857</td>
-<td class="gt_row gt_left" headers="SignificantTerms">s(dT_raw) (p=&lt;1e-04)</td>
+<td class="gt_row gt_left" headers="SignificantTerms">s(δT) (p=&lt;1e-04)</td>
 <td class="gt_row gt_left" headers="SignificantContrasts">n/a (no categorical terms)</td>
-<td class="gt_row gt_left" headers="EDF_Terms">s(age) (EDF=0); s(temperature anomaly) (EDF=0); s(dT_raw) (EDF=6.9)</td>
+<td class="gt_row gt_left" headers="EDF_Terms">s(age) (EDF=0); s(temperature anomaly) (EDF=0); s(δT) (EDF=6.9)</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left gt_striped" headers="Panel">Florida</td>
@@ -6362,9 +6362,9 @@ R-sq.(adj) =  0.332   Deviance explained = 45.5%
 <td class="gt_row gt_right gt_striped" headers="Weight">0.21</td>
 <td class="gt_row gt_right gt_striped" headers="DevianceExplained">0.239</td>
 <td class="gt_row gt_right gt_striped" headers="R2_Adj">0.173</td>
-<td class="gt_row gt_left gt_striped" headers="SignificantTerms">s(temperature anomaly) (p=0.016); s(Hur100_fqcy) (p=0.035)</td>
+<td class="gt_row gt_left gt_striped" headers="SignificantTerms">s(temperature anomaly) (p=0.016); s(TC frequency) (p=0.035)</td>
 <td class="gt_row gt_left gt_striped" headers="SignificantContrasts">n/a (no categorical terms)</td>
-<td class="gt_row gt_left gt_striped" headers="EDF_Terms">s(age) (EDF=0); s(temperature anomaly) (EDF=1.19); s(dT_raw) (EDF=0); s(Hur100_fqcy) (EDF=1.38)</td>
+<td class="gt_row gt_left gt_striped" headers="EDF_Terms">s(age) (EDF=0); s(temperature anomaly) (EDF=1.19); s(δT) (EDF=0); s(TC frequency) (EDF=1.38)</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="Panel">Belize</td>
@@ -6376,7 +6376,7 @@ R-sq.(adj) =  0.332   Deviance explained = 45.5%
 <td class="gt_row gt_right" headers="R2_Adj">0.402</td>
 <td class="gt_row gt_left" headers="SignificantTerms">s(temperature anomaly) (p=0.01)</td>
 <td class="gt_row gt_left" headers="SignificantContrasts">n/a (no categorical terms)</td>
-<td class="gt_row gt_left" headers="EDF_Terms">s(age) (EDF=1.72); s(temperature anomaly) (EDF=0.8); s(dT_raw) (EDF=0); s(Hur100_av) (EDF=0)</td>
+<td class="gt_row gt_left" headers="EDF_Terms">s(age) (EDF=1.72); s(temperature anomaly) (EDF=0.8); s(δT) (EDF=0); s(smoothed TC frequency) (EDF=0)</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left gt_striped" headers="Panel">Saint Croix</td>
@@ -6388,7 +6388,7 @@ R-sq.(adj) =  0.332   Deviance explained = 45.5%
 <td class="gt_row gt_right gt_striped" headers="R2_Adj">0.371</td>
 <td class="gt_row gt_left gt_striped" headers="SignificantTerms">Not significant</td>
 <td class="gt_row gt_left gt_striped" headers="SignificantContrasts">n/a (no categorical terms)</td>
-<td class="gt_row gt_left gt_striped" headers="EDF_Terms">s(age) (EDF=1.62); s(temperature anomaly) (EDF=0.22); s(dT_raw) (EDF=0); s(Hur100_av) (EDF=1.24)</td>
+<td class="gt_row gt_left gt_striped" headers="EDF_Terms">s(age) (EDF=1.62); s(temperature anomaly) (EDF=0.22); s(δT) (EDF=0); s(smoothed TC frequency) (EDF=1.24)</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="Panel">Regional</td>
@@ -6400,7 +6400,7 @@ R-sq.(adj) =  0.332   Deviance explained = 45.5%
 <td class="gt_row gt_right" headers="R2_Adj">0.325</td>
 <td class="gt_row gt_left" headers="SignificantTerms">Hurricane (p=0.00024)</td>
 <td class="gt_row gt_left" headers="SignificantContrasts">Hurricanehigh (2.88, p=0.00018)</td>
-<td class="gt_row gt_left" headers="EDF_Terms">s(age) (EDF=0); s(temperature anomaly) (EDF=0); s(dT_raw) (EDF=0); s(Hur100_av) (EDF=0)</td>
+<td class="gt_row gt_left" headers="EDF_Terms">s(age) (EDF=0); s(temperature anomaly) (EDF=0); s(δT) (EDF=0); s(smoothed TC frequency) (EDF=0)</td>
 </tr>
 </tbody><tfoot>
 <tr class="gt_footnotes odd">
@@ -6896,9 +6896,9 @@ character(0)</code></pre>
 <th id="Hurricane" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Hurricane</th>
 <th id="s(age)" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">s(age)</th>
 <th id="s(temperature-anomaly)" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">s(temperature anomaly)</th>
-<th id="s(dT_raw)" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">s(dT_raw)</th>
-<th id="s(Hur100_av)" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">s(Hur100_av)</th>
-<th id="s(Hur100_fqcy)" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">s(Hur100_fqcy)</th>
+<th id="s(δT)" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">s(δT)</th>
+<th id="s(smoothed-TC-frequency)" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">s(smoothed TC frequency)</th>
+<th id="s(TC-frequency)" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">s(TC frequency)</th>
 </tr>
 </thead>
 <tbody class="gt_table_body">
@@ -6914,9 +6914,9 @@ character(0)</code></pre>
 <td class="gt_row gt_right" headers="Punta Maroma  Hurricane">-</td>
 <td class="gt_row gt_left" headers="Punta Maroma  s(age)">0.6</td>
 <td class="gt_row gt_right" headers="Punta Maroma  s(temperature anomaly)">0.35</td>
-<td class="gt_row gt_left" headers="Punta Maroma  s(dT_raw)">&lt;1e-04 *</td>
-<td class="gt_row gt_right" headers="Punta Maroma  s(Hur100_av)">-</td>
-<td class="gt_row gt_right" headers="Punta Maroma  s(Hur100_fqcy)">-</td>
+<td class="gt_row gt_left" headers="Punta Maroma  s(δT)">&lt;1e-04 *</td>
+<td class="gt_row gt_right" headers="Punta Maroma  s(smoothed TC frequency)">-</td>
+<td class="gt_row gt_right" headers="Punta Maroma  s(TC frequency)">-</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="Punta Maroma  Model">M6_av</td>
@@ -6927,9 +6927,9 @@ character(0)</code></pre>
 <td class="gt_row gt_right" headers="Punta Maroma  Hurricane">-</td>
 <td class="gt_row gt_left" headers="Punta Maroma  s(age)">&lt;1e-04 *</td>
 <td class="gt_row gt_right" headers="Punta Maroma  s(temperature anomaly)">0.0087 *</td>
-<td class="gt_row gt_left" headers="Punta Maroma  s(dT_raw)">0.16</td>
-<td class="gt_row gt_right" headers="Punta Maroma  s(Hur100_av)">0.54</td>
-<td class="gt_row gt_right" headers="Punta Maroma  s(Hur100_fqcy)">-</td>
+<td class="gt_row gt_left" headers="Punta Maroma  s(δT)">0.16</td>
+<td class="gt_row gt_right" headers="Punta Maroma  s(smoothed TC frequency)">0.54</td>
+<td class="gt_row gt_right" headers="Punta Maroma  s(TC frequency)">-</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="Punta Maroma  Model">M6_fqcy</td>
@@ -6940,9 +6940,9 @@ character(0)</code></pre>
 <td class="gt_row gt_right" headers="Punta Maroma  Hurricane">-</td>
 <td class="gt_row gt_left" headers="Punta Maroma  s(age)">&lt;1e-04 *</td>
 <td class="gt_row gt_right" headers="Punta Maroma  s(temperature anomaly)">0.0087 *</td>
-<td class="gt_row gt_left" headers="Punta Maroma  s(dT_raw)">0.16</td>
-<td class="gt_row gt_right" headers="Punta Maroma  s(Hur100_av)">-</td>
-<td class="gt_row gt_right" headers="Punta Maroma  s(Hur100_fqcy)">0.96</td>
+<td class="gt_row gt_left" headers="Punta Maroma  s(δT)">0.16</td>
+<td class="gt_row gt_right" headers="Punta Maroma  s(smoothed TC frequency)">-</td>
+<td class="gt_row gt_right" headers="Punta Maroma  s(TC frequency)">0.96</td>
 </tr>
 <tr class="gt_group_heading_row odd">
 <th colspan="11" id="Florida" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">Florida</th>
@@ -6956,9 +6956,9 @@ character(0)</code></pre>
 <td class="gt_row gt_right" headers="Florida  Hurricane">-</td>
 <td class="gt_row gt_left" headers="Florida  s(age)">0.29</td>
 <td class="gt_row gt_right" headers="Florida  s(temperature anomaly)">0.016 *</td>
-<td class="gt_row gt_left" headers="Florida  s(dT_raw)">0.4</td>
-<td class="gt_row gt_right" headers="Florida  s(Hur100_av)">-</td>
-<td class="gt_row gt_right" headers="Florida  s(Hur100_fqcy)">0.035 *</td>
+<td class="gt_row gt_left" headers="Florida  s(δT)">0.4</td>
+<td class="gt_row gt_right" headers="Florida  s(smoothed TC frequency)">-</td>
+<td class="gt_row gt_right" headers="Florida  s(TC frequency)">0.035 *</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="Florida  Model">M7_fqcy</td>
@@ -6969,9 +6969,9 @@ character(0)</code></pre>
 <td class="gt_row gt_right" headers="Florida  Hurricane">0.26</td>
 <td class="gt_row gt_left" headers="Florida  s(age)">0.77</td>
 <td class="gt_row gt_right" headers="Florida  s(temperature anomaly)">0.032 *</td>
-<td class="gt_row gt_left" headers="Florida  s(dT_raw)">0.68</td>
-<td class="gt_row gt_right" headers="Florida  s(Hur100_av)">-</td>
-<td class="gt_row gt_right" headers="Florida  s(Hur100_fqcy)">0.0013 *</td>
+<td class="gt_row gt_left" headers="Florida  s(δT)">0.68</td>
+<td class="gt_row gt_right" headers="Florida  s(smoothed TC frequency)">-</td>
+<td class="gt_row gt_right" headers="Florida  s(TC frequency)">0.0013 *</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="Florida  Model">M6_fqcy</td>
@@ -6982,9 +6982,9 @@ character(0)</code></pre>
 <td class="gt_row gt_right" headers="Florida  Hurricane">-</td>
 <td class="gt_row gt_left" headers="Florida  s(age)">0.39</td>
 <td class="gt_row gt_right" headers="Florida  s(temperature anomaly)">0.095</td>
-<td class="gt_row gt_left" headers="Florida  s(dT_raw)">0.61</td>
-<td class="gt_row gt_right" headers="Florida  s(Hur100_av)">-</td>
-<td class="gt_row gt_right" headers="Florida  s(Hur100_fqcy)">0.0022 *</td>
+<td class="gt_row gt_left" headers="Florida  s(δT)">0.61</td>
+<td class="gt_row gt_right" headers="Florida  s(smoothed TC frequency)">-</td>
+<td class="gt_row gt_right" headers="Florida  s(TC frequency)">0.0022 *</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="Florida  Model">M2</td>
@@ -6995,9 +6995,9 @@ character(0)</code></pre>
 <td class="gt_row gt_right" headers="Florida  Hurricane">-</td>
 <td class="gt_row gt_left" headers="Florida  s(age)">0.53</td>
 <td class="gt_row gt_right" headers="Florida  s(temperature anomaly)">0.067</td>
-<td class="gt_row gt_left" headers="Florida  s(dT_raw)">-</td>
-<td class="gt_row gt_right" headers="Florida  s(Hur100_av)">-</td>
-<td class="gt_row gt_right" headers="Florida  s(Hur100_fqcy)">-</td>
+<td class="gt_row gt_left" headers="Florida  s(δT)">-</td>
+<td class="gt_row gt_right" headers="Florida  s(smoothed TC frequency)">-</td>
+<td class="gt_row gt_right" headers="Florida  s(TC frequency)">-</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="Florida  Model">M3</td>
@@ -7008,9 +7008,9 @@ character(0)</code></pre>
 <td class="gt_row gt_right" headers="Florida  Hurricane">-</td>
 <td class="gt_row gt_left" headers="Florida  s(age)">0.51</td>
 <td class="gt_row gt_right" headers="Florida  s(temperature anomaly)">0.067</td>
-<td class="gt_row gt_left" headers="Florida  s(dT_raw)">0.6</td>
-<td class="gt_row gt_right" headers="Florida  s(Hur100_av)">-</td>
-<td class="gt_row gt_right" headers="Florida  s(Hur100_fqcy)">-</td>
+<td class="gt_row gt_left" headers="Florida  s(δT)">0.6</td>
+<td class="gt_row gt_right" headers="Florida  s(smoothed TC frequency)">-</td>
+<td class="gt_row gt_right" headers="Florida  s(TC frequency)">-</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="Florida  Model">M4_av</td>
@@ -7021,9 +7021,9 @@ character(0)</code></pre>
 <td class="gt_row gt_right" headers="Florida  Hurricane">-</td>
 <td class="gt_row gt_left" headers="Florida  s(age)">0.5</td>
 <td class="gt_row gt_right" headers="Florida  s(temperature anomaly)">0.056</td>
-<td class="gt_row gt_left" headers="Florida  s(dT_raw)">0.59</td>
-<td class="gt_row gt_right" headers="Florida  s(Hur100_av)">0.28</td>
-<td class="gt_row gt_right" headers="Florida  s(Hur100_fqcy)">-</td>
+<td class="gt_row gt_left" headers="Florida  s(δT)">0.59</td>
+<td class="gt_row gt_right" headers="Florida  s(smoothed TC frequency)">0.28</td>
+<td class="gt_row gt_right" headers="Florida  s(TC frequency)">-</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="Florida  Model">M5_fqcy</td>
@@ -7034,9 +7034,9 @@ character(0)</code></pre>
 <td class="gt_row gt_right" headers="Florida  Hurricane">-</td>
 <td class="gt_row gt_left" headers="Florida  s(age)">0.29</td>
 <td class="gt_row gt_right" headers="Florida  s(temperature anomaly)">0.026 *</td>
-<td class="gt_row gt_left" headers="Florida  s(dT_raw)">0.43</td>
-<td class="gt_row gt_right" headers="Florida  s(Hur100_av)">-</td>
-<td class="gt_row gt_right" headers="Florida  s(Hur100_fqcy)">0.039 *</td>
+<td class="gt_row gt_left" headers="Florida  s(δT)">0.43</td>
+<td class="gt_row gt_right" headers="Florida  s(smoothed TC frequency)">-</td>
+<td class="gt_row gt_right" headers="Florida  s(TC frequency)">0.039 *</td>
 </tr>
 <tr class="gt_group_heading_row odd">
 <th colspan="11" id="Belize" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">Belize</th>
@@ -7050,9 +7050,9 @@ character(0)</code></pre>
 <td class="gt_row gt_right" headers="Belize  Hurricane">-</td>
 <td class="gt_row gt_left" headers="Belize  s(age)">0.0011 *</td>
 <td class="gt_row gt_right" headers="Belize  s(temperature anomaly)">0.01 *</td>
-<td class="gt_row gt_left" headers="Belize  s(dT_raw)">0.44</td>
-<td class="gt_row gt_right" headers="Belize  s(Hur100_av)">0.7</td>
-<td class="gt_row gt_right" headers="Belize  s(Hur100_fqcy)">-</td>
+<td class="gt_row gt_left" headers="Belize  s(δT)">0.44</td>
+<td class="gt_row gt_right" headers="Belize  s(smoothed TC frequency)">0.7</td>
+<td class="gt_row gt_right" headers="Belize  s(TC frequency)">-</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="Belize  Model">M4_fqcy</td>
@@ -7063,9 +7063,9 @@ character(0)</code></pre>
 <td class="gt_row gt_right" headers="Belize  Hurricane">-</td>
 <td class="gt_row gt_left" headers="Belize  s(age)">0.0011 *</td>
 <td class="gt_row gt_right" headers="Belize  s(temperature anomaly)">0.01 *</td>
-<td class="gt_row gt_left" headers="Belize  s(dT_raw)">0.54</td>
-<td class="gt_row gt_right" headers="Belize  s(Hur100_av)">-</td>
-<td class="gt_row gt_right" headers="Belize  s(Hur100_fqcy)">0.48</td>
+<td class="gt_row gt_left" headers="Belize  s(δT)">0.54</td>
+<td class="gt_row gt_right" headers="Belize  s(smoothed TC frequency)">-</td>
+<td class="gt_row gt_right" headers="Belize  s(TC frequency)">0.48</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="Belize  Model">M3</td>
@@ -7076,9 +7076,9 @@ character(0)</code></pre>
 <td class="gt_row gt_right" headers="Belize  Hurricane">-</td>
 <td class="gt_row gt_left" headers="Belize  s(age)">0.0014 *</td>
 <td class="gt_row gt_right" headers="Belize  s(temperature anomaly)">0.011 *</td>
-<td class="gt_row gt_left" headers="Belize  s(dT_raw)">0.46</td>
-<td class="gt_row gt_right" headers="Belize  s(Hur100_av)">-</td>
-<td class="gt_row gt_right" headers="Belize  s(Hur100_fqcy)">-</td>
+<td class="gt_row gt_left" headers="Belize  s(δT)">0.46</td>
+<td class="gt_row gt_right" headers="Belize  s(smoothed TC frequency)">-</td>
+<td class="gt_row gt_right" headers="Belize  s(TC frequency)">-</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="Belize  Model">M2</td>
@@ -7089,9 +7089,9 @@ character(0)</code></pre>
 <td class="gt_row gt_right" headers="Belize  Hurricane">-</td>
 <td class="gt_row gt_left" headers="Belize  s(age)">0.0016 *</td>
 <td class="gt_row gt_right" headers="Belize  s(temperature anomaly)">0.012 *</td>
-<td class="gt_row gt_left" headers="Belize  s(dT_raw)">-</td>
-<td class="gt_row gt_right" headers="Belize  s(Hur100_av)">-</td>
-<td class="gt_row gt_right" headers="Belize  s(Hur100_fqcy)">-</td>
+<td class="gt_row gt_left" headers="Belize  s(δT)">-</td>
+<td class="gt_row gt_right" headers="Belize  s(smoothed TC frequency)">-</td>
+<td class="gt_row gt_right" headers="Belize  s(TC frequency)">-</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="Belize  Model">M7_av</td>
@@ -7102,9 +7102,9 @@ character(0)</code></pre>
 <td class="gt_row gt_right" headers="Belize  Hurricane">0.11</td>
 <td class="gt_row gt_left" headers="Belize  s(age)">0.76</td>
 <td class="gt_row gt_right" headers="Belize  s(temperature anomaly)">0.79</td>
-<td class="gt_row gt_left" headers="Belize  s(dT_raw)">0.84</td>
-<td class="gt_row gt_right" headers="Belize  s(Hur100_av)">0.78</td>
-<td class="gt_row gt_right" headers="Belize  s(Hur100_fqcy)">-</td>
+<td class="gt_row gt_left" headers="Belize  s(δT)">0.84</td>
+<td class="gt_row gt_right" headers="Belize  s(smoothed TC frequency)">0.78</td>
+<td class="gt_row gt_right" headers="Belize  s(TC frequency)">-</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="Belize  Model">M7_fqcy</td>
@@ -7115,9 +7115,9 @@ character(0)</code></pre>
 <td class="gt_row gt_right" headers="Belize  Hurricane">0.11</td>
 <td class="gt_row gt_left" headers="Belize  s(age)">0.73</td>
 <td class="gt_row gt_right" headers="Belize  s(temperature anomaly)">0.8</td>
-<td class="gt_row gt_left" headers="Belize  s(dT_raw)">0.84</td>
-<td class="gt_row gt_right" headers="Belize  s(Hur100_av)">-</td>
-<td class="gt_row gt_right" headers="Belize  s(Hur100_fqcy)">0.84</td>
+<td class="gt_row gt_left" headers="Belize  s(δT)">0.84</td>
+<td class="gt_row gt_right" headers="Belize  s(smoothed TC frequency)">-</td>
+<td class="gt_row gt_right" headers="Belize  s(TC frequency)">0.84</td>
 </tr>
 <tr class="gt_group_heading_row even">
 <th colspan="11" id="Saint Croix" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">Saint Croix</th>
@@ -7131,9 +7131,9 @@ character(0)</code></pre>
 <td class="gt_row gt_right" headers="Saint Croix  Hurricane">-</td>
 <td class="gt_row gt_left" headers="Saint Croix  s(age)">0.0087 *</td>
 <td class="gt_row gt_right" headers="Saint Croix  s(temperature anomaly)">0.19</td>
-<td class="gt_row gt_left" headers="Saint Croix  s(dT_raw)">0.38</td>
-<td class="gt_row gt_right" headers="Saint Croix  s(Hur100_av)">0.054</td>
-<td class="gt_row gt_right" headers="Saint Croix  s(Hur100_fqcy)">-</td>
+<td class="gt_row gt_left" headers="Saint Croix  s(δT)">0.38</td>
+<td class="gt_row gt_right" headers="Saint Croix  s(smoothed TC frequency)">0.054</td>
+<td class="gt_row gt_right" headers="Saint Croix  s(TC frequency)">-</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="Saint Croix  Model">M4_fqcy</td>
@@ -7144,9 +7144,9 @@ character(0)</code></pre>
 <td class="gt_row gt_right" headers="Saint Croix  Hurricane">-</td>
 <td class="gt_row gt_left" headers="Saint Croix  s(age)">0.0037 *</td>
 <td class="gt_row gt_right" headers="Saint Croix  s(temperature anomaly)">0.13</td>
-<td class="gt_row gt_left" headers="Saint Croix  s(dT_raw)">0.41</td>
-<td class="gt_row gt_right" headers="Saint Croix  s(Hur100_av)">-</td>
-<td class="gt_row gt_right" headers="Saint Croix  s(Hur100_fqcy)">0.5</td>
+<td class="gt_row gt_left" headers="Saint Croix  s(δT)">0.41</td>
+<td class="gt_row gt_right" headers="Saint Croix  s(smoothed TC frequency)">-</td>
+<td class="gt_row gt_right" headers="Saint Croix  s(TC frequency)">0.5</td>
 </tr>
 <tr class="gt_group_heading_row odd">
 <th colspan="11" id="Regional" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">Regional</th>
@@ -7160,9 +7160,9 @@ character(0)</code></pre>
 <td class="gt_row gt_right" headers="Regional  Hurricane">0.00024 *</td>
 <td class="gt_row gt_left" headers="Regional  s(age)">0.81</td>
 <td class="gt_row gt_right" headers="Regional  s(temperature anomaly)">0.56</td>
-<td class="gt_row gt_left" headers="Regional  s(dT_raw)">0.72</td>
-<td class="gt_row gt_right" headers="Regional  s(Hur100_av)">0.47</td>
-<td class="gt_row gt_right" headers="Regional  s(Hur100_fqcy)">-</td>
+<td class="gt_row gt_left" headers="Regional  s(δT)">0.72</td>
+<td class="gt_row gt_right" headers="Regional  s(smoothed TC frequency)">0.47</td>
+<td class="gt_row gt_right" headers="Regional  s(TC frequency)">-</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="Regional  Model">M7_fqcy</td>
@@ -7173,9 +7173,9 @@ character(0)</code></pre>
 <td class="gt_row gt_right" headers="Regional  Hurricane">0.0003 *</td>
 <td class="gt_row gt_left" headers="Regional  s(age)">0.82</td>
 <td class="gt_row gt_right" headers="Regional  s(temperature anomaly)">0.62</td>
-<td class="gt_row gt_left" headers="Regional  s(dT_raw)">0.73</td>
-<td class="gt_row gt_right" headers="Regional  s(Hur100_av)">-</td>
-<td class="gt_row gt_right" headers="Regional  s(Hur100_fqcy)">0.18</td>
+<td class="gt_row gt_left" headers="Regional  s(δT)">0.73</td>
+<td class="gt_row gt_right" headers="Regional  s(smoothed TC frequency)">-</td>
+<td class="gt_row gt_right" headers="Regional  s(TC frequency)">0.18</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="Regional  Model">M6_av</td>
@@ -7186,9 +7186,9 @@ character(0)</code></pre>
 <td class="gt_row gt_right" headers="Regional  Hurricane">-</td>
 <td class="gt_row gt_left" headers="Regional  s(age)">&lt;1e-04 *</td>
 <td class="gt_row gt_right" headers="Regional  s(temperature anomaly)">0.001 *</td>
-<td class="gt_row gt_left" headers="Regional  s(dT_raw)">0.89</td>
-<td class="gt_row gt_right" headers="Regional  s(Hur100_av)">0.74</td>
-<td class="gt_row gt_right" headers="Regional  s(Hur100_fqcy)">-</td>
+<td class="gt_row gt_left" headers="Regional  s(δT)">0.89</td>
+<td class="gt_row gt_right" headers="Regional  s(smoothed TC frequency)">0.74</td>
+<td class="gt_row gt_right" headers="Regional  s(TC frequency)">-</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="Regional  Model">M6_fqcy</td>
@@ -7199,9 +7199,9 @@ character(0)</code></pre>
 <td class="gt_row gt_right" headers="Regional  Hurricane">-</td>
 <td class="gt_row gt_left" headers="Regional  s(age)">&lt;1e-04 *</td>
 <td class="gt_row gt_right" headers="Regional  s(temperature anomaly)">0.0009 *</td>
-<td class="gt_row gt_left" headers="Regional  s(dT_raw)">0.9</td>
-<td class="gt_row gt_right" headers="Regional  s(Hur100_av)">-</td>
-<td class="gt_row gt_right" headers="Regional  s(Hur100_fqcy)">0.27</td>
+<td class="gt_row gt_left" headers="Regional  s(δT)">0.9</td>
+<td class="gt_row gt_right" headers="Regional  s(smoothed TC frequency)">-</td>
+<td class="gt_row gt_right" headers="Regional  s(TC frequency)">0.27</td>
 </tr>
 </tbody><tfoot>
 <tr class="gt_footnotes odd">
@@ -7215,7 +7215,7 @@ character(0)</code></pre>
 </div>
 </div>
 <p><strong>Supplementary Table S8. Term-level <em>p</em>-values across the competitive set.</strong> For each panel, every combined GAM within ΔAIC ≤ 2 of the best model, with its ΔAIC, Akaike weight and the term-level <em>p</em>-value of each term (joint Wald test for factors; * <em>p</em> &lt; 0.05; - term not in the model).</p>
-<p>In Punta Maroma s(dT_raw) is significant only in M3, and the thermal regime is significant in both M6 models (<em>p</em> &lt; 10⁻⁴), in which s(dT_raw) is not (<em>p</em> = 0.16) and neither hurricane smooth is (<em>p</em> = 0.54 and 0.96). The δT smooth and the thermal regime therefore substitute for one another; when the regime is added to M3, the regime remains significant and the smooth does not (Section 4.5). In the regional composite the hurricane regime is significant in both M7 models (<em>p</em> = 2.4 × 10⁻⁴ and 3.0 × 10⁻⁴). The thermal regime is significant in the two M6 models (<em>p</em> = 0.012 and 0.013), which lack the hurricane regime, but not in the M7 models (<em>p</em> = 0.080 and 0.098). In Belize s(temperature anomaly) is significant in M2, M3 and both M4 models (<em>p</em> = 0.010-0.012) but not in the M7 models (<em>p</em> = 0.79-0.80), in which neither regime is significant (thermal <em>p</em> = 0.051; hurricane <em>p</em> = 0.11). In Florida s(Hur100_fqcy) is significant in the four competitive models that contain it (<em>p</em> = 0.0013-0.039), s(temperature anomaly) in three of the seven (<em>p</em> = 0.016-0.032), and Hydro, Thermal and the local hurricane regime in none. In Saint Croix no climate term is significant in either competitive model. Across panels, the climate terms that are both selected and significant are s(dT_raw) in Punta Maroma, the hurricane regime in the regional composite, s(temperature anomaly) in Belize and Florida, and s(Hur100_fqcy) in Florida.</p>
+<p>In Punta Maroma s(δT) is significant only in M3, and the thermal regime is significant in both M6 models (<em>p</em> &lt; 10⁻⁴), in which s(δT) is not (<em>p</em> = 0.16) and neither hurricane smooth is (<em>p</em> = 0.54 and 0.96). The δT smooth and the thermal regime therefore substitute for one another; when the regime is added to M3, the regime remains significant and the smooth does not (Section 4.5). In the regional composite the hurricane regime is significant in both M7 models (<em>p</em> = 2.4 × 10⁻⁴ and 3.0 × 10⁻⁴). The thermal regime is significant in the two M6 models (<em>p</em> = 0.012 and 0.013), which lack the hurricane regime, but not in the M7 models (<em>p</em> = 0.080 and 0.098). In Belize s(temperature anomaly) is significant in M2, M3 and both M4 models (<em>p</em> = 0.010-0.012) but not in the M7 models (<em>p</em> = 0.79-0.80), in which neither regime is significant (thermal <em>p</em> = 0.051; hurricane <em>p</em> = 0.11). In Florida s(TC frequency) is significant in the four competitive models that contain it (<em>p</em> = 0.0013-0.039), s(temperature anomaly) in three of the seven (<em>p</em> = 0.016-0.032), and Hydro, Thermal and the local hurricane regime in none. In Saint Croix no climate term is significant in either competitive model. Across panels, the climate terms that are both selected and significant are s(δT) in Punta Maroma, the hurricane regime in the regional composite, s(temperature anomaly) in Belize and Florida, and s(TC frequency) in Florida.</p>
 </section>
 <section id="full-summaries-of-the-selected-combined-models" class="level4">
 <h4 class="anchored" data-anchor-id="full-summaries-of-the-selected-combined-models">3.3.4 Full summaries of the selected combined models</h4>
@@ -7236,7 +7236,7 @@ Link function: logit
 Formula:
 counts_norm_sv ~ s(age, k = 10) + s(GMHT_CPS0_30N, k = 10) + 
     s(dT_raw, k = 10)
-&lt;environment: 0x000001e974b48000&gt;
+&lt;environment: 0x0000020f1f231ab8&gt;
 
 Parametric coefficients:
             Estimate Std. Error z value Pr(&gt;|z|)    
@@ -7270,7 +7270,7 @@ Link function: logit
 Formula:
 counts_norm_sv ~ s(age, k = 10) + s(GMHT_CPS0_30N, k = 10) + 
     s(dT_raw, k = 10) + s(Hur100_fqcy, k = 10)
-&lt;environment: 0x000001e96e64ecb0&gt;
+&lt;environment: 0x0000020f20132cf0&gt;
 
 Parametric coefficients:
             Estimate Std. Error z value Pr(&gt;|z|)   
@@ -7305,7 +7305,7 @@ Link function: logit
 Formula:
 counts_norm_sv ~ s(age, k = 5) + s(GMHT_CPS0_30N, k = 5) + s(dT_raw, 
     k = 5) + s(Hur100_av, k = 5)
-&lt;environment: 0x000001e95e30dd20&gt;
+&lt;environment: 0x0000020f2073a0b0&gt;
 
 Parametric coefficients:
             Estimate Std. Error z value Pr(&gt;|z|)
@@ -7338,7 +7338,7 @@ Link function: logit
 Formula:
 counts_norm_sv ~ s(age, k = 4) + s(GMHT_CPS0_30N, k = 4) + s(dT_raw, 
     k = 4) + s(Hur100_av, k = 4)
-&lt;environment: 0x000001e967375970&gt;
+&lt;environment: 0x0000020f21c2d038&gt;
 
 Parametric coefficients:
             Estimate Std. Error z value Pr(&gt;|z|)  
@@ -7373,7 +7373,7 @@ Link function: logit
 Formula:
 counts_norm_sv ~ s(age, k = 10) + s(GMHT_CPS0_30N, k = 10) + 
     s(dT_raw, k = 10) + s(Hur100_av, k = 10) + Thermal + Hurricane
-&lt;environment: 0x000001e96b3bd3f0&gt;
+&lt;environment: 0x0000020f205879d8&gt;
 
 Parametric coefficients:
                   Estimate Std. Error z value Pr(&gt;|z|)    
@@ -7406,8 +7406,8 @@ R-sq.(adj) =  0.325   Deviance explained = 48.9%
 <ol type="1">
 <li><strong>Dating.</strong> All 22 ages are radiocarbon. The 95 % calibrated range of each spans 3-5 centennial bins (Section 1.4), so the bin of an individual record is uncertain: in 1,000 Monte Carlo draws of the ages, a Saint Croix age stays in its central bin in 37 % of draws on average (Punta Maroma, dated by U-Th: 87 %).</li>
 <li><strong>Response.</strong> 16 of the 19 occupied bins hold a single record, so <code>counts_norm_sv</code> takes essentially two values (0.50 and 0.97; Section 3.1.3). The beta model then contrasts a handful of bins with two records against the rest.</li>
-<li><strong>Marginal models.</strong> The best model (M_hav, weight 0.61) contains no significant climate term (s(Hur100_av), <em>p</em> = 0.076; Section 3.2.4), and neither does the best categorical model. Before Hydro was removed, the top-ranked model owed its rank only to the “no data” level of the hydroclimate series.</li>
-<li><strong>Combined models.</strong> The selected model (M4_av) contains no significant climate term (s(Hur100_av), <em>p</em> = 0.054), none is significant when the response is modelled as one versus two records per bin (Section 4.5), and AICc selects M4_fqcy (Section 4.5.2).</li>
+<li><strong>Marginal models.</strong> The best model (M_hav, weight 0.61) contains no significant climate term (s(smoothed TC frequency), <em>p</em> = 0.076; Section 3.2.4), and neither does the best categorical model. Before Hydro was removed, the top-ranked model owed its rank only to the “no data” level of the hydroclimate series.</li>
+<li><strong>Combined models.</strong> The selected model (M4_av) contains no significant climate term (s(smoothed TC frequency), <em>p</em> = 0.054), none is significant when the response is modelled as one versus two records per bin (Section 4.5), and AICc selects M4_fqcy (Section 4.5.2).</li>
 <li><strong>Age and sampling uncertainty.</strong> Across replicates of the ages and of the records, the best of the models without categorical regimes changes from replicate to replicate (the most frequent is chosen in 29-36 %), the climate models improve on <code>s(age)</code> in 43-53 % of the replicates and no climate term is significant in more than 28 % of them (Section 4.5.2).</li>
 <li><strong>Density.</strong> At the narrowest bandwidth (0.05 ka) the age envelope of the Saint Croix density is as wide as its sampling envelope (Supplementary Fig. S1).</li>
 </ol>
@@ -7430,7 +7430,7 @@ Link function: logit
 Formula:
 counts_norm_sv ~ s(age, k = 10) + s(GMHT_CPS0_30N, k = 10) + 
     s(dT_raw, k = 10)
-&lt;environment: 0x000001e974b48000&gt;
+&lt;environment: 0x0000020f1f231ab8&gt;
 
 Parametric coefficients:
             Estimate Std. Error z value Pr(&gt;|z|)    
@@ -7457,7 +7457,7 @@ Link function: logit
 Formula:
 counts_norm_sv ~ s(age, k = 10) + s(GMHT_CPS0_30N, k = 10) + 
     s(dT_raw, k = 10) + s(Hur100_fqcy, k = 10)
-&lt;environment: 0x000001e96e64ecb0&gt;
+&lt;environment: 0x0000020f20132cf0&gt;
 
 Parametric coefficients:
             Estimate Std. Error z value Pr(&gt;|z|)   
@@ -7485,7 +7485,7 @@ Link function: logit
 Formula:
 counts_norm_sv ~ s(age, k = 5) + s(GMHT_CPS0_30N, k = 5) + s(dT_raw, 
     k = 5) + s(Hur100_av, k = 5)
-&lt;environment: 0x000001e95e30dd20&gt;
+&lt;environment: 0x0000020f2073a0b0&gt;
 
 Parametric coefficients:
             Estimate Std. Error z value Pr(&gt;|z|)
@@ -7511,7 +7511,7 @@ Link function: logit
 Formula:
 counts_norm_sv ~ s(age, k = 4) + s(GMHT_CPS0_30N, k = 4) + s(dT_raw, 
     k = 4) + s(Hur100_av, k = 4)
-&lt;environment: 0x000001e967375970&gt;
+&lt;environment: 0x0000020f21c2d038&gt;
 
 Parametric coefficients:
             Estimate Std. Error z value Pr(&gt;|z|)  
@@ -7539,7 +7539,7 @@ Link function: logit
 Formula:
 counts_norm_sv ~ s(age, k = 10) + s(GMHT_CPS0_30N, k = 10) + 
     s(dT_raw, k = 10) + s(Hur100_av, k = 10) + Thermal + Hurricane
-&lt;environment: 0x000001e96b3bd3f0&gt;
+&lt;environment: 0x0000020f205879d8&gt;
 
 Parametric coefficients:
                   Estimate Std. Error z value Pr(&gt;|z|)    
@@ -7572,7 +7572,7 @@ R-sq.(adj) =  0.325   Deviance explained = 48.9%
 </div>
 </div>
 </div>
-<p><strong>Figure 4</strong> (<code>Figure_4.pdf</code>). Partial effects of the selected combined GAMs on the logit scale, coloured by panel (Punta Maroma, Florida, Belize and the regional composite; Saint Croix is not interpreted, Section 3.3.5). Smooth panels show each smooth term with its 95 % confidence band. Terms shrunk to EDF ≈ 0 plot as flat lines at zero: s(age) in Punta Maroma, Florida and the regional composite; s(temperature anomaly) in Punta Maroma and the regional composite; s(dT_raw) in Florida, Belize and the regional composite; and s(Hur100_av) in Belize and the regional composite. Smooths are centred to a mean of zero over the fitted bins, so zero denotes the model’s average contribution of that term and a curve below zero is associated with a lower frequency than average. Factor panels show the effect of each regime level with its 95 % confidence interval, centred in the same way (Section 4.1); they show only the regimes of the selected models, here those of the regional composite. The hurricane-regime contrasts reported for Punta Maroma and Belize in Section 4.7.2 come from a different model, <code>s(age)</code> + hurricane regime refitted across bin phases, and therefore do not appear in this figure.</p>
+<p><strong>Figure 4</strong> (<code>Figure_4.pdf</code>). Partial effects of the selected combined GAMs on the logit scale, coloured by panel (Punta Maroma, Florida, Belize and the regional composite; Saint Croix is not interpreted, Section 3.3.5). Smooth panels show each smooth term with its 95 % confidence band. Terms shrunk to EDF ≈ 0 plot as flat lines at zero: s(age) in Punta Maroma, Florida and the regional composite; s(temperature anomaly) in Punta Maroma and the regional composite; s(δT) in Florida, Belize and the regional composite; and s(smoothed TC frequency) in Belize and the regional composite. Smooths are centred to a mean of zero over the fitted bins, so zero denotes the model’s average contribution of that term and a curve below zero is associated with a lower frequency than average. Factor panels show the effect of each regime level with its 95 % confidence interval, centred in the same way (Section 4.1); they show only the regimes of the selected models, here those of the regional composite. The hurricane-regime contrasts reported for Punta Maroma and Belize in Section 4.7.2 come from a different model, <code>s(age)</code> + hurricane regime refitted across bin phases, and therefore do not appear in this figure.</p>
 </section>
 <section id="concurvity-analysis" class="level3">
 <h3 class="anchored" data-anchor-id="concurvity-analysis">4.2 Concurvity analysis</h3>
@@ -8076,7 +8076,7 @@ Attaching package: 'reshape2'</code></pre>
 <td class="gt_row gt_right" headers="Punta Maroma  estimate">0.99</td>
 </tr>
 <tr class="odd">
-<td class="gt_row gt_left" headers="Punta Maroma  Term">s(dT_raw)</td>
+<td class="gt_row gt_left" headers="Punta Maroma  Term">s(δT)</td>
 <td class="gt_row gt_right" headers="Punta Maroma  worst">1.00</td>
 <td class="gt_row gt_right" headers="Punta Maroma  observed">0.99</td>
 <td class="gt_row gt_right" headers="Punta Maroma  estimate">0.90</td>
@@ -8103,13 +8103,13 @@ Attaching package: 'reshape2'</code></pre>
 <td class="gt_row gt_right" headers="Florida  estimate">0.99</td>
 </tr>
 <tr class="even">
-<td class="gt_row gt_left" headers="Florida  Term">s(dT_raw)</td>
+<td class="gt_row gt_left" headers="Florida  Term">s(δT)</td>
 <td class="gt_row gt_right" headers="Florida  worst">1.00</td>
 <td class="gt_row gt_right" headers="Florida  observed">0.96</td>
 <td class="gt_row gt_right" headers="Florida  estimate">0.94</td>
 </tr>
 <tr class="odd">
-<td class="gt_row gt_left" headers="Florida  Term">s(Hur100_fqcy)</td>
+<td class="gt_row gt_left" headers="Florida  Term">s(TC frequency)</td>
 <td class="gt_row gt_right" headers="Florida  worst">1.00</td>
 <td class="gt_row gt_right" headers="Florida  observed">0.85</td>
 <td class="gt_row gt_right" headers="Florida  estimate">0.79</td>
@@ -8136,13 +8136,13 @@ Attaching package: 'reshape2'</code></pre>
 <td class="gt_row gt_right" headers="Belize  estimate">0.98</td>
 </tr>
 <tr class="even">
-<td class="gt_row gt_left" headers="Belize  Term">s(dT_raw)</td>
+<td class="gt_row gt_left" headers="Belize  Term">s(δT)</td>
 <td class="gt_row gt_right" headers="Belize  worst">0.99</td>
 <td class="gt_row gt_right" headers="Belize  observed">0.92</td>
 <td class="gt_row gt_right" headers="Belize  estimate">0.90</td>
 </tr>
 <tr class="odd">
-<td class="gt_row gt_left" headers="Belize  Term">s(Hur100_av)</td>
+<td class="gt_row gt_left" headers="Belize  Term">s(smoothed TC frequency)</td>
 <td class="gt_row gt_right" headers="Belize  worst">0.82</td>
 <td class="gt_row gt_right" headers="Belize  observed">0.66</td>
 <td class="gt_row gt_right" headers="Belize  estimate">0.68</td>
@@ -8169,13 +8169,13 @@ Attaching package: 'reshape2'</code></pre>
 <td class="gt_row gt_right" headers="Saint Croix  estimate">0.98</td>
 </tr>
 <tr class="even">
-<td class="gt_row gt_left" headers="Saint Croix  Term">s(dT_raw)</td>
+<td class="gt_row gt_left" headers="Saint Croix  Term">s(δT)</td>
 <td class="gt_row gt_right" headers="Saint Croix  worst">0.97</td>
 <td class="gt_row gt_right" headers="Saint Croix  observed">0.80</td>
 <td class="gt_row gt_right" headers="Saint Croix  estimate">0.81</td>
 </tr>
 <tr class="odd">
-<td class="gt_row gt_left" headers="Saint Croix  Term">s(Hur100_av)</td>
+<td class="gt_row gt_left" headers="Saint Croix  Term">s(smoothed TC frequency)</td>
 <td class="gt_row gt_right" headers="Saint Croix  worst">0.94</td>
 <td class="gt_row gt_right" headers="Saint Croix  observed">0.44</td>
 <td class="gt_row gt_right" headers="Saint Croix  estimate">0.89</td>
@@ -8202,13 +8202,13 @@ Attaching package: 'reshape2'</code></pre>
 <td class="gt_row gt_right" headers="Regional  estimate">0.99</td>
 </tr>
 <tr class="even">
-<td class="gt_row gt_left" headers="Regional  Term">s(dT_raw)</td>
+<td class="gt_row gt_left" headers="Regional  Term">s(δT)</td>
 <td class="gt_row gt_right" headers="Regional  worst">1.00</td>
 <td class="gt_row gt_right" headers="Regional  observed">0.88</td>
 <td class="gt_row gt_right" headers="Regional  estimate">0.91</td>
 </tr>
 <tr class="odd">
-<td class="gt_row gt_left" headers="Regional  Term">s(Hur100_av)</td>
+<td class="gt_row gt_left" headers="Regional  Term">s(smoothed TC frequency)</td>
 <td class="gt_row gt_right" headers="Regional  worst">0.96</td>
 <td class="gt_row gt_right" headers="Regional  observed">0.79</td>
 <td class="gt_row gt_right" headers="Regional  estimate">0.82</td>
@@ -8219,8 +8219,8 @@ Attaching package: 'reshape2'</code></pre>
 </div>
 </div>
 </div>
-<p><strong>Supplementary Table S9. Concurvity of the selected combined GAMs</strong> (output above). Only the regional model contains categorical regimes, and its parametric terms are almost completely approximated by the smooths (observed concurvity 0.998). Observed concurvity is high for s(age) (0.93-0.996) and for s(temperature anomaly) (0.985-0.999), ranges from 0.80 to 0.99 for s(dT_raw) (0.99 in Punta Maroma, where it is the only significant term), and ranges from 0.44 to 0.85 for the hurricane smooth.</p>
-<p>The temporal trend, background temperature, hurricane activity and the categorical regimes are therefore partly interchangeable in these data, because the regimes are defined on the same chronology (Section 2.1) and the continuous climate series have a temporal structure of their own (Fig. 3). With <code>select = TRUE</code>, the term that carries this shared temporal pattern differs among panels. s(age) is retained in Belize (EDF 1.72) and Saint Croix (EDF 1.62) and shrunk to EDF ≈ 0 in Punta Maroma, Florida and the regional composite. In Punta Maroma s(dT_raw) carries the pattern (EDF 6.90), and in the regional composite the hurricane regime does. Which term <code>select = TRUE</code> retains is not uniquely determined, and the effects in Table 2 and Fig. 4 should be read as conditional on the other terms rather than as independent contributions. In Punta Maroma, in particular, the selected s(dT_raw) and the thermal regime of the competitive M6 models cannot be separated from the temporal trend of the record. The dependence of the selected models on the youngest bin, which holds the frequency maximum in Punta Maroma and the regional composite and is one of the two bins of the “high” hurricane regime, is examined in Section 4.5.2.</p>
+<p><strong>Supplementary Table S9. Concurvity of the selected combined GAMs</strong> (output above). Only the regional model contains categorical regimes, and its parametric terms are almost completely approximated by the smooths (observed concurvity 0.998). Observed concurvity is high for s(age) (0.93-0.996) and for s(temperature anomaly) (0.985-0.999), ranges from 0.80 to 0.99 for s(δT) (0.99 in Punta Maroma, where it is the only significant term), and ranges from 0.44 to 0.85 for the hurricane smooth.</p>
+<p>The temporal trend, background temperature, hurricane activity and the categorical regimes are therefore partly interchangeable in these data, because the regimes are defined on the same chronology (Section 2.1) and the continuous climate series have a temporal structure of their own (Fig. 3). With <code>select = TRUE</code>, the term that carries this shared temporal pattern differs among panels. s(age) is retained in Belize (EDF 1.72) and Saint Croix (EDF 1.62) and shrunk to EDF ≈ 0 in Punta Maroma, Florida and the regional composite. In Punta Maroma s(δT) carries the pattern (EDF 6.90), and in the regional composite the hurricane regime does. Which term <code>select = TRUE</code> retains is not uniquely determined, and the effects in Table 2 and Fig. 4 should be read as conditional on the other terms rather than as independent contributions. In Punta Maroma, in particular, the selected s(δT) and the thermal regime of the competitive M6 models cannot be separated from the temporal trend of the record. The dependence of the selected models on the youngest bin, which holds the frequency maximum in Punta Maroma and the regional composite and is one of the two bins of the “high” hurricane regime, is examined in Section 4.5.2.</p>
 </section>
 <section id="gam-diagnostic-plots" class="level3">
 <h3 class="anchored" data-anchor-id="gam-diagnostic-plots">4.3 GAM diagnostic plots</h3>
@@ -8928,7 +8928,7 @@ Using model: M7_av for segment: Regional </code></pre>
 <li><strong>Residual autocorrelation (Florida, Punta Maroma).</strong> Florida, the panel with positive lag-1 autocorrelation (Section 4.4), and Punta Maroma, the panel with the strongest climate effect, are refitted as Gaussian GAMMs on the logit of the response, with the same terms and basis dimensions. Each is fitted first with independent errors and then with a continuous-time AR(1) structure (<code>corCAR1</code> on age, because bins are not always consecutive). mgcv does not provide a beta family with correlated errors, so this is an approximation used as a check, not a replacement for the beta models. The terms tested are the significant climate smooths of each selected model.</li>
 <li><strong>Florida source standardization.</strong> The combined and marginal candidate sets are refitted to the Florida series pooled across sources (<code>datos_fl_norm</code>, Section 3.1.1).</li>
 <li><strong>Saint Croix response.</strong> Because the response takes only two values, the selected model is refitted as a binomial GAM of one versus two records per bin.</li>
-<li><strong>Thermal regime in Punta Maroma.</strong> The thermal regime is significant in the marginal model of this panel (Section 3.2.4), whereas the selected combined model (M3) contains s(dT_raw) instead. The regime is added to M3 to test which of the two terms remains significant when both are present.</li>
+<li><strong>Thermal regime in Punta Maroma.</strong> The thermal regime is significant in the marginal model of this panel (Section 3.2.4), whereas the selected combined model (M3) contains s(δT) instead. The regime is added to M3 to test which of the two terms remains significant when both are present.</li>
 </ol>
 <div class="cell">
 <div class="cell-output-display">
@@ -9401,14 +9401,14 @@ Using model: M7_av for segment: Regional </code></pre>
 </tr>
 <tr class="gt_row_group_first even">
 <td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Panel">Florida</td>
-<td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Term">s(temperature anomaly); s(Hur100_fqcy)</td>
+<td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Term">s(temperature anomaly); s(TC frequency)</td>
 <td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Reference">0.016; 0.035</td>
 <td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Sensitivity">0.22; 0.04 (independent); 0.2; 0.031 (AR(1))</td>
 <td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Note">phi = 0.37 per 0.1 ka; LRT p = 0.086; dAIC(AR1 - indep) = -0.9</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Panel">Punta Maroma</td>
-<td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Term">s(dT_raw)</td>
+<td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Term">s(δT)</td>
 <td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Reference">&lt;1e-04</td>
 <td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Sensitivity">0.3 (independent); 0.76 (AR(1))</td>
 <td class="gt_row gt_left" headers="Residual AR(1) (Gaussian GAMM on logit, corCAR1)  Note">phi = 0.85 per 0.1 ka; LRT p = 0.31; dAIC(AR1 - indep) = 3.0</td>
@@ -9419,7 +9419,7 @@ Using model: M7_av for segment: Regional </code></pre>
 <tr class="gt_row_group_first odd">
 <td class="gt_row gt_left" headers="Florida series pooled across sources (combined models)  Panel">Florida</td>
 <td class="gt_row gt_left" headers="Florida series pooled across sources (combined models)  Term">climate terms with p &lt; 0.05</td>
-<td class="gt_row gt_left" headers="Florida series pooled across sources (combined models)  Reference">s(temperature anomaly) (0.016); s(Hur100_fqcy) (0.035)</td>
+<td class="gt_row gt_left" headers="Florida series pooled across sources (combined models)  Reference">s(temperature anomaly) (0.016); s(TC frequency) (0.035)</td>
 <td class="gt_row gt_left" headers="Florida series pooled across sources (combined models)  Sensitivity">Hydro (0.0016)</td>
 <td class="gt_row gt_left" headers="Florida series pooled across sources (combined models)  Note">selected model M5_fqcy (weight 0.27) vs M4_fqcy; deviance explained 23.9 % vs 23.9 %</td>
 </tr>
@@ -9445,14 +9445,14 @@ Using model: M7_av for segment: Regional </code></pre>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="Binomial GAM, one vs two records per bin  Panel">Saint Croix</td>
-<td class="gt_row gt_left" headers="Binomial GAM, one vs two records per bin  Term">s(dT_raw)</td>
+<td class="gt_row gt_left" headers="Binomial GAM, one vs two records per bin  Term">s(δT)</td>
 <td class="gt_row gt_left" headers="Binomial GAM, one vs two records per bin  Reference">0.38</td>
 <td class="gt_row gt_left" headers="Binomial GAM, one vs two records per bin  Sensitivity">1</td>
 <td class="gt_row gt_left" headers="Binomial GAM, one vs two records per bin  Note">same terms as the selected model</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="Binomial GAM, one vs two records per bin  Panel">Saint Croix</td>
-<td class="gt_row gt_left" headers="Binomial GAM, one vs two records per bin  Term">s(Hur100_av)</td>
+<td class="gt_row gt_left" headers="Binomial GAM, one vs two records per bin  Term">s(smoothed TC frequency)</td>
 <td class="gt_row gt_left" headers="Binomial GAM, one vs two records per bin  Reference">0.054</td>
 <td class="gt_row gt_left" headers="Binomial GAM, one vs two records per bin  Sensitivity">1</td>
 <td class="gt_row gt_left" headers="Binomial GAM, one vs two records per bin  Note">same terms as the selected model</td>
@@ -9465,7 +9465,7 @@ Using model: M7_av for segment: Regional </code></pre>
 <td class="gt_row gt_left" headers="Thermal regime added to the selected model  Term">Thermal</td>
 <td class="gt_row gt_left" headers="Thermal regime added to the selected model  Reference">&lt;1e-04</td>
 <td class="gt_row gt_left" headers="Thermal regime added to the selected model  Sensitivity">&lt;1e-04</td>
-<td class="gt_row gt_left" headers="Thermal regime added to the selected model  Note">reference = marginal thermal-regime model; s(dT_raw) in the extended model: p = 0.15</td>
+<td class="gt_row gt_left" headers="Thermal regime added to the selected model  Note">reference = marginal thermal-regime model; s(δT) in the extended model: p = 0.15</td>
 </tr>
 </tbody>
 </table>
@@ -9475,10 +9475,10 @@ Using model: M7_av for segment: Regional </code></pre>
 </div>
 <p><strong>Supplementary Table S11. Sensitivity analyses of the selected combined GAMs.</strong> For each check, the term tested, its <em>p</em>-value in the reference analysis and in the sensitivity analysis, and the relevant model statistics.</p>
 <ul>
-<li><strong>Residual autocorrelation.</strong> The AR(1) parameter is 0.37 per century in Florida and 0.85 in Punta Maroma, but in neither panel does it improve the fit (likelihood-ratio <em>p</em> = 0.086 and 0.31; AIC of the AR(1) model 0.9 units lower and 3.0 units higher). In Florida s(Hur100_fqcy) remains significant with independent and with AR(1) errors (<em>p</em> = 0.040 and 0.031), whereas s(temperature anomaly) does not (<em>p</em> = 0.22 and 0.20). In Punta Maroma s(dT_raw), significant in the beta model (<em>p</em> &lt; 10⁻⁴), is not significant in either Gaussian model (<em>p</em> = 0.30 and 0.76).</li>
-<li><strong>Florida source standardization.</strong> The Florida result depends on how the sources are scaled. With the pooled series the selected model is M5_fqcy (weight 0.27), in which the only significant climate term is the Florida hydroclimate (<em>p</em> = 0.0016); the best marginal model is also the hydroclimate model (weight 0.68; <em>p</em> = 0.0025, against 0.66 on the source-standardized series). On the source-standardized series the significant climate terms are instead s(temperature anomaly) and s(Hur100_fqcy) (<em>p</em> = 0.016 and 0.035). Pooling lets the largest source dominate the series, so we retain the source-standardized series; because the significant climate terms change with the scaling of the sources, the Florida result is not considered resolved.</li>
+<li><strong>Residual autocorrelation.</strong> The AR(1) parameter is 0.37 per century in Florida and 0.85 in Punta Maroma, but in neither panel does it improve the fit (likelihood-ratio <em>p</em> = 0.086 and 0.31; AIC of the AR(1) model 0.9 units lower and 3.0 units higher). In Florida s(TC frequency) remains significant with independent and with AR(1) errors (<em>p</em> = 0.040 and 0.031), whereas s(temperature anomaly) does not (<em>p</em> = 0.22 and 0.20). In Punta Maroma s(δT), significant in the beta model (<em>p</em> &lt; 10⁻⁴), is not significant in either Gaussian model (<em>p</em> = 0.30 and 0.76).</li>
+<li><strong>Florida source standardization.</strong> The Florida result depends on how the sources are scaled. With the pooled series the selected model is M5_fqcy (weight 0.27), in which the only significant climate term is the Florida hydroclimate (<em>p</em> = 0.0016); the best marginal model is also the hydroclimate model (weight 0.68; <em>p</em> = 0.0025, against 0.66 on the source-standardized series). On the source-standardized series the significant climate terms are instead s(temperature anomaly) and s(TC frequency) (<em>p</em> = 0.016 and 0.035). Pooling lets the largest source dominate the series, so we retain the source-standardized series; because the significant climate terms change with the scaling of the sources, the Florida result is not considered resolved.</li>
 <li><strong>Saint Croix.</strong> No climate smooth of the selected model is significant in the beta model (<em>p</em> = 0.054-0.38) or in the binomial model of one versus two records per bin (<em>p</em> ≈ 1), consistent with not interpreting this panel (Section 3.3.5).</li>
-<li><strong>Punta Maroma.</strong> When the thermal regime is added to M3, the regime remains significant (<em>p</em> &lt; 10⁻⁴, as in the marginal thermal-regime model) and s(dT_raw) does not (<em>p</em> = 0.15). The two terms carry the same temporal signal; when both are present, the data retain the regime.</li>
+<li><strong>Punta Maroma.</strong> When the thermal regime is added to M3, the regime remains significant (<em>p</em> &lt; 10⁻⁴, as in the marginal thermal-regime model) and s(δT) does not (<em>p</em> = 0.15). The two terms carry the same temporal signal; when both are present, the data retain the regime.</li>
 </ul>
 <section id="local-climate-records-in-florida" class="level4">
 <h4 class="anchored" data-anchor-id="local-climate-records-in-florida">4.5.1 Local climate records in Florida</h4>
@@ -10724,10 +10724,10 @@ $minutes
 <th id="Top-model-(share)" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Top model (share)</th>
 <th id="dAIC-vs-s(age)->-2-(%)" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">dAIC vs s(age) &gt; 2 (%)</th>
 <th id="dAIC-vs-s(age),-median-[95-%]" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">dAIC vs s(age), median [95 %]</th>
-<th id="s(Hur100_av)-p-<-0.05-(%)" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">s(Hur100_av) p &lt; 0.05 (%)</th>
+<th id="s(smoothed-TC-frequency)-p-<-0.05-(%)" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">s(smoothed TC frequency) p &lt; 0.05 (%)</th>
 <th id="s(temperature-anomaly)-p-<-0.05-(%)" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">s(temperature anomaly) p &lt; 0.05 (%)</th>
-<th id="s(dT_raw)-p-<-0.05-(%)" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">s(dT_raw) p &lt; 0.05 (%)</th>
-<th id="s(Hur100_fqcy)-p-<-0.05-(%)" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">s(Hur100_fqcy) p &lt; 0.05 (%)</th>
+<th id="s(δT)-p-<-0.05-(%)" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">s(δT) p &lt; 0.05 (%)</th>
+<th id="s(TC-frequency)-p-<-0.05-(%)" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">s(TC frequency) p &lt; 0.05 (%)</th>
 </tr>
 </thead>
 <tbody class="gt_table_body">
@@ -10740,10 +10740,10 @@ $minutes
 <td class="gt_row gt_left" headers="Punta Maroma  Top model (share)">M3 (59 %)</td>
 <td class="gt_row gt_right" headers="Punta Maroma  dAIC vs s(age) > 2 (%)">100</td>
 <td class="gt_row gt_left" headers="Punta Maroma  dAIC vs s(age), median [95 %]">45.8 [21.3, 60.5]</td>
-<td class="gt_row gt_right" headers="Punta Maroma  s(Hur100_av) p < 0.05 (%)">79</td>
+<td class="gt_row gt_right" headers="Punta Maroma  s(smoothed TC frequency) p < 0.05 (%)">79</td>
 <td class="gt_row gt_right" headers="Punta Maroma  s(temperature anomaly) p < 0.05 (%)">81</td>
-<td class="gt_row gt_right" headers="Punta Maroma  s(dT_raw) p < 0.05 (%)">22</td>
-<td class="gt_row gt_right" headers="Punta Maroma  s(Hur100_fqcy) p < 0.05 (%)">16</td>
+<td class="gt_row gt_right" headers="Punta Maroma  s(δT) p < 0.05 (%)">22</td>
+<td class="gt_row gt_right" headers="Punta Maroma  s(TC frequency) p < 0.05 (%)">16</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_center" headers="Punta Maroma  Scenario">Sampling</td>
@@ -10751,10 +10751,10 @@ $minutes
 <td class="gt_row gt_left" headers="Punta Maroma  Top model (share)">M4_av (40 %)</td>
 <td class="gt_row gt_right" headers="Punta Maroma  dAIC vs s(age) > 2 (%)">95</td>
 <td class="gt_row gt_left" headers="Punta Maroma  dAIC vs s(age), median [95 %]">13.4 [0.3, 45.4]</td>
-<td class="gt_row gt_right" headers="Punta Maroma  s(Hur100_av) p < 0.05 (%)">36</td>
+<td class="gt_row gt_right" headers="Punta Maroma  s(smoothed TC frequency) p < 0.05 (%)">36</td>
 <td class="gt_row gt_right" headers="Punta Maroma  s(temperature anomaly) p < 0.05 (%)">59</td>
-<td class="gt_row gt_right" headers="Punta Maroma  s(dT_raw) p < 0.05 (%)">36</td>
-<td class="gt_row gt_right" headers="Punta Maroma  s(Hur100_fqcy) p < 0.05 (%)">6</td>
+<td class="gt_row gt_right" headers="Punta Maroma  s(δT) p < 0.05 (%)">36</td>
+<td class="gt_row gt_right" headers="Punta Maroma  s(TC frequency) p < 0.05 (%)">6</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_center" headers="Punta Maroma  Scenario">Both</td>
@@ -10762,10 +10762,10 @@ $minutes
 <td class="gt_row gt_left" headers="Punta Maroma  Top model (share)">M4_av (41 %)</td>
 <td class="gt_row gt_right" headers="Punta Maroma  dAIC vs s(age) > 2 (%)">95</td>
 <td class="gt_row gt_left" headers="Punta Maroma  dAIC vs s(age), median [95 %]">13.9 [0.0, 48.3]</td>
-<td class="gt_row gt_right" headers="Punta Maroma  s(Hur100_av) p < 0.05 (%)">40</td>
+<td class="gt_row gt_right" headers="Punta Maroma  s(smoothed TC frequency) p < 0.05 (%)">40</td>
 <td class="gt_row gt_right" headers="Punta Maroma  s(temperature anomaly) p < 0.05 (%)">59</td>
-<td class="gt_row gt_right" headers="Punta Maroma  s(dT_raw) p < 0.05 (%)">41</td>
-<td class="gt_row gt_right" headers="Punta Maroma  s(Hur100_fqcy) p < 0.05 (%)">14</td>
+<td class="gt_row gt_right" headers="Punta Maroma  s(δT) p < 0.05 (%)">41</td>
+<td class="gt_row gt_right" headers="Punta Maroma  s(TC frequency) p < 0.05 (%)">14</td>
 </tr>
 <tr class="gt_group_heading_row odd">
 <th colspan="9" id="Florida" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">Florida</th>
@@ -10776,10 +10776,10 @@ $minutes
 <td class="gt_row gt_left" headers="Florida  Top model (share)">M4_fqcy (85 %)</td>
 <td class="gt_row gt_right" headers="Florida  dAIC vs s(age) > 2 (%)">77</td>
 <td class="gt_row gt_left" headers="Florida  dAIC vs s(age), median [95 %]">6.1 [0.0, 21.2]</td>
-<td class="gt_row gt_right" headers="Florida  s(Hur100_av) p < 0.05 (%)">15</td>
+<td class="gt_row gt_right" headers="Florida  s(smoothed TC frequency) p < 0.05 (%)">15</td>
 <td class="gt_row gt_right" headers="Florida  s(temperature anomaly) p < 0.05 (%)">24</td>
-<td class="gt_row gt_right" headers="Florida  s(dT_raw) p < 0.05 (%)">0</td>
-<td class="gt_row gt_right" headers="Florida  s(Hur100_fqcy) p < 0.05 (%)">75</td>
+<td class="gt_row gt_right" headers="Florida  s(δT) p < 0.05 (%)">0</td>
+<td class="gt_row gt_right" headers="Florida  s(TC frequency) p < 0.05 (%)">75</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_center" headers="Florida  Scenario">Sampling</td>
@@ -10787,10 +10787,10 @@ $minutes
 <td class="gt_row gt_left" headers="Florida  Top model (share)">M4_fqcy (38 %)</td>
 <td class="gt_row gt_right" headers="Florida  dAIC vs s(age) > 2 (%)">27</td>
 <td class="gt_row gt_left" headers="Florida  dAIC vs s(age), median [95 %]">0.3 [0.0, 10.2]</td>
-<td class="gt_row gt_right" headers="Florida  s(Hur100_av) p < 0.05 (%)">11</td>
+<td class="gt_row gt_right" headers="Florida  s(smoothed TC frequency) p < 0.05 (%)">11</td>
 <td class="gt_row gt_right" headers="Florida  s(temperature anomaly) p < 0.05 (%)">7</td>
-<td class="gt_row gt_right" headers="Florida  s(dT_raw) p < 0.05 (%)">6</td>
-<td class="gt_row gt_right" headers="Florida  s(Hur100_fqcy) p < 0.05 (%)">19</td>
+<td class="gt_row gt_right" headers="Florida  s(δT) p < 0.05 (%)">6</td>
+<td class="gt_row gt_right" headers="Florida  s(TC frequency) p < 0.05 (%)">19</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_center" headers="Florida  Scenario">Both</td>
@@ -10798,10 +10798,10 @@ $minutes
 <td class="gt_row gt_left" headers="Florida  Top model (share)">M4_fqcy (49 %)</td>
 <td class="gt_row gt_right" headers="Florida  dAIC vs s(age) > 2 (%)">36</td>
 <td class="gt_row gt_left" headers="Florida  dAIC vs s(age), median [95 %]">0.6 [0.0, 14.9]</td>
-<td class="gt_row gt_right" headers="Florida  s(Hur100_av) p < 0.05 (%)">16</td>
+<td class="gt_row gt_right" headers="Florida  s(smoothed TC frequency) p < 0.05 (%)">16</td>
 <td class="gt_row gt_right" headers="Florida  s(temperature anomaly) p < 0.05 (%)">13</td>
-<td class="gt_row gt_right" headers="Florida  s(dT_raw) p < 0.05 (%)">5</td>
-<td class="gt_row gt_right" headers="Florida  s(Hur100_fqcy) p < 0.05 (%)">32</td>
+<td class="gt_row gt_right" headers="Florida  s(δT) p < 0.05 (%)">5</td>
+<td class="gt_row gt_right" headers="Florida  s(TC frequency) p < 0.05 (%)">32</td>
 </tr>
 <tr class="gt_group_heading_row odd">
 <th colspan="9" id="Belize" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">Belize</th>
@@ -10812,10 +10812,10 @@ $minutes
 <td class="gt_row gt_left" headers="Belize  Top model (share)">M4_av (39 %)</td>
 <td class="gt_row gt_right" headers="Belize  dAIC vs s(age) > 2 (%)">90</td>
 <td class="gt_row gt_left" headers="Belize  dAIC vs s(age), median [95 %]">6.7 [0.2, 32.5]</td>
-<td class="gt_row gt_right" headers="Belize  s(Hur100_av) p < 0.05 (%)">9</td>
+<td class="gt_row gt_right" headers="Belize  s(smoothed TC frequency) p < 0.05 (%)">9</td>
 <td class="gt_row gt_right" headers="Belize  s(temperature anomaly) p < 0.05 (%)">70</td>
-<td class="gt_row gt_right" headers="Belize  s(dT_raw) p < 0.05 (%)">36</td>
-<td class="gt_row gt_right" headers="Belize  s(Hur100_fqcy) p < 0.05 (%)">7</td>
+<td class="gt_row gt_right" headers="Belize  s(δT) p < 0.05 (%)">36</td>
+<td class="gt_row gt_right" headers="Belize  s(TC frequency) p < 0.05 (%)">7</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_center" headers="Belize  Scenario">Sampling</td>
@@ -10823,10 +10823,10 @@ $minutes
 <td class="gt_row gt_left" headers="Belize  Top model (share)">M4_fqcy (29 %)</td>
 <td class="gt_row gt_right" headers="Belize  dAIC vs s(age) > 2 (%)">44</td>
 <td class="gt_row gt_left" headers="Belize  dAIC vs s(age), median [95 %]">1.1 [0.0, 18.0]</td>
-<td class="gt_row gt_right" headers="Belize  s(Hur100_av) p < 0.05 (%)">13</td>
+<td class="gt_row gt_right" headers="Belize  s(smoothed TC frequency) p < 0.05 (%)">13</td>
 <td class="gt_row gt_right" headers="Belize  s(temperature anomaly) p < 0.05 (%)">19</td>
-<td class="gt_row gt_right" headers="Belize  s(dT_raw) p < 0.05 (%)">19</td>
-<td class="gt_row gt_right" headers="Belize  s(Hur100_fqcy) p < 0.05 (%)">12</td>
+<td class="gt_row gt_right" headers="Belize  s(δT) p < 0.05 (%)">19</td>
+<td class="gt_row gt_right" headers="Belize  s(TC frequency) p < 0.05 (%)">12</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_center" headers="Belize  Scenario">Both</td>
@@ -10834,10 +10834,10 @@ $minutes
 <td class="gt_row gt_left" headers="Belize  Top model (share)">M4_av (28 %)</td>
 <td class="gt_row gt_right" headers="Belize  dAIC vs s(age) > 2 (%)">42</td>
 <td class="gt_row gt_left" headers="Belize  dAIC vs s(age), median [95 %]">1.1 [0.0, 25.3]</td>
-<td class="gt_row gt_right" headers="Belize  s(Hur100_av) p < 0.05 (%)">14</td>
+<td class="gt_row gt_right" headers="Belize  s(smoothed TC frequency) p < 0.05 (%)">14</td>
 <td class="gt_row gt_right" headers="Belize  s(temperature anomaly) p < 0.05 (%)">18</td>
-<td class="gt_row gt_right" headers="Belize  s(dT_raw) p < 0.05 (%)">20</td>
-<td class="gt_row gt_right" headers="Belize  s(Hur100_fqcy) p < 0.05 (%)">12</td>
+<td class="gt_row gt_right" headers="Belize  s(δT) p < 0.05 (%)">20</td>
+<td class="gt_row gt_right" headers="Belize  s(TC frequency) p < 0.05 (%)">12</td>
 </tr>
 <tr class="gt_group_heading_row odd">
 <th colspan="9" id="Saint Croix" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">Saint Croix</th>
@@ -10848,10 +10848,10 @@ $minutes
 <td class="gt_row gt_left" headers="Saint Croix  Top model (share)">M4_av (36 %)</td>
 <td class="gt_row gt_right" headers="Saint Croix  dAIC vs s(age) > 2 (%)">50</td>
 <td class="gt_row gt_left" headers="Saint Croix  dAIC vs s(age), median [95 %]">2.0 [0.0, 45.8]</td>
-<td class="gt_row gt_right" headers="Saint Croix  s(Hur100_av) p < 0.05 (%)">16</td>
+<td class="gt_row gt_right" headers="Saint Croix  s(smoothed TC frequency) p < 0.05 (%)">16</td>
 <td class="gt_row gt_right" headers="Saint Croix  s(temperature anomaly) p < 0.05 (%)">21</td>
-<td class="gt_row gt_right" headers="Saint Croix  s(dT_raw) p < 0.05 (%)">26</td>
-<td class="gt_row gt_right" headers="Saint Croix  s(Hur100_fqcy) p < 0.05 (%)">15</td>
+<td class="gt_row gt_right" headers="Saint Croix  s(δT) p < 0.05 (%)">26</td>
+<td class="gt_row gt_right" headers="Saint Croix  s(TC frequency) p < 0.05 (%)">15</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_center" headers="Saint Croix  Scenario">Sampling</td>
@@ -10859,10 +10859,10 @@ $minutes
 <td class="gt_row gt_left" headers="Saint Croix  Top model (share)">M3 (29 %)</td>
 <td class="gt_row gt_right" headers="Saint Croix  dAIC vs s(age) > 2 (%)">53</td>
 <td class="gt_row gt_left" headers="Saint Croix  dAIC vs s(age), median [95 %]">2.3 [0.0, 17.7]</td>
-<td class="gt_row gt_right" headers="Saint Croix  s(Hur100_av) p < 0.05 (%)">28</td>
+<td class="gt_row gt_right" headers="Saint Croix  s(smoothed TC frequency) p < 0.05 (%)">28</td>
 <td class="gt_row gt_right" headers="Saint Croix  s(temperature anomaly) p < 0.05 (%)">15</td>
-<td class="gt_row gt_right" headers="Saint Croix  s(dT_raw) p < 0.05 (%)">25</td>
-<td class="gt_row gt_right" headers="Saint Croix  s(Hur100_fqcy) p < 0.05 (%)">19</td>
+<td class="gt_row gt_right" headers="Saint Croix  s(δT) p < 0.05 (%)">25</td>
+<td class="gt_row gt_right" headers="Saint Croix  s(TC frequency) p < 0.05 (%)">19</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_center" headers="Saint Croix  Scenario">Both</td>
@@ -10870,10 +10870,10 @@ $minutes
 <td class="gt_row gt_left" headers="Saint Croix  Top model (share)">M3 (31 %)</td>
 <td class="gt_row gt_right" headers="Saint Croix  dAIC vs s(age) > 2 (%)">43</td>
 <td class="gt_row gt_left" headers="Saint Croix  dAIC vs s(age), median [95 %]">1.1 [0.0, 20.0]</td>
-<td class="gt_row gt_right" headers="Saint Croix  s(Hur100_av) p < 0.05 (%)">22</td>
+<td class="gt_row gt_right" headers="Saint Croix  s(smoothed TC frequency) p < 0.05 (%)">22</td>
 <td class="gt_row gt_right" headers="Saint Croix  s(temperature anomaly) p < 0.05 (%)">21</td>
-<td class="gt_row gt_right" headers="Saint Croix  s(dT_raw) p < 0.05 (%)">22</td>
-<td class="gt_row gt_right" headers="Saint Croix  s(Hur100_fqcy) p < 0.05 (%)">19</td>
+<td class="gt_row gt_right" headers="Saint Croix  s(δT) p < 0.05 (%)">22</td>
+<td class="gt_row gt_right" headers="Saint Croix  s(TC frequency) p < 0.05 (%)">19</td>
 </tr>
 <tr class="gt_group_heading_row odd">
 <th colspan="9" id="Regional" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">Regional</th>
@@ -10884,10 +10884,10 @@ $minutes
 <td class="gt_row gt_left" headers="Regional  Top model (share)">M4_av (34 %)</td>
 <td class="gt_row gt_right" headers="Regional  dAIC vs s(age) > 2 (%)">99</td>
 <td class="gt_row gt_left" headers="Regional  dAIC vs s(age), median [95 %]">16.2 [6.2, 35.4]</td>
-<td class="gt_row gt_right" headers="Regional  s(Hur100_av) p < 0.05 (%)">32</td>
+<td class="gt_row gt_right" headers="Regional  s(smoothed TC frequency) p < 0.05 (%)">32</td>
 <td class="gt_row gt_right" headers="Regional  s(temperature anomaly) p < 0.05 (%)">78</td>
-<td class="gt_row gt_right" headers="Regional  s(dT_raw) p < 0.05 (%)">27</td>
-<td class="gt_row gt_right" headers="Regional  s(Hur100_fqcy) p < 0.05 (%)">20</td>
+<td class="gt_row gt_right" headers="Regional  s(δT) p < 0.05 (%)">27</td>
+<td class="gt_row gt_right" headers="Regional  s(TC frequency) p < 0.05 (%)">20</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_center" headers="Regional  Scenario">Sampling</td>
@@ -10895,10 +10895,10 @@ $minutes
 <td class="gt_row gt_left" headers="Regional  Top model (share)">M4_av (43 %)</td>
 <td class="gt_row gt_right" headers="Regional  dAIC vs s(age) > 2 (%)">91</td>
 <td class="gt_row gt_left" headers="Regional  dAIC vs s(age), median [95 %]">10.8 [0.0, 31.3]</td>
-<td class="gt_row gt_right" headers="Regional  s(Hur100_av) p < 0.05 (%)">42</td>
+<td class="gt_row gt_right" headers="Regional  s(smoothed TC frequency) p < 0.05 (%)">42</td>
 <td class="gt_row gt_right" headers="Regional  s(temperature anomaly) p < 0.05 (%)">67</td>
-<td class="gt_row gt_right" headers="Regional  s(dT_raw) p < 0.05 (%)">23</td>
-<td class="gt_row gt_right" headers="Regional  s(Hur100_fqcy) p < 0.05 (%)">17</td>
+<td class="gt_row gt_right" headers="Regional  s(δT) p < 0.05 (%)">23</td>
+<td class="gt_row gt_right" headers="Regional  s(TC frequency) p < 0.05 (%)">17</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_center" headers="Regional  Scenario">Both</td>
@@ -10906,10 +10906,10 @@ $minutes
 <td class="gt_row gt_left" headers="Regional  Top model (share)">M4_av (34 %)</td>
 <td class="gt_row gt_right" headers="Regional  dAIC vs s(age) > 2 (%)">87</td>
 <td class="gt_row gt_left" headers="Regional  dAIC vs s(age), median [95 %]">10.9 [0.0, 32.2]</td>
-<td class="gt_row gt_right" headers="Regional  s(Hur100_av) p < 0.05 (%)">30</td>
+<td class="gt_row gt_right" headers="Regional  s(smoothed TC frequency) p < 0.05 (%)">30</td>
 <td class="gt_row gt_right" headers="Regional  s(temperature anomaly) p < 0.05 (%)">53</td>
-<td class="gt_row gt_right" headers="Regional  s(dT_raw) p < 0.05 (%)">36</td>
-<td class="gt_row gt_right" headers="Regional  s(Hur100_fqcy) p < 0.05 (%)">18</td>
+<td class="gt_row gt_right" headers="Regional  s(δT) p < 0.05 (%)">36</td>
+<td class="gt_row gt_right" headers="Regional  s(TC frequency) p < 0.05 (%)">18</td>
 </tr>
 </tbody>
 </table>
@@ -10919,11 +10919,11 @@ $minutes
 </div>
 <p><strong>Supplementary Table S12. Propagation of age and sampling uncertainty to the combined GAMs</strong> (output above). For each panel and scenario: number of replicates, model selected most often among M1-M4 (the candidates without categorical regimes; the selected M6 and M7 models are not refitted) and its share, percentage of replicates in which that model improves on <code>s(age)</code> by more than 2 AIC units, median and 95 % range of that improvement, and percentage of replicates in which each climate smooth is significant (<em>p</em> &lt; 0.05) in its M4 model.</p>
 <ul>
-<li><strong>The modern peak (a).</strong> Removing the youngest bin (0-0.1 ka) removes most of the AIC advantage of the selected model over <code>s(age)</code> in Punta Maroma (from 49.8 to 3.0 AIC units) and all of it in the regional composite (from 20.1 to −1.9). In these two panels, therefore, the support for the selected models (s(dT_raw) in Punta Maroma, hurricane regime in the regional composite) depends on the last century, which holds the frequency maximum of both series and is one of the two bins of the “high” hurricane regime. In Belize the advantage is unchanged (4.0 → 5.3) and s(temperature anomaly) remains significant. In Florida the advantage increases (2.6 → 4.6) and both climate smooths remain significant. In Saint Croix it disappears (2.6 → 0.0). The table reports the significance of smooth terms only, and both models are fitted with <code>select = TRUE</code>, so the improvements differ from the ΔAIC vs <code>s(age)</code> of Section 4.6.</li>
+<li><strong>The modern peak (a).</strong> Removing the youngest bin (0-0.1 ka) removes most of the AIC advantage of the selected model over <code>s(age)</code> in Punta Maroma (from 49.8 to 3.0 AIC units) and all of it in the regional composite (from 20.1 to −1.9). In these two panels, therefore, the support for the selected models (s(δT) in Punta Maroma, hurricane regime in the regional composite) depends on the last century, which holds the frequency maximum of both series and is one of the two bins of the “high” hurricane regime. In Belize the advantage is unchanged (4.0 → 5.3) and s(temperature anomaly) remains significant. In Florida the advantage increases (2.6 → 4.6) and both climate smooths remain significant. In Saint Croix it disappears (2.6 → 0.0). The table reports the significance of smooth terms only, and both models are fitted with <code>select = TRUE</code>, so the improvements differ from the ΔAIC vs <code>s(age)</code> of Section 4.6.</li>
 <li><strong>Information criterion (c).</strong> AICc, which penalizes complexity more strongly in small samples, selects the same model as AIC in four panels. In Saint Croix it selects M4_fqcy, with the AIC-selected M4_av 1.56 AICc units behind.</li>
-<li><strong>Bin width and phase (d).</strong> This analysis compares only the candidates without categorical regimes (M1-M4), because the regimes are not rebuilt for other bin widths. With 0.2-ka bins, starting at 0 or at 0.1 ka, s(dT_raw) is significant in M4_av in both phases in Punta Maroma (<em>p</em> &lt; 10⁻⁴), Belize (<em>p</em> ≤ 0.010) and the regional composite (<em>p</em> ≤ 0.026), whereas s(temperature anomaly) is significant in only one phase in Punta Maroma (<em>p</em> = 0.032) and in Belize (<em>p</em> = 4.0 × 10⁻⁵), and in neither phase in the regional composite. The best model improves on <code>s(age)</code> by 32-35 AIC units in Punta Maroma, 14-24 in Belize and 4-22 in the regional composite. No hurricane smooth is significant in any panel or phase. Florida shows no consistent climate effect, and in Saint Croix the result changes with the phase. With 0.2-ka bins the two modern centuries form a single bin, so these fits do not separate the δT smooth from the modern maximum either.</li>
+<li><strong>Bin width and phase (d).</strong> This analysis compares only the candidates without categorical regimes (M1-M4), because the regimes are not rebuilt for other bin widths. With 0.2-ka bins, starting at 0 or at 0.1 ka, s(δT) is significant in M4_av in both phases in Punta Maroma (<em>p</em> &lt; 10⁻⁴), Belize (<em>p</em> ≤ 0.010) and the regional composite (<em>p</em> ≤ 0.026), whereas s(temperature anomaly) is significant in only one phase in Punta Maroma (<em>p</em> = 0.032) and in Belize (<em>p</em> = 4.0 × 10⁻⁵), and in neither phase in the regional composite. The best model improves on <code>s(age)</code> by 32-35 AIC units in Punta Maroma, 14-24 in Belize and 4-22 in the regional composite. No hurricane smooth is significant in any panel or phase. Florida shows no consistent climate effect, and in Saint Croix the result changes with the phase. With 0.2-ka bins the two modern centuries form a single bin, so these fits do not separate the δT smooth from the modern maximum either.</li>
 <li><strong>Regional composite without Saint Croix (b).</strong> Without Saint Croix the composite has 55 bins instead of 57. The best marginal model is again the hurricane-regime model (M_hur, weight 0.77). The selected combined model changes from M7_av to M6_av (weight 0.24; deviance explained 47.3 % vs 48.9 %), with M7_av 0.79 AIC units behind. In M6_av s(age) and s(temperature anomaly) are significant (<em>p</em> &lt; 10⁻⁴), whereas the thermal regime is not (<em>p</em> = 0.084). The marginal hurricane-regime association of the composite therefore does not depend on Saint Croix, but the choice between the combined models with and without the hurricane regime does.</li>
-<li><strong>Age and sampling uncertainty (e).</strong> Of 300 replicates per scenario, two age replicates failed to fit and were dropped (298 retained). Because only M1-M4 are refitted, this analysis tests the continuous predictors, not the categorical regimes. In Punta Maroma and the regional composite the best of M1-M4 improves on <code>s(age)</code> by more than 2 AIC units in 87-100 % of the replicates. s(temperature anomaly) is the most consistently significant smooth (53-81 %), s(dT_raw) is significant in 22-41 % and s(Hur100_av) in 30-79 %. Age uncertainty alone moves these results less than resampling of the records (Punta Maroma: improvement 45.8 [21.3, 60.5] AIC units, against 13.4 [0.3, 45.4] under resampling), because their chronology is dominated by U-Th ages or, in the composite, averaged over four sites; sampling is the larger source of uncertainty. In Belize the improvement exceeds 2 AIC units in 90 % of the age replicates (s(temperature anomaly) significant in 70 %), but in 42-44 % when the records are resampled (s(temperature anomaly) significant in 18-19 %): with 39 records, the Belize result depends on which fossils were dated. In Florida the improvement exceeds 2 units in 77 % of the age replicates (s(Hur100_fqcy) significant in 75 %), but in 27-36 % under resampling (s(Hur100_fqcy) significant in 19-32 %). In Saint Croix the climate models improve on <code>s(age)</code> in 43-53 % of the replicates and no climate term is significant in more than 28 % of them.</li>
+<li><strong>Age and sampling uncertainty (e).</strong> Of 300 replicates per scenario, two age replicates failed to fit and were dropped (298 retained). Because only M1-M4 are refitted, this analysis tests the continuous predictors, not the categorical regimes. In Punta Maroma and the regional composite the best of M1-M4 improves on <code>s(age)</code> by more than 2 AIC units in 87-100 % of the replicates. s(temperature anomaly) is the most consistently significant smooth (53-81 %), s(δT) is significant in 22-41 % and s(smoothed TC frequency) in 30-79 %. Age uncertainty alone moves these results less than resampling of the records (Punta Maroma: improvement 45.8 [21.3, 60.5] AIC units, against 13.4 [0.3, 45.4] under resampling), because their chronology is dominated by U-Th ages or, in the composite, averaged over four sites; sampling is the larger source of uncertainty. In Belize the improvement exceeds 2 AIC units in 90 % of the age replicates (s(temperature anomaly) significant in 70 %), but in 42-44 % when the records are resampled (s(temperature anomaly) significant in 18-19 %): with 39 records, the Belize result depends on which fossils were dated. In Florida the improvement exceeds 2 units in 77 % of the age replicates (s(TC frequency) significant in 75 %), but in 27-36 % under resampling (s(TC frequency) significant in 19-32 %). In Saint Croix the climate models improve on <code>s(age)</code> in 43-53 % of the replicates and no climate term is significant in more than 28 % of them.</li>
 </ul>
 </section>
 </section>
@@ -12046,7 +12046,7 @@ $minutes
 <tr class="even">
 <td class="gt_row gt_center" headers="Punta Maroma  Type">Combined</td>
 <td class="gt_row gt_left" headers="Punta Maroma  Model">M3</td>
-<td class="gt_row gt_left" headers="Punta Maroma  Term">s(dT_raw)</td>
+<td class="gt_row gt_left" headers="Punta Maroma  Term">s(δT)</td>
 <td class="gt_row gt_left" headers="Punta Maroma  p (all data)">&lt;1e-04</td>
 <td class="gt_row gt_right" headers="Punta Maroma  Largest p (drop-one)">0.94</td>
 <td class="gt_row gt_right" headers="Punta Maroma  Century removed (ka)">3.9</td>
@@ -12058,7 +12058,7 @@ $minutes
 <tr class="gt_row_group_first even">
 <td class="gt_row gt_center" headers="Florida  Type">Marginal</td>
 <td class="gt_row gt_left" headers="Florida  Model">M_hf</td>
-<td class="gt_row gt_left" headers="Florida  Term">s(Hur100_fqcy)</td>
+<td class="gt_row gt_left" headers="Florida  Term">s(TC frequency)</td>
 <td class="gt_row gt_left" headers="Florida  p (all data)">0.056</td>
 <td class="gt_row gt_right" headers="Florida  Largest p (drop-one)">0.12</td>
 <td class="gt_row gt_right" headers="Florida  Century removed (ka)">5.9</td>
@@ -12076,7 +12076,7 @@ $minutes
 <tr class="even">
 <td class="gt_row gt_center" headers="Florida  Type">Combined</td>
 <td class="gt_row gt_left" headers="Florida  Model">M4_fqcy</td>
-<td class="gt_row gt_left" headers="Florida  Term">s(dT_raw)</td>
+<td class="gt_row gt_left" headers="Florida  Term">s(δT)</td>
 <td class="gt_row gt_left" headers="Florida  p (all data)">0.4</td>
 <td class="gt_row gt_right" headers="Florida  Largest p (drop-one)">0.71</td>
 <td class="gt_row gt_right" headers="Florida  Century removed (ka)">0.1</td>
@@ -12085,7 +12085,7 @@ $minutes
 <tr class="odd">
 <td class="gt_row gt_center" headers="Florida  Type">Combined</td>
 <td class="gt_row gt_left" headers="Florida  Model">M4_fqcy</td>
-<td class="gt_row gt_left" headers="Florida  Term">s(Hur100_fqcy)</td>
+<td class="gt_row gt_left" headers="Florida  Term">s(TC frequency)</td>
 <td class="gt_row gt_left" headers="Florida  p (all data)">0.035</td>
 <td class="gt_row gt_right" headers="Florida  Largest p (drop-one)">0.13</td>
 <td class="gt_row gt_right" headers="Florida  Century removed (ka)">3.2</td>
@@ -12115,7 +12115,7 @@ $minutes
 <tr class="odd">
 <td class="gt_row gt_center" headers="Belize  Type">Combined</td>
 <td class="gt_row gt_left" headers="Belize  Model">M4_av</td>
-<td class="gt_row gt_left" headers="Belize  Term">s(dT_raw)</td>
+<td class="gt_row gt_left" headers="Belize  Term">s(δT)</td>
 <td class="gt_row gt_left" headers="Belize  p (all data)">0.44</td>
 <td class="gt_row gt_right" headers="Belize  Largest p (drop-one)">0.92</td>
 <td class="gt_row gt_right" headers="Belize  Century removed (ka)">0.4</td>
@@ -12124,7 +12124,7 @@ $minutes
 <tr class="even">
 <td class="gt_row gt_center" headers="Belize  Type">Combined</td>
 <td class="gt_row gt_left" headers="Belize  Model">M4_av</td>
-<td class="gt_row gt_left" headers="Belize  Term">s(Hur100_av)</td>
+<td class="gt_row gt_left" headers="Belize  Term">s(smoothed TC frequency)</td>
 <td class="gt_row gt_left" headers="Belize  p (all data)">0.7</td>
 <td class="gt_row gt_right" headers="Belize  Largest p (drop-one)">0.91</td>
 <td class="gt_row gt_right" headers="Belize  Century removed (ka)">0.2</td>
@@ -12136,7 +12136,7 @@ $minutes
 <tr class="gt_row_group_first even">
 <td class="gt_row gt_center" headers="Saint Croix  Type">Marginal</td>
 <td class="gt_row gt_left" headers="Saint Croix  Model">M_hav</td>
-<td class="gt_row gt_left" headers="Saint Croix  Term">s(Hur100_av)</td>
+<td class="gt_row gt_left" headers="Saint Croix  Term">s(smoothed TC frequency)</td>
 <td class="gt_row gt_left" headers="Saint Croix  p (all data)">0.076</td>
 <td class="gt_row gt_right" headers="Saint Croix  Largest p (drop-one)">0.19</td>
 <td class="gt_row gt_right" headers="Saint Croix  Century removed (ka)">0.7</td>
@@ -12154,7 +12154,7 @@ $minutes
 <tr class="even">
 <td class="gt_row gt_center" headers="Saint Croix  Type">Combined</td>
 <td class="gt_row gt_left" headers="Saint Croix  Model">M4_av</td>
-<td class="gt_row gt_left" headers="Saint Croix  Term">s(dT_raw)</td>
+<td class="gt_row gt_left" headers="Saint Croix  Term">s(δT)</td>
 <td class="gt_row gt_left" headers="Saint Croix  p (all data)">0.38</td>
 <td class="gt_row gt_right" headers="Saint Croix  Largest p (drop-one)">0.87</td>
 <td class="gt_row gt_right" headers="Saint Croix  Century removed (ka)">1.0</td>
@@ -12163,7 +12163,7 @@ $minutes
 <tr class="odd">
 <td class="gt_row gt_center" headers="Saint Croix  Type">Combined</td>
 <td class="gt_row gt_left" headers="Saint Croix  Model">M4_av</td>
-<td class="gt_row gt_left" headers="Saint Croix  Term">s(Hur100_av)</td>
+<td class="gt_row gt_left" headers="Saint Croix  Term">s(smoothed TC frequency)</td>
 <td class="gt_row gt_left" headers="Saint Croix  p (all data)">0.054</td>
 <td class="gt_row gt_right" headers="Saint Croix  Largest p (drop-one)">0.35</td>
 <td class="gt_row gt_right" headers="Saint Croix  Century removed (ka)">0.1</td>
@@ -12211,7 +12211,7 @@ $minutes
 <tr class="odd">
 <td class="gt_row gt_center" headers="Regional  Type">Combined</td>
 <td class="gt_row gt_left" headers="Regional  Model">M7_av</td>
-<td class="gt_row gt_left" headers="Regional  Term">s(dT_raw)</td>
+<td class="gt_row gt_left" headers="Regional  Term">s(δT)</td>
 <td class="gt_row gt_left" headers="Regional  p (all data)">0.72</td>
 <td class="gt_row gt_right" headers="Regional  Largest p (drop-one)">0.92</td>
 <td class="gt_row gt_right" headers="Regional  Century removed (ka)">4.7</td>
@@ -12220,7 +12220,7 @@ $minutes
 <tr class="even">
 <td class="gt_row gt_center" headers="Regional  Type">Combined</td>
 <td class="gt_row gt_left" headers="Regional  Model">M7_av</td>
-<td class="gt_row gt_left" headers="Regional  Term">s(Hur100_av)</td>
+<td class="gt_row gt_left" headers="Regional  Term">s(smoothed TC frequency)</td>
 <td class="gt_row gt_left" headers="Regional  p (all data)">0.47</td>
 <td class="gt_row gt_right" headers="Regional  Largest p (drop-one)">0.64</td>
 <td class="gt_row gt_right" headers="Regional  Century removed (ka)">0.1</td>
@@ -12235,7 +12235,7 @@ $minutes
 <ul>
 <li><strong>Cross-validation.</strong> Only the marginal thermal-regime model of Punta Maroma predicts better than the reference model in both versions (ΔELPD = 31.1 ± 23.0 in LOO, 26.3 ± 19.6 in h-block; 71 % of the centuries predicted better), and its summed differences are of the same order as their standard errors. The marginal hurricane-regime model of the regional composite is better in LOO (13.5 ± 12.8) but not in h-block (−9.6 ± 4.3). No selected combined model predicts better than the reference model (Punta Maroma, M3: −64.1 ± 35.5 and −83.2 ± 70.8; regional composite: −3.0 ± 9.0 and −40.3 ± 20.5; Belize: −7.6 ± 10.6 and −10.2 ± 9.7; Florida: 0.1 ± 2.4 and −2.2 ± 4.0), although they predict 58-71 % of the left-out centuries better; the losses are concentrated in a few centuries (worst: 0.2 ka in Punta Maroma and the regional composite, 5.2 ka in Belize). The competitive M6 models of Punta Maroma, which contain the thermal regime, do not predict better either (M6_av: −24.2 ± 20.4 and −87.3 ± 69.0). In Saint Croix no climate model is better than the reference model. With 19-57 centuries per panel, cross-validation does not discriminate firmly among models; the fitted models describe the sampled record and have limited predictive transferability beyond its climatic range.</li>
 <li><strong>Circular-shift test.</strong> The marginal models of Punta Maroma (thermal regime, <em>p</em> = 0.04) and of the regional composite (hurricane regime, <em>p</em> = 0.02, the smallest attainable) exceed nearly all or all shifted alignments, and so does the selected M3 of Punta Maroma (<em>p</em> = 0.02). The selected model of the regional composite does not reach α = 0.05 (<em>p</em> = 0.10). In Belize <em>p</em> = 0.16 (marginal) and 0.30 (combined), in Florida 0.08 and 0.40, and in Saint Croix 0.16 and 0.28: in these panels the observed alignment is not distinguishable from a shifted one at α = 0.05. The M3 of Punta Maroma thus aligns with the coral record better than shifted series do, but does not predict left-out centuries: its alignment rests on the youngest century (Section 4.5.2).</li>
-<li><strong>Drop-one influence.</strong> In Punta Maroma the marginal thermal regime remains significant in 97 % of the drop-one fits (largest <em>p</em> = 0.66, on removing 0.1 ka), whereas s(dT_raw) in M3 remains significant in only 42 % (largest <em>p</em> = 0.94). In the regional composite the hurricane regime remains significant in 98 % of the fits of both models (largest <em>p</em> = 0.065 and 0.083, on removing 0.1 ka). In Florida s(temperature anomaly) remains significant in every drop-one fit of the combined model (largest <em>p</em> = 0.037) and s(Hur100_fqcy) in 84 % (largest <em>p</em> = 0.13, on removing 3.2 ka); the marginal s(Hur100_fqcy) in 25 %. In Belize s(temperature anomaly) remains significant in 96 % of the combined fits (largest <em>p</em> = 0.050, on removing 0.2 ka), and the marginal hurricane regime in 13 %. The century with most influence on the regime terms of Punta Maroma and the regional composite is the youngest (0-0.1 ka), which is examined further in Section 4.5.2.</li>
+<li><strong>Drop-one influence.</strong> In Punta Maroma the marginal thermal regime remains significant in 97 % of the drop-one fits (largest <em>p</em> = 0.66, on removing 0.1 ka), whereas s(δT) in M3 remains significant in only 42 % (largest <em>p</em> = 0.94). In the regional composite the hurricane regime remains significant in 98 % of the fits of both models (largest <em>p</em> = 0.065 and 0.083, on removing 0.1 ka). In Florida s(temperature anomaly) remains significant in every drop-one fit of the combined model (largest <em>p</em> = 0.037) and s(TC frequency) in 84 % (largest <em>p</em> = 0.13, on removing 3.2 ka); the marginal s(TC frequency) in 25 %. In Belize s(temperature anomaly) remains significant in 96 % of the combined fits (largest <em>p</em> = 0.050, on removing 0.2 ka), and the marginal hurricane regime in 13 %. The century with most influence on the regime terms of Punta Maroma and the regional composite is the youngest (0-0.1 ka), which is examined further in Section 4.5.2.</li>
 <li><strong>Former cross-validation.</strong> Because the Regional panel contains the site records, every observation entered the training data twice, and the score was computed against the mean of 4-6 test values per panel and fold. When those values are nearly identical, as is common with 2-6 distinct response values per site, the denominator approaches zero and the score becomes very negative or undefined (median of fold means −13.6 in Punta Maroma; undefined folds in 11 and 20 of the 20 fold assignments in Belize and Saint Croix). Its results therefore do not measure the predictive performance of the site models, and the analysis is replaced by the cross-validation above.</li>
 </ul>
 <div class="cell">
@@ -13237,14 +13237,14 @@ Caused by warning in `min()`:
 <td class="gt_row gt_left" headers="BP, youngest bin to 1956 CE (main)  Selected">M3</td>
 <td class="gt_row gt_right" headers="BP, youngest bin to 1956 CE (main)  Weight">0.43</td>
 <td class="gt_row gt_right" headers="BP, youngest bin to 1956 CE (main)  DevExpl">90.2</td>
-<td class="gt_row gt_left" headers="BP, youngest bin to 1956 CE (main)  Significant">s(dT_raw) (p=&lt;1e-04)</td>
+<td class="gt_row gt_left" headers="BP, youngest bin to 1956 CE (main)  Significant">s(δT) (p=&lt;1e-04)</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="BP, youngest bin to 1956 CE (main)  Panel">Florida</td>
 <td class="gt_row gt_left" headers="BP, youngest bin to 1956 CE (main)  Selected">M4_fqcy</td>
 <td class="gt_row gt_right" headers="BP, youngest bin to 1956 CE (main)  Weight">0.21</td>
 <td class="gt_row gt_right" headers="BP, youngest bin to 1956 CE (main)  DevExpl">23.9</td>
-<td class="gt_row gt_left" headers="BP, youngest bin to 1956 CE (main)  Significant">s(temperature anomaly) (p=0.016); s(Hur100_fqcy) (p=0.035)</td>
+<td class="gt_row gt_left" headers="BP, youngest bin to 1956 CE (main)  Significant">s(temperature anomaly) (p=0.016); s(TC frequency) (p=0.035)</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="BP, youngest bin to 1956 CE (main)  Panel">Belize</td>
@@ -13275,7 +13275,7 @@ Caused by warning in `min()`:
 <td class="gt_row gt_left" headers="BP, youngest bin to 2022 CE  Selected">M4_av</td>
 <td class="gt_row gt_right" headers="BP, youngest bin to 2022 CE  Weight">0.54</td>
 <td class="gt_row gt_right" headers="BP, youngest bin to 2022 CE  DevExpl">91.9</td>
-<td class="gt_row gt_left" headers="BP, youngest bin to 2022 CE  Significant">s(dT_raw) (p=0.0016); s(Hur100_av) (p=&lt;1e-04)</td>
+<td class="gt_row gt_left" headers="BP, youngest bin to 2022 CE  Significant">s(δT) (p=0.0016); s(smoothed TC frequency) (p=&lt;1e-04)</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="BP, youngest bin to 2022 CE  Panel">Florida</td>
@@ -13296,7 +13296,7 @@ Caused by warning in `min()`:
 <td class="gt_row gt_left" headers="BP, youngest bin to 2022 CE  Selected">M4_av</td>
 <td class="gt_row gt_right" headers="BP, youngest bin to 2022 CE  Weight">0.45</td>
 <td class="gt_row gt_right" headers="BP, youngest bin to 2022 CE  DevExpl">57.4</td>
-<td class="gt_row gt_left" headers="BP, youngest bin to 2022 CE  Significant">s(Hur100_av) (p=0.031)</td>
+<td class="gt_row gt_left" headers="BP, youngest bin to 2022 CE  Significant">s(smoothed TC frequency) (p=0.031)</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="BP, youngest bin to 2022 CE  Panel">Regional</td>
@@ -13313,35 +13313,35 @@ Caused by warning in `min()`:
 <td class="gt_row gt_left" headers="Years before 2021 CE  Selected">M7_av</td>
 <td class="gt_row gt_right" headers="Years before 2021 CE  Weight">0.54</td>
 <td class="gt_row gt_right" headers="Years before 2021 CE  DevExpl">89.2</td>
-<td class="gt_row gt_left" headers="Years before 2021 CE  Significant">Hurricane (p=&lt;1e-04); s(dT_raw) (p=0.00015)</td>
+<td class="gt_row gt_left" headers="Years before 2021 CE  Significant">Hurricane (p=&lt;1e-04); s(δT) (p=0.00015)</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="Years before 2021 CE  Panel">Florida</td>
 <td class="gt_row gt_left" headers="Years before 2021 CE  Selected">M5_fqcy</td>
 <td class="gt_row gt_right" headers="Years before 2021 CE  Weight">0.52</td>
 <td class="gt_row gt_right" headers="Years before 2021 CE  DevExpl">52.4</td>
-<td class="gt_row gt_left" headers="Years before 2021 CE  Significant">s(temperature anomaly) (p=0.0036); s(Hur100_fqcy) (p=&lt;1e-04)</td>
+<td class="gt_row gt_left" headers="Years before 2021 CE  Significant">s(temperature anomaly) (p=0.0036); s(TC frequency) (p=&lt;1e-04)</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="Years before 2021 CE  Panel">Belize</td>
 <td class="gt_row gt_left" headers="Years before 2021 CE  Selected">M6_fqcy</td>
 <td class="gt_row gt_right" headers="Years before 2021 CE  Weight">0.57</td>
 <td class="gt_row gt_right" headers="Years before 2021 CE  DevExpl">66.1</td>
-<td class="gt_row gt_left" headers="Years before 2021 CE  Significant">Thermal (p=0.00063); s(Hur100_fqcy) (p=0.0071)</td>
+<td class="gt_row gt_left" headers="Years before 2021 CE  Significant">Thermal (p=0.00063); s(TC frequency) (p=0.0071)</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="Years before 2021 CE  Panel">Saint Croix</td>
 <td class="gt_row gt_left" headers="Years before 2021 CE  Selected">M4_fqcy</td>
 <td class="gt_row gt_right" headers="Years before 2021 CE  Weight">0.40</td>
 <td class="gt_row gt_right" headers="Years before 2021 CE  DevExpl">53.1</td>
-<td class="gt_row gt_left" headers="Years before 2021 CE  Significant">s(Hur100_fqcy) (p=0.0067)</td>
+<td class="gt_row gt_left" headers="Years before 2021 CE  Significant">s(TC frequency) (p=0.0067)</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="Years before 2021 CE  Panel">Regional</td>
 <td class="gt_row gt_left" headers="Years before 2021 CE  Selected">M7_av</td>
 <td class="gt_row gt_right" headers="Years before 2021 CE  Weight">0.50</td>
 <td class="gt_row gt_right" headers="Years before 2021 CE  DevExpl">58.7</td>
-<td class="gt_row gt_left" headers="Years before 2021 CE  Significant">Hurricane (p=0.0085); s(dT_raw) (p=0.00083)</td>
+<td class="gt_row gt_left" headers="Years before 2021 CE  Significant">Hurricane (p=0.0085); s(δT) (p=0.00083)</td>
 </tr>
 </tbody>
 </table>
@@ -13901,7 +13901,7 @@ Caused by warning in `min()`:
 </div>
 </div>
 </div>
-<p>Extending the youngest bin to 2022 CE keeps the hurricane regime of the regional composite (now in M7_fqcy; “high” +2.55) and the temperature smooth of Belize. In Punta Maroma the selected model changes to M4_av, in which s(dT_raw) and s(Hur100_av) are significant. Expressing every series in years before 2021 CE changes the selected model in every panel. The hurricane regime remains in the regional composite and enters the Punta Maroma model; the thermal regime enters the Belize model; and s(Hur100_fqcy) becomes significant in Florida, Belize and Saint Croix. In this frame the support no longer depends on the youngest bin (Punta Maroma 37.2 → 33.6 AIC units without it; regional composite 21.7 → 22.8). Corals and storms are aligned identically in the two frames; only the century boundaries move, by 71 years. A result that changes with that shift depends on the bin phase, which is tested directly in Section 4.7.2.</p>
+<p>Extending the youngest bin to 2022 CE keeps the hurricane regime of the regional composite (now in M7_fqcy; “high” +2.55) and the temperature smooth of Belize. In Punta Maroma the selected model changes to M4_av, in which s(δT) and s(smoothed TC frequency) are significant. Expressing every series in years before 2021 CE changes the selected model in every panel. The hurricane regime remains in the regional composite and enters the Punta Maroma model; the thermal regime enters the Belize model; and s(TC frequency) becomes significant in Florida, Belize and Saint Croix. In this frame the support no longer depends on the youngest bin (Punta Maroma 37.2 → 33.6 AIC units without it; regional composite 21.7 → 22.8). Corals and storms are aligned identically in the two frames; only the century boundaries move, by 71 years. A result that changes with that shift depends on the bin phase, which is tested directly in Section 4.7.2.</p>
 </section>
 <section id="bin-phase" class="level4">
 <h4 class="anchored" data-anchor-id="bin-phase">4.7.2 Bin phase</h4>
@@ -14365,8 +14365,8 @@ Caused by warning in `min()`:
 </tr>
 <tr class="gt_col_headings even">
 <th id="Panel" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">Panel</th>
-<th id="s(Hur100)-p<0.05,-marginal-(of-10)" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">s(Hur100) p&lt;0.05, marginal (of 10)</th>
-<th id="s(Hur100)-p<0.05,-selected-combined" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">s(Hur100) p&lt;0.05, selected combined</th>
+<th id="s(TC-metric)-p<0.05,-marginal-(of-10)" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">s(TC metric) p&lt;0.05, marginal (of 10)</th>
+<th id="s(TC-metric)-p<0.05,-selected-combined" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">s(TC metric) p&lt;0.05, selected combined</th>
 <th id="Hurricane-regime-p<0.05,-selected-combined" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Hurricane regime p&lt;0.05, selected combined</th>
 <th id="Thermal-regime-p<0.05,-selected-combined" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Thermal regime p&lt;0.05, selected combined</th>
 <th id="dAIC-selected-vs-s(age),-range" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">dAIC selected vs s(age), range</th>
@@ -14375,40 +14375,40 @@ Caused by warning in `min()`:
 <tbody class="gt_table_body">
 <tr class="odd">
 <td class="gt_row gt_center" headers="Panel">Punta Maroma</td>
-<td class="gt_row gt_right" headers="s(Hur100) p<0.05, marginal (of 10)">3</td>
-<td class="gt_row gt_right" headers="s(Hur100) p<0.05, selected combined">2</td>
+<td class="gt_row gt_right" headers="s(TC metric) p<0.05, marginal (of 10)">3</td>
+<td class="gt_row gt_right" headers="s(TC metric) p<0.05, selected combined">2</td>
 <td class="gt_row gt_right" headers="Hurricane regime p<0.05, selected combined">6</td>
 <td class="gt_row gt_right" headers="Thermal regime p<0.05, selected combined">5</td>
 <td class="gt_row gt_left" headers="dAIC selected vs s(age), range">15.3 to 61.1</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_center" headers="Panel">Florida</td>
-<td class="gt_row gt_right" headers="s(Hur100) p<0.05, marginal (of 10)">3</td>
-<td class="gt_row gt_right" headers="s(Hur100) p<0.05, selected combined">3</td>
+<td class="gt_row gt_right" headers="s(TC metric) p<0.05, marginal (of 10)">3</td>
+<td class="gt_row gt_right" headers="s(TC metric) p<0.05, selected combined">3</td>
 <td class="gt_row gt_right" headers="Hurricane regime p<0.05, selected combined">0</td>
 <td class="gt_row gt_right" headers="Thermal regime p<0.05, selected combined">0</td>
 <td class="gt_row gt_left" headers="dAIC selected vs s(age), range">0.0 to 9.8</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_center" headers="Panel">Belize</td>
-<td class="gt_row gt_right" headers="s(Hur100) p<0.05, marginal (of 10)">0</td>
-<td class="gt_row gt_right" headers="s(Hur100) p<0.05, selected combined">1</td>
+<td class="gt_row gt_right" headers="s(TC metric) p<0.05, marginal (of 10)">0</td>
+<td class="gt_row gt_right" headers="s(TC metric) p<0.05, selected combined">1</td>
 <td class="gt_row gt_right" headers="Hurricane regime p<0.05, selected combined">3</td>
 <td class="gt_row gt_right" headers="Thermal regime p<0.05, selected combined">8</td>
 <td class="gt_row gt_left" headers="dAIC selected vs s(age), range">2.7 to 32.0</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_center" headers="Panel">Saint Croix</td>
-<td class="gt_row gt_right" headers="s(Hur100) p<0.05, marginal (of 10)">1</td>
-<td class="gt_row gt_right" headers="s(Hur100) p<0.05, selected combined">6</td>
+<td class="gt_row gt_right" headers="s(TC metric) p<0.05, marginal (of 10)">1</td>
+<td class="gt_row gt_right" headers="s(TC metric) p<0.05, selected combined">6</td>
 <td class="gt_row gt_right" headers="Hurricane regime p<0.05, selected combined">4</td>
 <td class="gt_row gt_right" headers="Thermal regime p<0.05, selected combined">6</td>
 <td class="gt_row gt_left" headers="dAIC selected vs s(age), range">1.4 to 54.2</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_center" headers="Panel">Regional</td>
-<td class="gt_row gt_right" headers="s(Hur100) p<0.05, marginal (of 10)">2</td>
-<td class="gt_row gt_right" headers="s(Hur100) p<0.05, selected combined">1</td>
+<td class="gt_row gt_right" headers="s(TC metric) p<0.05, marginal (of 10)">2</td>
+<td class="gt_row gt_right" headers="s(TC metric) p<0.05, selected combined">1</td>
 <td class="gt_row gt_right" headers="Hurricane regime p<0.05, selected combined">6</td>
 <td class="gt_row gt_right" headers="Thermal regime p<0.05, selected combined">6</td>
 <td class="gt_row gt_left" headers="dAIC selected vs s(age), range">17.8 to 33.7</td>
@@ -15538,8 +15538,8 @@ Caused by warning in `min()`:
 <th id="Thermal-p-<-0.05-(%)" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Thermal p &lt; 0.05 (%)</th>
 <th id="Hurricane-regime-p-<-0.05-(%)" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Hurricane regime p &lt; 0.05 (%)</th>
 <th id="s(temperature-anomaly)-p-<-0.05-(%)" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">s(temperature anomaly) p &lt; 0.05 (%)</th>
-<th id="s(dT_raw)-p-<-0.05-(%)" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">s(dT_raw) p &lt; 0.05 (%)</th>
-<th id="s(Hur100)-p-<-0.05-(%)" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">s(Hur100) p &lt; 0.05 (%)</th>
+<th id="s(δT)-p-<-0.05-(%)" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">s(δT) p &lt; 0.05 (%)</th>
+<th id="s(TC-metric)-p-<-0.05-(%)" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">s(TC metric) p &lt; 0.05 (%)</th>
 </tr>
 </thead>
 <tbody class="gt_table_body">
@@ -15558,8 +15558,8 @@ Caused by warning in `min()`:
 <td class="gt_row gt_right" headers="Punta Maroma  Thermal p < 0.05 (%)">NaN</td>
 <td class="gt_row gt_right" headers="Punta Maroma  Hurricane regime p < 0.05 (%)">NaN</td>
 <td class="gt_row gt_right" headers="Punta Maroma  s(temperature anomaly) p < 0.05 (%)">42</td>
-<td class="gt_row gt_right" headers="Punta Maroma  s(dT_raw) p < 0.05 (%)">63</td>
-<td class="gt_row gt_right" headers="Punta Maroma  s(Hur100) p < 0.05 (%)">NaN</td>
+<td class="gt_row gt_right" headers="Punta Maroma  s(δT) p < 0.05 (%)">63</td>
+<td class="gt_row gt_right" headers="Punta Maroma  s(TC metric) p < 0.05 (%)">NaN</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_center" headers="Punta Maroma  Scenario">Sampling</td>
@@ -15573,8 +15573,8 @@ Caused by warning in `min()`:
 <td class="gt_row gt_right" headers="Punta Maroma  Thermal p < 0.05 (%)">NaN</td>
 <td class="gt_row gt_right" headers="Punta Maroma  Hurricane regime p < 0.05 (%)">NaN</td>
 <td class="gt_row gt_right" headers="Punta Maroma  s(temperature anomaly) p < 0.05 (%)">61</td>
-<td class="gt_row gt_right" headers="Punta Maroma  s(dT_raw) p < 0.05 (%)">35</td>
-<td class="gt_row gt_right" headers="Punta Maroma  s(Hur100) p < 0.05 (%)">NaN</td>
+<td class="gt_row gt_right" headers="Punta Maroma  s(δT) p < 0.05 (%)">35</td>
+<td class="gt_row gt_right" headers="Punta Maroma  s(TC metric) p < 0.05 (%)">NaN</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_center" headers="Punta Maroma  Scenario">Both</td>
@@ -15588,8 +15588,8 @@ Caused by warning in `min()`:
 <td class="gt_row gt_right" headers="Punta Maroma  Thermal p < 0.05 (%)">NaN</td>
 <td class="gt_row gt_right" headers="Punta Maroma  Hurricane regime p < 0.05 (%)">NaN</td>
 <td class="gt_row gt_right" headers="Punta Maroma  s(temperature anomaly) p < 0.05 (%)">63</td>
-<td class="gt_row gt_right" headers="Punta Maroma  s(dT_raw) p < 0.05 (%)">38</td>
-<td class="gt_row gt_right" headers="Punta Maroma  s(Hur100) p < 0.05 (%)">NaN</td>
+<td class="gt_row gt_right" headers="Punta Maroma  s(δT) p < 0.05 (%)">38</td>
+<td class="gt_row gt_right" headers="Punta Maroma  s(TC metric) p < 0.05 (%)">NaN</td>
 </tr>
 <tr class="gt_group_heading_row odd">
 <th colspan="13" id="Florida" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">Florida</th>
@@ -15606,8 +15606,8 @@ Caused by warning in `min()`:
 <td class="gt_row gt_right" headers="Florida  Thermal p < 0.05 (%)">NaN</td>
 <td class="gt_row gt_right" headers="Florida  Hurricane regime p < 0.05 (%)">NaN</td>
 <td class="gt_row gt_right" headers="Florida  s(temperature anomaly) p < 0.05 (%)">69</td>
-<td class="gt_row gt_right" headers="Florida  s(dT_raw) p < 0.05 (%)">3</td>
-<td class="gt_row gt_right" headers="Florida  s(Hur100) p < 0.05 (%)">75</td>
+<td class="gt_row gt_right" headers="Florida  s(δT) p < 0.05 (%)">3</td>
+<td class="gt_row gt_right" headers="Florida  s(TC metric) p < 0.05 (%)">75</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_center" headers="Florida  Scenario">Sampling</td>
@@ -15621,8 +15621,8 @@ Caused by warning in `min()`:
 <td class="gt_row gt_right" headers="Florida  Thermal p < 0.05 (%)">NaN</td>
 <td class="gt_row gt_right" headers="Florida  Hurricane regime p < 0.05 (%)">NaN</td>
 <td class="gt_row gt_right" headers="Florida  s(temperature anomaly) p < 0.05 (%)">12</td>
-<td class="gt_row gt_right" headers="Florida  s(dT_raw) p < 0.05 (%)">4</td>
-<td class="gt_row gt_right" headers="Florida  s(Hur100) p < 0.05 (%)">21</td>
+<td class="gt_row gt_right" headers="Florida  s(δT) p < 0.05 (%)">4</td>
+<td class="gt_row gt_right" headers="Florida  s(TC metric) p < 0.05 (%)">21</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_center" headers="Florida  Scenario">Both</td>
@@ -15636,8 +15636,8 @@ Caused by warning in `min()`:
 <td class="gt_row gt_right" headers="Florida  Thermal p < 0.05 (%)">NaN</td>
 <td class="gt_row gt_right" headers="Florida  Hurricane regime p < 0.05 (%)">NaN</td>
 <td class="gt_row gt_right" headers="Florida  s(temperature anomaly) p < 0.05 (%)">16</td>
-<td class="gt_row gt_right" headers="Florida  s(dT_raw) p < 0.05 (%)">5</td>
-<td class="gt_row gt_right" headers="Florida  s(Hur100) p < 0.05 (%)">30</td>
+<td class="gt_row gt_right" headers="Florida  s(δT) p < 0.05 (%)">5</td>
+<td class="gt_row gt_right" headers="Florida  s(TC metric) p < 0.05 (%)">30</td>
 </tr>
 <tr class="gt_group_heading_row odd">
 <th colspan="13" id="Belize" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">Belize</th>
@@ -15654,8 +15654,8 @@ Caused by warning in `min()`:
 <td class="gt_row gt_right" headers="Belize  Thermal p < 0.05 (%)">NaN</td>
 <td class="gt_row gt_right" headers="Belize  Hurricane regime p < 0.05 (%)">NaN</td>
 <td class="gt_row gt_right" headers="Belize  s(temperature anomaly) p < 0.05 (%)">70</td>
-<td class="gt_row gt_right" headers="Belize  s(dT_raw) p < 0.05 (%)">36</td>
-<td class="gt_row gt_right" headers="Belize  s(Hur100) p < 0.05 (%)">9</td>
+<td class="gt_row gt_right" headers="Belize  s(δT) p < 0.05 (%)">36</td>
+<td class="gt_row gt_right" headers="Belize  s(TC metric) p < 0.05 (%)">9</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_center" headers="Belize  Scenario">Sampling</td>
@@ -15669,8 +15669,8 @@ Caused by warning in `min()`:
 <td class="gt_row gt_right" headers="Belize  Thermal p < 0.05 (%)">NaN</td>
 <td class="gt_row gt_right" headers="Belize  Hurricane regime p < 0.05 (%)">NaN</td>
 <td class="gt_row gt_right" headers="Belize  s(temperature anomaly) p < 0.05 (%)">16</td>
-<td class="gt_row gt_right" headers="Belize  s(dT_raw) p < 0.05 (%)">18</td>
-<td class="gt_row gt_right" headers="Belize  s(Hur100) p < 0.05 (%)">11</td>
+<td class="gt_row gt_right" headers="Belize  s(δT) p < 0.05 (%)">18</td>
+<td class="gt_row gt_right" headers="Belize  s(TC metric) p < 0.05 (%)">11</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_center" headers="Belize  Scenario">Both</td>
@@ -15684,8 +15684,8 @@ Caused by warning in `min()`:
 <td class="gt_row gt_right" headers="Belize  Thermal p < 0.05 (%)">NaN</td>
 <td class="gt_row gt_right" headers="Belize  Hurricane regime p < 0.05 (%)">NaN</td>
 <td class="gt_row gt_right" headers="Belize  s(temperature anomaly) p < 0.05 (%)">14</td>
-<td class="gt_row gt_right" headers="Belize  s(dT_raw) p < 0.05 (%)">20</td>
-<td class="gt_row gt_right" headers="Belize  s(Hur100) p < 0.05 (%)">15</td>
+<td class="gt_row gt_right" headers="Belize  s(δT) p < 0.05 (%)">20</td>
+<td class="gt_row gt_right" headers="Belize  s(TC metric) p < 0.05 (%)">15</td>
 </tr>
 <tr class="gt_group_heading_row odd">
 <th colspan="13" id="Saint Croix" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">Saint Croix</th>
@@ -15702,8 +15702,8 @@ Caused by warning in `min()`:
 <td class="gt_row gt_right" headers="Saint Croix  Thermal p < 0.05 (%)">NaN</td>
 <td class="gt_row gt_right" headers="Saint Croix  Hurricane regime p < 0.05 (%)">NaN</td>
 <td class="gt_row gt_right" headers="Saint Croix  s(temperature anomaly) p < 0.05 (%)">21</td>
-<td class="gt_row gt_right" headers="Saint Croix  s(dT_raw) p < 0.05 (%)">26</td>
-<td class="gt_row gt_right" headers="Saint Croix  s(Hur100) p < 0.05 (%)">16</td>
+<td class="gt_row gt_right" headers="Saint Croix  s(δT) p < 0.05 (%)">26</td>
+<td class="gt_row gt_right" headers="Saint Croix  s(TC metric) p < 0.05 (%)">16</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_center" headers="Saint Croix  Scenario">Sampling</td>
@@ -15717,8 +15717,8 @@ Caused by warning in `min()`:
 <td class="gt_row gt_right" headers="Saint Croix  Thermal p < 0.05 (%)">NaN</td>
 <td class="gt_row gt_right" headers="Saint Croix  Hurricane regime p < 0.05 (%)">NaN</td>
 <td class="gt_row gt_right" headers="Saint Croix  s(temperature anomaly) p < 0.05 (%)">17</td>
-<td class="gt_row gt_right" headers="Saint Croix  s(dT_raw) p < 0.05 (%)">22</td>
-<td class="gt_row gt_right" headers="Saint Croix  s(Hur100) p < 0.05 (%)">26</td>
+<td class="gt_row gt_right" headers="Saint Croix  s(δT) p < 0.05 (%)">22</td>
+<td class="gt_row gt_right" headers="Saint Croix  s(TC metric) p < 0.05 (%)">26</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_center" headers="Saint Croix  Scenario">Both</td>
@@ -15732,8 +15732,8 @@ Caused by warning in `min()`:
 <td class="gt_row gt_right" headers="Saint Croix  Thermal p < 0.05 (%)">NaN</td>
 <td class="gt_row gt_right" headers="Saint Croix  Hurricane regime p < 0.05 (%)">NaN</td>
 <td class="gt_row gt_right" headers="Saint Croix  s(temperature anomaly) p < 0.05 (%)">11</td>
-<td class="gt_row gt_right" headers="Saint Croix  s(dT_raw) p < 0.05 (%)">19</td>
-<td class="gt_row gt_right" headers="Saint Croix  s(Hur100) p < 0.05 (%)">12</td>
+<td class="gt_row gt_right" headers="Saint Croix  s(δT) p < 0.05 (%)">19</td>
+<td class="gt_row gt_right" headers="Saint Croix  s(TC metric) p < 0.05 (%)">12</td>
 </tr>
 <tr class="gt_group_heading_row odd">
 <th colspan="13" id="Regional" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">Regional</th>
@@ -15750,8 +15750,8 @@ Caused by warning in `min()`:
 <td class="gt_row gt_right" headers="Regional  Thermal p < 0.05 (%)">14</td>
 <td class="gt_row gt_right" headers="Regional  Hurricane regime p < 0.05 (%)">100</td>
 <td class="gt_row gt_right" headers="Regional  s(temperature anomaly) p < 0.05 (%)">2</td>
-<td class="gt_row gt_right" headers="Regional  s(dT_raw) p < 0.05 (%)">10</td>
-<td class="gt_row gt_right" headers="Regional  s(Hur100) p < 0.05 (%)">15</td>
+<td class="gt_row gt_right" headers="Regional  s(δT) p < 0.05 (%)">10</td>
+<td class="gt_row gt_right" headers="Regional  s(TC metric) p < 0.05 (%)">15</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_center" headers="Regional  Scenario">Sampling</td>
@@ -15765,8 +15765,8 @@ Caused by warning in `min()`:
 <td class="gt_row gt_right" headers="Regional  Thermal p < 0.05 (%)">19</td>
 <td class="gt_row gt_right" headers="Regional  Hurricane regime p < 0.05 (%)">80</td>
 <td class="gt_row gt_right" headers="Regional  s(temperature anomaly) p < 0.05 (%)">5</td>
-<td class="gt_row gt_right" headers="Regional  s(dT_raw) p < 0.05 (%)">11</td>
-<td class="gt_row gt_right" headers="Regional  s(Hur100) p < 0.05 (%)">19</td>
+<td class="gt_row gt_right" headers="Regional  s(δT) p < 0.05 (%)">11</td>
+<td class="gt_row gt_right" headers="Regional  s(TC metric) p < 0.05 (%)">19</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_center" headers="Regional  Scenario">Both</td>
@@ -15780,8 +15780,8 @@ Caused by warning in `min()`:
 <td class="gt_row gt_right" headers="Regional  Thermal p < 0.05 (%)">25</td>
 <td class="gt_row gt_right" headers="Regional  Hurricane regime p < 0.05 (%)">79</td>
 <td class="gt_row gt_right" headers="Regional  s(temperature anomaly) p < 0.05 (%)">7</td>
-<td class="gt_row gt_right" headers="Regional  s(dT_raw) p < 0.05 (%)">11</td>
-<td class="gt_row gt_right" headers="Regional  s(Hur100) p < 0.05 (%)">19</td>
+<td class="gt_row gt_right" headers="Regional  s(δT) p < 0.05 (%)">11</td>
+<td class="gt_row gt_right" headers="Regional  s(TC metric) p < 0.05 (%)">19</td>
 </tr>
 </tbody>
 </table>
@@ -15789,7 +15789,7 @@ Caused by warning in `min()`:
 </div>
 </div>
 </div>
-<p>In Punta Maroma the model selected with the audited ages (M3) is the best model in only 33 % of the age replicates and in 2-4 % of those that resample the records, whereas a model with a regime is the best in 62-89 %. s(dT_raw) is significant within M3 in 35-63 % of the replicates. Because the recorded <em>p</em>-values are those of the selected model, which does not contain the thermal regime, the significance of that regime in the replicates is not recorded here (Section 4.7.5 gives a comparable test across temperature reconstructions). In the regional composite the hurricane regime is significant in 79-100 % of the replicates, a regime is in the best model in 77-90 % and s(Hur100_av) is significant in 15-19 %. At Belize, s(temperature anomaly) is significant in 70 % of the age replicates but in 14-16 % of those that resample the records, and M4_av is the best model in 9-16 %. In Florida, s(Hur100_fqcy) is significant in 75 % of the age replicates and in 21-30 % under resampling. The model selected with the audited ages is itself the best model in only 2-39 % of the replicates, so the identity of the selected model is uncertain, whereas the presence of a regime term in the best models of Punta Maroma and the regional composite is not.</p>
+<p>In Punta Maroma the model selected with the audited ages (M3) is the best model in only 33 % of the age replicates and in 2-4 % of those that resample the records, whereas a model with a regime is the best in 62-89 %. s(δT) is significant within M3 in 35-63 % of the replicates. Because the recorded <em>p</em>-values are those of the selected model, which does not contain the thermal regime, the significance of that regime in the replicates is not recorded here (Section 4.7.5 gives a comparable test across temperature reconstructions). In the regional composite the hurricane regime is significant in 79-100 % of the replicates, a regime is in the best model in 77-90 % and s(smoothed TC frequency) is significant in 15-19 %. At Belize, s(temperature anomaly) is significant in 70 % of the age replicates but in 14-16 % of those that resample the records, and M4_av is the best model in 9-16 %. In Florida, s(TC frequency) is significant in 75 % of the age replicates and in 21-30 % under resampling. The model selected with the audited ages is itself the best model in only 2-39 % of the replicates, so the identity of the selected model is uncertain, whereas the presence of a regime term in the best models of Punta Maroma and the regional composite is not.</p>
 </section>
 <section id="the-little-ice-age-contrast-of-punta-maroma" class="level4">
 <h4 class="anchored" data-anchor-id="the-little-ice-age-contrast-of-punta-maroma">4.7.4 The Little Ice Age contrast of Punta Maroma</h4>
@@ -17966,7 +17966,7 @@ Caused by warning in `min()`:
 </div>
 </div>
 </div>
-<p>With the median, the models reproduce the main analysis (Table 2). Across the 100 members the results fall into two groups. The categorical regimes are stable. In Punta Maroma the best combined model contains a regime with 76 % of the members (M6 with 73 %), a model with a regime lies within ΔAIC ≤ 2 of the best with 84 %, and the thermal regime is significant in the best model with 73 %; M3, selected with the median, is selected with only 2 % of the members. In the regional composite a regime is in the best model with 82 % of the members, and the hurricane regime is significant with 69 %. The continuous temperature terms are not stable. Across panels, s(temperature anomaly) is significant in the best model with 28-47 % of the members and s(dT_raw) with 19-36 %. In the marginal models s(dT_raw) is significant with 66 % of the members in Punta Maroma and 44 % in the regional composite, and s(temperature anomaly) with 79 % and 51 %. With member V1, the series of table v4 with the corrected δT definition, the selected models are M6_fqcy in Punta Maroma and M6_av in the regional composite. The median is smoother than any member, so its δT varies less from century to century and follows the long-term trend more closely; this explains why s(dT_raw) can replace <code>s(age)</code> with the median (Section 4.2) but rarely with individual members. The associations of the categorical regimes therefore do not depend on the temperature reconstruction, whereas those of the continuous temperature predictors do.</p>
+<p>With the median, the models reproduce the main analysis (Table 2). Across the 100 members the results fall into two groups. The categorical regimes are stable. In Punta Maroma the best combined model contains a regime with 76 % of the members (M6 with 73 %), a model with a regime lies within ΔAIC ≤ 2 of the best with 84 %, and the thermal regime is significant in the best model with 73 %; M3, selected with the median, is selected with only 2 % of the members. In the regional composite a regime is in the best model with 82 % of the members, and the hurricane regime is significant with 69 %. The continuous temperature terms are not stable. Across panels, s(temperature anomaly) is significant in the best model with 28-47 % of the members and s(δT) with 19-36 %. In the marginal models s(δT) is significant with 66 % of the members in Punta Maroma and 44 % in the regional composite, and s(temperature anomaly) with 79 % and 51 %. With member V1, the series of table v4 with the corrected δT definition, the selected models are M6_fqcy in Punta Maroma and M6_av in the regional composite. The median is smoother than any member, so its δT varies less from century to century and follows the long-term trend more closely; this explains why s(δT) can replace <code>s(age)</code> with the median (Section 4.2) but rarely with individual members. The associations of the categorical regimes therefore do not depend on the temperature reconstruction, whereas those of the continuous temperature predictors do.</p>
 </section>
 <section id="summary" class="level4">
 <h4 class="anchored" data-anchor-id="summary">4.7.6 Summary</h4>
