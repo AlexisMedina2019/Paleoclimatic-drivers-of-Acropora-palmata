@@ -873,7 +873,7 @@ pr <- ggplot(norm_stack, aes(x = age, y = counts_norm_sv, fill = spot)) +
   geom_col(position = "stack", width = 0.09, alpha = 0.85) +
   scale_fill_manual(values = custom_colors[site_levels], labels = site_labels,
                     breaks = site_levels) +
-  labs(x = "Time (ka BP)",
+  labs(x = "Age (ka BP)",
        y = "Relative frequency\n(stacked by site)",
        fill = "Site") +
   theme_minimal(base_size = 15) +
@@ -1016,7 +1016,7 @@ p4 <- ggplot(df_segments) +
   coord_cartesian(xlim = c(0, 6)) +
   theme_minimal(base_size = 14) +
   theme(legend.position = "none") +
-  labs(x = "Age (ka BP)", y = "Nominal Terms")
+  labs(x = "Age (ka BP)", y = "Regimes")
 
 ## panel letters (a-f) and a common time axis: only panels a and f show age labels
 Figure_3 <- ((pr + theme(legend.text = element_text(size = 11), legend.title = element_text(size = 12))) /
