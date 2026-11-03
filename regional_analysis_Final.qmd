@@ -3974,9 +3974,62 @@ cps_res %>% filter(member == "V1") %>%
 
 With the median, the models reproduce the main analysis (Table 2). Across the 100 members the results fall into two groups. The categorical regimes are stable. In Punta Maroma the best combined model contains a regime with 76 % of the members (M6 with 73 %), a model with a regime lies within ΔAIC ≤ 2 of the best with 84 %, and the thermal regime is significant in the best model with 73 %; M3, selected with the median, is selected with only 2 % of the members. In the regional composite a regime is in the best model with 82 % of the members, and the hurricane regime is significant with 69 %. The continuous temperature terms are not stable. Across panels, s(temperature anomaly) is significant in the best model with 28-47 % of the members and s(δT) with 19-36 %. In the marginal models s(δT) is significant with 66 % of the members in Punta Maroma and 44 % in the regional composite, and s(temperature anomaly) with 79 % and 51 %. With member V1, the series of table v4 with the corrected δT definition, the selected models are M6_fqcy in Punta Maroma and M6_av in the regional composite. The median is smoother than any member, so its δT varies less from century to century and follows the long-term trend more closely; this explains why s(δT) can replace `s(age)` with the median (Section 4.2) but rarely with individual members. The associations of the categorical regimes therefore do not depend on the temperature reconstruction, whereas those of the continuous temperature predictors do.
 
-#### 4.7.6 Summary
+#### 4.7.6 Reservoir correction of the Belize radiocarbon ages
 
-Across the five tests, two results are stable. First, the frequency of dated colonies is highest in the two most recent centuries, which coincide with the "high" hurricane regime of Schmitt et al. (2025) and with the warm modern regime. This association holds across bin phases, time references, age and sampling uncertainty and temperature reconstructions, but it rests on two bins and cannot be separated from recency bias. Second, at Punta Maroma the LIA bins have a lower frequency than the modern century that follows them, but not a lower one than earlier cool intervals. In Punta Maroma the δT smooth selected with the CPS median and the thermal regime of the competitive models describe the same modern contrast; the regime is retained when both are present, and the smooth is selected with only 2 % of the ensemble members. The continuous temperature and TC predictors are not robust to bin phase, to age and sampling uncertainty or to the choice of reconstruction, and no climatic predictor shows a consistent association before 0.2 ka.
+Added in round 3 (reviewer 2, L119-122). The Belize radiocarbon ages are calibrated with ΔR = −248 ± 35 ¹⁴C yr (Greer et al. 2020), a single estimate that is much more negative than the nearest entries of the Marine Reservoir Database. Here we recalibrate them with a regional value, −114 ± 70 ¹⁴C yr, the inverse-variance weighted mean of the ten nearest entries (Greer et al. 2020; Diaz-Castro et al. 2025), with their standard deviation as its uncertainty (column `t_sens_dR_regional_ka` of sheet `Trazabilidad`; Section 1.1). U-Th ages and the other sites are unchanged. The series of Belize and of the regional composite are rebuilt with `build_series()` (Section 4.5.2), and all marginal and combined candidates are refitted. The test was specified in round 2 and run in round 3 (2026-11-03).
+
+```{r round3-belize-dr, warning=FALSE, message=FALSE}
+## Belize reservoir correction: regional ΔR instead of Greer et al. (2020)
+trz <- read_excel(here("ages_kernel_reg_updt2.xlsx"), sheet = "Trazabilidad")
+bz_trz <- trz %>%
+  filter(spot == "Belize", group_updt2 == "palmata", keep == "yes") %>%
+  mutate(t_main = as.numeric(t_ka_updt2),
+         t_sens = as.numeric(ifelse(method == "14C", t_sens_dR_regional_ka, t_ka_updt2)))
+## check: with the main ΔR, these rows are exactly the Belize records of the models
+stopifnot(sum(bz_trz$t_main > -0.1 & bz_trz$t_main <= 6) == sum(recs$spot == "Belize"))
+recs_dr <- bind_rows(recs %>% filter(spot != "Belize") %>% select(spot, source, t_ka),
+                     bz_trz %>% transmute(spot = "Belize", source, t_ka = t_sens))
+ser_dr <- build_series(recs_dr)
+
+## shift of the Belize radiocarbon ages (0-6 ka) and records that enter or leave the window
+shift_bz <- bz_trz %>% filter(method == "14C", t_main <= 6 | t_sens <= 6) %>%
+  mutate(shift = t_main - t_sens, in_main = t_main <= 6, in_sens = t_sens <= 6,
+         bin_main = ceiling(round(t_main * 10, 6)) / 10, bin_sens = ceiling(round(t_sens * 10, 6)) / 10)
+dr_shift <- shift_bz %>%
+  summarise(`Radiocarbon ages` = sum(in_main | in_sens),
+            `Shift younger (ka)` = sprintf("%.2f-%.2f", min(shift), max(shift)),
+            `Ages that change bin` = sum(in_main & in_sens & bin_main != bin_sens),
+            `Ages that enter the 0-6 ka window` = paste(sample_site[!in_main & in_sens], collapse = ", "))
+
+dr_summary <- function(d, p, label, main_sel) {
+  marg <- compare_gams(fit_gams_panel(d, formulas_mg)) %>% arrange(AIC)
+  invisible(capture.output(res <- fit_combined_gams_safe(formulas_cb, d, paste(p, label))))
+  best <- get_best_combined(res)
+  pv   <- term_pvalues(best$fit); pv <- pv[names(pv) != "s(age)"]
+  dm   <- res$stats$deltaAIC[res$stats$Model == main_sel]
+  data.frame(Panel = p, `Belize ΔR` = label, Bins = nrow(d),
+             `Best marginal (weight)` = sprintf("%s (%.2f)", marg$Model[1], marg$weight[1]),
+             `Selected combined (weight)` = sprintf("%s (%.2f)", best$best_model, best$ranking$weight[1]),
+             `Climate terms p < 0.05` = if (any(pv < 0.05))
+               paste(sprintf("%s (p = %s)", names(pv)[pv < 0.05], signif(pv[pv < 0.05], 2)), collapse = "; ") else "none",
+             `ΔAIC of the main selected model` = if (length(dm)) round(dm, 2) else NA_real_,
+             check.names = FALSE)
+}
+dr_tbl <- bind_rows(lapply(c("Belize", "Regional"), function(p) {
+  main_sel <- if (p == "Belize") best_bz_cb$best_model else best_reg_cb$best_model
+  bind_rows(dr_summary(merged_df_g %>% filter(panel == p), p, "-248 ± 35 (main)", main_sel),
+            dr_summary(ser_dr %>% filter(panel == p), p, "-114 ± 70 (regional)", main_sel))
+}))
+dr_shift %>% gt() %>% tab_header(title = "Belize radiocarbon ages with the regional ΔR")
+dr_tbl %>% gt(groupname_col = "Panel") %>%
+  tab_header(title = "Belize and regional composite refitted with the regional ΔR for Belize")
+```
+
+With the regional ΔR, the 18 radiocarbon ages of Belize within 0-6 ka become 0.12-0.18 ka younger and all of them change bin, and one older age (BBR 8, 6.05 ka) enters the window, so the Belize series has 25 bins instead of 24. In Belize the selected model changes. The hurricane-regime model M7_fqcy is selected (Akaike weight 0.35), with the hurricane regime as its only significant climate term (*p* = 0.013; "high" +1.96 relative to "low", *p* = 0.011), and the model selected with the main ΔR, M4_av, lies 4.9 AIC units behind. The temperature anomaly, the only significant climate term of the main analysis, is not significant in the new selected model; in the marginal models it remains significant (*p* = 0.010) but lies 3.8 AIC units behind the hurricane-regime model, which is again the best marginal model. In the regional composite the hurricane regime remains the only significant term (*p* = 0.00053), and the model selected with the main ΔR, M7_av, lies 0.81 AIC units behind M7_fqcy. The association of Belize with the temperature anomaly therefore depends on the reservoir correction of its radiocarbon ages, whereas that of the composite with the hurricane regime does not.
+
+#### 4.7.7 Summary
+
+Across the five tests, two results are stable. First, the frequency of dated colonies is highest in the two most recent centuries, which coincide with the "high" hurricane regime of Schmitt et al. (2025) and with the warm modern regime. This association holds across bin phases, time references, age and sampling uncertainty and temperature reconstructions, but it rests on two bins and cannot be separated from recency bias. Second, at Punta Maroma the LIA bins have a lower frequency than the modern century that follows them, but not a lower one than earlier cool intervals. In Punta Maroma the δT smooth selected with the CPS median and the thermal regime of the competitive models describe the same modern contrast; the regime is retained when both are present, and the smooth is selected with only 2 % of the ensemble members. The continuous temperature and TC predictors are not robust to bin phase, to age and sampling uncertainty or to the choice of reconstruction, and no climatic predictor shows a consistent association before 0.2 ka. In Belize, the association with the temperature anomaly also depends on the reservoir correction of the radiocarbon ages (Section 4.7.6).
 
 ## Session information
 
