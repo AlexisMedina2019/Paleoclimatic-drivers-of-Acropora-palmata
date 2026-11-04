@@ -4027,9 +4027,50 @@ dr_tbl %>% gt(groupname_col = "Panel") %>%
 
 With the regional ΔR, the 18 radiocarbon ages of Belize within 0-6 ka become 0.12-0.18 ka younger and all of them change bin, and one older age (BBR 8, 6.05 ka) enters the window, so the Belize series has 25 bins instead of 24. In Belize the selected model changes. The hurricane-regime model M7_fqcy is selected (Akaike weight 0.35), with the hurricane regime as its only significant climate term (*p* = 0.013; "high" +1.96 relative to "low", *p* = 0.011), and the model selected with the main ΔR, M4_av, lies 4.9 AIC units behind. The temperature anomaly, the only significant climate term of the main analysis, is not significant in the new selected model; in the marginal models it remains significant (*p* = 0.010) but lies 3.8 AIC units behind the hurricane-regime model, which is again the best marginal model. In the regional composite the hurricane regime remains the only significant term (*p* = 0.00053), and the model selected with the main ΔR, M7_av, lies 0.81 AIC units behind M7_fqcy. The association of Belize with the temperature anomaly therefore depends on the reservoir correction of its radiocarbon ages, whereas that of the composite with the hurricane regime does not.
 
-#### 4.7.7 Summary
+#### 4.7.7 Which site produces the Little Ice Age low of the regional composite
 
-Across the five tests, two results are stable. First, the frequency of dated colonies is highest in the two most recent centuries, which coincide with the "high" hurricane regime of Schmitt et al. (2025) and with the warm modern regime. This association holds across bin phases, time references, age and sampling uncertainty and temperature reconstructions, but it rests on two bins and cannot be separated from recency bias. Second, at Punta Maroma the LIA bins have a lower frequency than the modern century that follows them, but not a lower one than earlier cool intervals. In Punta Maroma the δT smooth selected with the CPS median and the thermal regime of the competitive models describe the same modern contrast; the regime is retained when both are present, and the smooth is selected with only 2 % of the ensemble members. The continuous temperature and TC predictors are not robust to bin phase, to age and sampling uncertainty or to the choice of reconstruction, and no climatic predictor shows a consistent association before 0.2 ka. In Belize, the association with the temperature anomaly also depends on the reservoir correction of the radiocarbon ages (Section 4.7.6).
+Added in round 3 (Discussion, core-margin framework of Fig. 5). The regional composite sums the four site series after each has been normalized to its own maximum (Section 1.3), so a low in the composite can arise from a low at a single heavily weighted site while other sites show the opposite trend. To find which site produces the low-density interval of the composite at 0.31-0.58 ka (Section 2), we rebuild the composite four times, each time without one site, with the same normalization, weighting, bootstrap (1,000 resamples stratified by site), age envelope and low-density rule as in Section 2. With all four sites the weights reproduce those of the regional composite (checked in the code). We also report the mean density of each site in the modern bin, the Little Ice Age, the CWP-MWA and older bins, from the weighted KDE of Section 2.
+
+```{r round3-loo-composite, warning=FALSE, message=FALSE}
+## Leave-one-site-out composites: which site produces the regional low-density interval
+loo_comp <- function(drop) {
+  r <- recs %>% filter(!spot %in% drop)
+  bins <- r %>% group_by(age) %>% summarise(s = sum(w_site), .groups = "drop") %>%
+    mutate(cn = round(s / max(s), 4),  # as in normalize_counts()
+           cn_sv = ifelse(cn %in% c(0, 1), (cn * (n() - 1) + 0.5) / n(), cn),
+           w_reg = cn_sv / s)
+  r <- r %>% left_join(bins %>% select(age, w_reg), by = "age") %>% mutate(w = w_site * w_reg)
+  idx <- match(r$ID, recs$ID); stopifnot(!anyNA(idx))
+  ## check: with all four sites the weights are those of the regional composite (Section 2)
+  if (!length(drop)) stopifnot(max(abs(r$w - recs$w_regional[idx])) < 1e-3)
+  lab <- if (length(drop)) paste("Without", drop) else "All sites"
+  s   <- calc_density_summary(r$t_ka, r$w, lab, strata = r$spot)
+  sig <- cbind(s$signal_df, kde_age_env(idx, r$w))
+  ld  <- low_runs(sig$x, pmax(sig$q975, sig$age_q975) < 1 / 6)
+  lia <- s$centennial_summary %>% filter(interval_mid > 0.1, interval_mid < 0.7)
+  data.frame(Composite = lab,
+             `Low-density intervals (ka)` = if (nrow(ld)) paste(sprintf("%.2f-%.2f", ld$xmin, ld$xmax), collapse = "; ") else "none",
+             `Mean density, 0.1-0.7 ka` = round(mean(lia$density), 3),
+             `Minimum bin (ka)` = s$centennial_summary$interval_mid[which.min(s$centennial_summary$density)],
+             check.names = FALSE)
+}
+set.seed(20261104)
+loo_tbl <- bind_rows(lapply(list(character(0), "Florida", "Punta Maroma", "Belize", "Saint Croix"), loo_comp))
+## mean density of each site by climatic interval (Section 2 KDE)
+loo_sites <- centennial_density_all %>%
+  filter(spot != "Regional composite") %>%
+  mutate(Interval = cut(interval_mid, c(0, 0.1, 0.7, 1.3, 6), labels = c("Modern (0-0.1 ka)", "LIA (0.1-0.7 ka)", "CWP-MWA (0.7-1.3 ka)", "Older (1.3-6 ka)"))) %>%
+  group_by(Site = spot, Interval) %>% summarise(d = round(mean(density), 3), .groups = "drop") %>%
+  pivot_wider(names_from = Interval, values_from = d)
+loo_tbl %>% gt() %>% tab_header(title = "Regional composite rebuilt without each site")
+loo_sites %>% gt() %>% tab_header(title = "Mean density of each site by climatic interval (ka⁻¹; uniform = 0.167)")
+```
+
+The Little Ice Age low of the composite is produced by the Florida record. Without Florida no low-density interval falls in the Little Ice Age, the mean density at 0.1-0.7 ka rises from 0.142 to 0.206 ka⁻¹ (above the uniform density, 0.167), and the minimum of the composite moves to 2.65 ka. Without Punta Maroma, Belize or Saint Croix the low persists (0.28-0.56, 0.29-0.54 and 0.39-0.69 ka). Florida carries 39 % of the regional weight (Section 2), and its mean density in the Little Ice Age, 0.044 ka⁻¹, is about a quarter of the uniform value. In the same interval Punta Maroma (0.334) and Belize (0.210) lie above the uniform density, and Saint Croix (0.145) lies below it and below its own CWP-MWA value (0.374). The composite therefore averages opposite trends at the core sites and at the margin. Two limitations apply. First, the excess at Punta Maroma and Belize is concentrated in the youngest Little Ice Age bin (0.1-0.2 ka; 4 of the 10 Punta Maroma records and 4 of the 5 Belize records at 0.1-0.7 ka), next to the modern maximum, so part of it is kernel spill-over from that maximum and it cannot be separated from recency bias. The contrast of Punta Maroma with the CWP-MWA (10 records at 0.1-0.7 ka, none at 0.8-1.3 ka) does not depend on that bin. Second, the comparison is descriptive; no model tests a difference between core and margin. The short intervals outside the Little Ice Age (for example 2.03-2.24 ka with all four sites) lie at the threshold of the rule: whether they are flagged depends on the bootstrap draws, and the main analysis (Section 2) does not flag them.
+
+#### 4.7.8 Summary
+
+Across the five tests, two results are stable. First, the frequency of dated colonies is highest in the two most recent centuries, which coincide with the "high" hurricane regime of Schmitt et al. (2025) and with the warm modern regime. This association holds across bin phases, time references, age and sampling uncertainty and temperature reconstructions, but it rests on two bins and cannot be separated from recency bias. Second, at Punta Maroma the LIA bins have a lower frequency than the modern century that follows them, but not a lower one than earlier cool intervals. In Punta Maroma the δT smooth selected with the CPS median and the thermal regime of the competitive models describe the same modern contrast; the regime is retained when both are present, and the smooth is selected with only 2 % of the ensemble members. The continuous temperature and TC predictors are not robust to bin phase, to age and sampling uncertainty or to the choice of reconstruction, and no climatic predictor shows a consistent association before 0.2 ka. In Belize, the association with the temperature anomaly also depends on the reservoir correction of the radiocarbon ages (Section 4.7.6). The Little Ice Age low of the regional composite is produced by the Florida record; Punta Maroma and Belize lie above the uniform density in that interval (Section 4.7.7).
 
 ## Session information
 
