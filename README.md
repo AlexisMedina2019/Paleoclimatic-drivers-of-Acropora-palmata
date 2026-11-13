@@ -28,4 +28,4 @@ Third-party data deposited here (e.g. the Marine20 calibration curve, the Kaufma
 
 ## Citation
 If you use this dataset or code, please cite:  
-Medina-Valmaseda, A.E. et al. (2026). *Paleoclimatic drivers of Acropora palmata populations across Caribbean Reefs over the last 6000 Years*. Scientific Reports (in revision).
+Medina-Valmaseda, A.E. et al. (2026). *Paleoclimate and Acropora palmata populations across Caribbean reefs over the last 6000 years*. Scientific Reports (in revision).
